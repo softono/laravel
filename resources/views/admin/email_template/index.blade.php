@@ -23,7 +23,7 @@ Email Template
     <h4 class="align-middle d-sm-inline-block d-none">Email Template</h4>
   </div>
   <div class="card-datatable table-responsive">
-    <table class=" table table-bordered table-responsive" id="data-table">
+    <table class=" table table-bordered" id="data-table">
       <thead>
 
         <tr>

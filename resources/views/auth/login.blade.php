@@ -47,10 +47,16 @@ Login To Your Account
                 </a>
               </div>
             </div>
+          
             <div class="mb-6">
               <button class="btn btn-primary d-grid w-100 mb-4" type="submit">Login</button>
-              <button type="button" class="btn btn-primary d-grid w-100 mb-4" onclick="$('#login-otp-form').show();$('#login-form').hide();">Login with OTP</button>
-          </div>
+                 @if (Config::get('setting.user_login_with_otp') == 1)
+                    <button type="button" class="btn btn-primary d-grid w-100 mb-4"
+                        onclick="$('#login-otp-form').show(); $('#login-form').hide();">
+                        Login with OTP
+                    </button>
+                @endif
+            </div>
           </form>
           <form id="login-otp-form" action="{{ route('auth/login-otp-process') }}" method="POST" style="display: none;">
             {{ csrf_field() }}
@@ -144,6 +150,7 @@ Login To Your Account
             } catch (e) {}
           }
           if (response.status) {
+              
             if (response.message) {
               app.showConfirmationPopup({
                 title: "",

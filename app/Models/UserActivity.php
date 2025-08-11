@@ -143,7 +143,7 @@ class UserActivity extends Model
      * @return array The paginated log data.
      */
     public function listAdmin($postData)
-    {
+    { 
         $query = DB::table($this->table)->select(['user_activity.created_at as created_at', 'user_activity.type As type', 'user_activity.ip', 'user_activity.client', 'user.first_name', 'user.email', 'user.last_name'])
             ->join('user', 'user.id', '=', 'user_activity.user_id');
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
@@ -199,7 +199,7 @@ class UserActivity extends Model
      * @return array The paginated log data.
      */
     public function list(array $postData, int $userId): array
-    {
+    { 
         $query = DB::table($this->table)
             ->select('*')
             ->where('user_id', $userId);
@@ -262,7 +262,7 @@ class UserActivity extends Model
             $query->where(function ($query) use ($searchText) {
                 $query->where('client', 'like', $searchText)
                     ->orWhere('ip', 'like', $searchText)
-                    ->orWhere("log.created_at", 'LIKE', $searchText);
+                    ->orWhere("created_at", 'LIKE', $searchText);
             });
         }
     }

@@ -2,6 +2,7 @@
     @csrf
     <input type="hidden" name="id" value="{{ @$model->id }}">
     <input type="hidden" name="pass" value="{{ @$model->password }}">
+        <input type="hidden" name="role" value="1">
     <div class="row">
         <div class="col-md-12">
             <div class="row">
@@ -105,26 +106,29 @@
             @foreach ($model->getPermissionListData() as $permissionList)
             <div class="col-md-3 mb-3">
                 <div class="form-check custom-option custom-option-basic">
+                    
                     <label class="form-check-label custom-option-content checkbox-block" for="customCheckTemp4">
                         <input
                             onchange="$(this).closest('.checkbox-block').find('.checkbox-child').prop('checked',this.checked);"
-                            class="form-check-input checkbox-parent" type="checkbox" name="permission[]"
+                            class="form-check-input checkbox-parent ms-0 " type="checkbox" name="permission[]"
                             value="{{ $permissionList['key'] }}" @if(in_array(strtolower($permissionList['key']),
                             $permissions)) checked @endif />
                         <span class="custom-option-header">
-                            <span class="h5 mb-0">{{ $permissionList['title'] }}</span>
+                            <span class="h5 mb-0 ps-2">{{ $permissionList['title'] }}</span>
                         </span>
                         <span class="custom-option-body">
                             <small>
                                 @if(isset($permissionList['list']) && $permissionList['list'])
                                 @foreach($permissionList['list'] as $permission)
                                 <div class="form-check">
+                                    <div class="ps-1">
                                     <input
                                         onchange="if(this.checked){$(this).closest('.checkbox-block').find('.checkbox-parent').prop('checked',true);}"
                                         class="form-check-input checkbox-child" type="checkbox" name="permission[]"
                                         value="{{ $permission['key'] }}" @if(in_array(strtolower($permission['key']),
                                         $permissions)) checked @endif />
                                     <label class="form-check-label" for="defaultCheck3"> {{ $permission['title'] }}
+                                    </div>
                                     </label>
                                 </div>
                                 @endforeach

@@ -10,7 +10,6 @@ use Illuminate\View\View;
 use App\Models\User;
 use App\Services\AuthService;
 use App\Services\TfaService;
-use App\Helpers\General;
 
 /**
  * Class AuthController
@@ -27,6 +26,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+
         // Check if the user is already authenticated
         if (Auth::check()) {
             return redirect($this->general->authRedirectUrl(config('setting.login_redirect_url')));
@@ -113,6 +113,7 @@ class AuthController extends Controller
      */
     public function resendOTP(Request $request)
     {
+
         return response()->json((new TfaService())->resendOTP($request->only(['type', 'code'])));
     }
 
@@ -151,18 +152,18 @@ class AuthController extends Controller
         return redirect($this->general->authRedirectUrl(config('setting.login_redirect_url')));
     }
 
-     public function getTotpModel(Request $request)
+    public function getTotpModel(Request $request)
     {
         $user = auth()->user();
-    
-        if ($user->totp_secret_key	) {
+
+        if ($user->totp_secret_key) {
             return response()->json(['error' => 'TOTP already enabled.'], 403);
         }
-    
+
         $data = (new TfaService())->generateTotpQrcode($user->user_name);
         $secretKey = $data['secretKey'];
         $qrCode = $data['qrCode'];
-    
+
         return view('common.totp_modal', compact('secretKey', 'qrCode'));
     }
 
@@ -201,16 +202,16 @@ class AuthController extends Controller
     {
         $user = auth()->user();
         $backupCode = $user->backup_code;
-        return view('account/backup',compact('backupCode','user'));
+        return view('account/backup', compact('backupCode', 'user'));
     }
-    
-    
+
+
     public function removeTotp()
     {
         $user = auth()->user();
-        $user->totp_secret_key	 = null;
+        $user->totp_secret_key     = null;
         $user->save();
-    
+
         return response()->json(['message' => 'TOTP removed']);
     }
 }

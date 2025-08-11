@@ -412,6 +412,37 @@ const app = {
 
         document.head.appendChild(script);
     },
+    
+    /**
+    * Sets the browser's URL and optionally updates query parameters.
+    * @param {string} url - The base URL to set.
+    * @param {Object} params - Key-value pairs to add or update in the URL's query string.
+    */
+    setUrl: function (url, params) {
+        if (params) {
+          const paramStringArray = [];
+          let [baseUrl, queryString] = url.split("?");
+        
+          if (queryString) {
+            const existingParams = queryString.split("&");
+            existingParams.forEach((param) => {
+              const [key, value] = param.split("=");
+              if (!params.hasOwnProperty(key)) {
+                paramStringArray.push(`${key}=${value}`);
+              }
+            });
+          }
+        
+          Object.entries(params).forEach(([key, value]) => {
+            paramStringArray.push(`${key}=${value}`);
+          });
+        
+          url = `${baseUrl}?${paramStringArray.join("&")}`;
+        }
+        
+        window.history.pushState({}, "", url);
+    },
+
 
     /**
      * Cookie management utilities
@@ -655,7 +686,7 @@ class Pagination {
         if (cacheEnabled) {
             cachedPage = AppCache.get(cacheKey);
             if (cachedPage) {
-                if (_this.type == 0) {
+                if (_this.type == 1) {
                     _this.ajaxContainer.html(cachedPage);
                 } else {
                     _this.ajaxContainer.find(".pagination-load-more").remove();
@@ -670,7 +701,7 @@ class Pagination {
         }
         //cache end
         if (showLoading) {
-            if (_this.type == 0) {
+            if (_this.type == 1) {
                 _this.ajaxContainer.css("min-height", _this.ajaxContainer.height());
                 _this.ajaxContainer.html('<div class="loading-text">Loading...</div>');
             } else {
@@ -690,7 +721,7 @@ class Pagination {
                 }
                 AppCache.set(cacheKey, response);
                 //cache end
-                if (_this.type == 0) {
+                if (_this.type == 1) {
                     _this.ajaxContainer.html(response);
                     _this.ajaxContainer.css("min-height", 0);
                 } else {

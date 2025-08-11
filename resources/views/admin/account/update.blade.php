@@ -70,6 +70,16 @@ Profile
   documentReady(function() {
     $('#ajax-form').validate({
       rules:{
+            first_name: {
+                    required: true,
+                },
+             last_name: {
+                    required: true,
+                },
+            phone: {
+                    required: true,
+                    minlength: 10,
+                },
          email: {
                     required: true,
                     email: true,
@@ -77,10 +87,19 @@ Profile
                 },
       },
       messages:{
+              first_name: {
+                       required: "Please enter the first name",
+                },
+                 last_name: {
+                       required: "Please enter the last name",
+                },
             email: {
                     required: "Please enter the email",
                     email: "Please enter a valid email address",
                     noDisposableEmail: "Please enter a valid Email domain"
+                },
+             phone: {
+                       required: "Please enter the phone number",
                 },
       },
       submitHandler: function(form) {

@@ -99,6 +99,13 @@ jQuery.validator.addMethod("noDisposableEmail", v => !["mailinator.com","tempmai
         $('#ajax-form').validate({
             rules: 
             {
+                first_name :{
+                    required: true, 
+                },
+                last_name :{
+                    required: true, 
+                    minlength: 10,
+                },
                 phone :{
                     required: true, 
                     minlength: 10,
@@ -121,20 +128,30 @@ jQuery.validator.addMethod("noDisposableEmail", v => !["mailinator.com","tempmai
                 }
             },
             messages: {
-                
+                first_name: {
+                    required: "Please enter your first name.",
+                },
+                last_name: {
+                    required: "Please enter your last name.",
+                },
                 phone: {
                     required: "Please enter your phone number.",
                     minlength: "Please enter at least 10 digits."
                 },
                 email: 
                 {
-                    required: "Please Enter Your Email.",
+                    required: "Please enter your email address.",
                     email: "Please enter a valid email address.",
-                    noDisposableEmail: "Please enter a valid Email domain"
+                    noDisposableEmail: "Please enter a valid email domain"
 
                 },
                 password: {
-                    required: "Please Enter Your Password",
+                    required: "Please Enter your password",
+                    minlength: "Please enter at least 6 characters.",
+                    maxlength: "Please enter no more than 32 characters."
+                },
+                 password_confirm: {
+                    required: "Please enter your confirm password",
                     minlength: "Please enter at least 6 characters.",
                     maxlength: "Please enter no more than 32 characters."
                 },

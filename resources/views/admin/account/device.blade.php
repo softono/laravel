@@ -18,7 +18,7 @@ Device
             <table class="datatable-list-table table border-top" id="data-table">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>id</th>
                   <th>Client</th>
                   <th>IP</th>
                   <th>Location</th>

@@ -52,6 +52,7 @@ class AccountService
 
         $ip = $general->getClientIp();
         $userObj = new User();
+
         $user = $userObj->create([
             'first_name' => $postData['first_name'],
             'last_name' => $postData['last_name'],
@@ -59,9 +60,10 @@ class AccountService
             'phone' => $postData['phone'],
             'password' => (new AuthService())->encryptPassword($postData['password']),
             'country' => $general->getIpInfoCountry($ip),
-            'status'      => 1,
-            'timezone' => config('app.timezone'),
-            'registered_ip' => $ip
+            'status' => 1,
+            'timezone' => $general->getClientTimezone(),
+            'registered_ip' => $ip,
+            'role' => 4,
         ]);
 
         (new UserActivity())->add($user->id, 3);
@@ -191,7 +193,7 @@ class AccountService
         } else {
             $user->update([
                 'password' => (new AuthService())->encryptPassword($postData['password']),
-                'data' => $user->otp='',
+                'data' => $user->otp = '',
             ]);
             return ['status' => 1, 'message' => 'Password reset successfully. You can now log in', 'next' => 'redirect', 'url' => 'admin/auth/login'];
         }

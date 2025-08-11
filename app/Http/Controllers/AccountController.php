@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserAuth;
-use App\Models\User;
+use App\Models\Device;
 use App\Models\UserActivity;
 use App\Services\AccountService;
 use Illuminate\Http\Request;
@@ -92,20 +92,20 @@ class AccountController extends Controller
      * Show TFA settings page.
      */
 
-       public function tfa()
+    public function tfa()
     {
         $model = auth()->user();
         $userAuthList = DB::table('user_auth')
-                ->leftjoin('user', 'user_auth.device_uid', '=', 'user.ignore_tfa_device')
-                ->where('user.ignore_tfa_device', $model->ignore_tfa_device)
-                ->select('user_auth.*','user.ignore_tfa_device')
-                ->get();
+            ->leftjoin('user', 'user_auth.device_uid', '=', 'user.ignore_tfa_device')
+            ->where('user.ignore_tfa_device', $model->ignore_tfa_device)
+            ->select('user_auth.*', 'user.ignore_tfa_device')
+            ->get();
 
-         foreach ($userAuthList as $key => $userAuth) {
+        foreach ($userAuthList as $key => $userAuth) {
             $userAuthList[$key]->client =  (new General())->deviceName($userAuth->client) . ' ' . ($userAuth->device_uid == @$_COOKIE[config("setting.app_uid") . '_token'] ? ' (This Device)' : '');
             $userAuthList[$key]->location = (new General)->getIpLocation($userAuth->ip);
         }
-        return view('account/tfa',compact('model','userAuthList'));
+        return view('account/tfa', compact('model', 'userAuthList'));
     }
 
 
@@ -190,13 +190,12 @@ class AccountController extends Controller
     }
 
 
-     public function accountDeactivate()
+    public function accountDeactivate()
     {
         $model = auth()->user();
         $model->status = 0;
-         Auth::logout();
+        Auth::logout();
         $model->update();
         return redirect('logout');
-
     }
 }

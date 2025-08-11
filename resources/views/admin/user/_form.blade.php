@@ -82,17 +82,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label" for="basic-icon-default-fullname">Phone Number <span
-                                    class="text-danger">*</span></label>
-                            <div class="input-group input-group-merge">
-                                <input type="number" class="form-control" id="basic-icon-default-phone-number"
-                                    placeholder="Phone Number" name="phone" aria-label="Name"
-                                    value="{{ @$model->phone }}" />
-                            </div>
-                        </div>
-                    </div>
+                    <!--<div class="col-md-6">-->
+                    <!--    <div class="mb-3">-->
+                    <!--        <label class="form-label" for="basic-icon-default-fullname">Phone Number <span-->
+                    <!--                class="text-danger">*</span></label>-->
+                    <!--        <div class="input-group input-group-merge">-->
+                    <!--            <input type="number" class="form-control" id="basic-icon-default-phone-number"-->
+                    <!--                placeholder="Phone Number" name="phone" aria-label="Name"-->
+                    <!--                value="{{ @$model->phone }}" />-->
+                    <!--        </div>-->
+                    <!--    </div>-->
+                    <!--</div>-->
                 </div>
 
             </div>

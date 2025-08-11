@@ -29,13 +29,13 @@ Device
     <table class="datatable-list-table table border-top " id="data-table">
       <thead>
         <tr>
-          <th>#</th>
+          <th>Last Activity</th>
+          <th>Device ID</th>
           <th>Name</th>
           <th class="text-break">Email</th>
           <th>Client</th>
           <th>IP</th>
           <th>Location</th>
-          <th>Last Activity</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -57,7 +57,12 @@ Device
         url: '{{route("admin/device/list")}}',
         method: 'post'
       }),
-      columns: [{
+      columns: [
+        {
+          data: "last_activity",
+          responsivePriority: 1
+        },
+        {
           data: "id",
           responsivePriority: 6
         },
@@ -78,16 +83,12 @@ Device
         {
           data: "ip",
           class:'wrap-td',
-          responsivePriority: 3
+          responsivePriority: 3,
+          sortable: false
         },
         {
           data: "location",
           responsivePriority: 2,
-          sortable: false
-        },
-        {
-          data: "last_activity",
-          responsivePriority: 1,
           sortable: false
         },
         {
@@ -99,7 +100,7 @@ Device
       responsive: true,
       serverSide: true,
       "order": [
-        [4, "desc"]
+        [0, "desc"]
       ]
     });
   });

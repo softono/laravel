@@ -59,6 +59,26 @@ Change password
             submitHandler: function(form) {
                 app.ajaxForm(form);
             },
+             rules: {
+                title: {
+                    required: true,
+                },
+                keyword: {
+                    required: true,
+                },
+
+            },
+            messages: {
+                current_password: {
+                    required: "Please enter the current password",
+                },
+                password: {
+                    required: "Please enter the password",
+                },
+                confirm_password: {
+                    required: "Please enter the confirm password",
+                },
+            },
              highlight: function(element) {
             $(element).addClass('is-invalid');
             $(element)

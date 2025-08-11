@@ -25,7 +25,7 @@ Log
         <table class="datatable-list-table table border-top" id="data-table">
             <thead>
                 <tr>
-                    <th>Created At</th>
+                    <th>Date</th>
                     <th>Type</th>
                     <th>Name</th>
                     <th>Email</th>

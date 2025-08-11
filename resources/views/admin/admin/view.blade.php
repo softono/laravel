@@ -56,9 +56,9 @@ Admin View
               <span>{{ $model->first_name.' '.$model->last_name }}</span>
             </li>
             <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-envelope"></i>
-              <span class="fw-medium mx-2">Email:</span>
-              <span>{{ $model->email }}</span>
+                <i class="icon-base bx bx-envelope"></i>
+                <span class="fw-medium mx-2">Email:</span>
+                <span class="text-break">{{ $model->email }}</span>
             </li>
             <li class="d-flex align-items-center mb-4">
               <i class="icon-base bx bx-phone"></i>
@@ -77,7 +77,7 @@ Admin View
             <li class="d-flex align-items-center mb-4">
               <i class="icon-base bx bx-time"></i>
               <span class="fw-medium mx-2">Created at:</span>
-                              <span>{{ $general->dateFormat($model->created_at) }}</span>
+              <span>{{ $general->dateFormat($model->created_at) }}</span>
             </li>
             <li class="d-flex align-items-center mb-4">
               <i class="icon-base bx bx-time-five"></i>

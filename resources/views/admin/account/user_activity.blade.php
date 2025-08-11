@@ -60,7 +60,8 @@ Log
         },
         {
           data: "location",
-          responsivePriority: 4
+          responsivePriority: 4,
+          sortable: false
         },
         {
           data: "ip",

@@ -93,13 +93,16 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Admin Contact Email <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
+                                                <div class="from-group">
+                                                        <div class="input-group">
                                                     <span class="input-group-text cursor-pointer"><i
                                                             class="icon-base bx bx-envelope"></i></span>
                                                     <input type="email" id="setting_admin_email" class="form-control"
                                                         placeholder="Admin Contact Email" name="setting_admin_email"
                                                         value="{{ $setting['setting.admin_email'] }}" required />
+                                                        </div>
                                                 </div>
+                                                    <label id="setting_admin_email-error" class="error text-danger" for="setting_admin_email" style="display: none;"></label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -218,7 +221,7 @@
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="mb-3">
-                                                                <div class="input-group input-group-merge">
+                                                                <div class="from-group">
                                                                     <input type="file" required="required"
                                                                         name="image"
                                                                         onchange="previewImage(this,'.preview-app-logo')"
@@ -290,7 +293,7 @@
                                                 <label class="form-label">Host <span
                                                         class="text-danger">*</span></label>
                                                 <div class="">
-                                                    <input type="text" class="form-control" placeholder="Host"
+                                                    <input type="text" class="form-control" id="mail_mailers_smtp_host" placeholder="Host"
                                                         name="mail_mailers_smtp_host" value="{{ $setting['mail.mailers.smtp.host'] }}"
                                                         required />
                                                 </div>
@@ -327,7 +330,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="">
                                                     <input type="text" class="form-control" placeholder="Username"
-                                                        id="mail.mailers.smtp.username" name="mail_mailers_smtp_username"
+                                                        id="mail_mailers_smtp_username" name="mail_mailers_smtp_username"
                                                         value="{{ $setting['mail.mailers.smtp.username'] }}" required />
                                                 </div>
                                             </div>
@@ -336,8 +339,8 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Password <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
-                                                    <input type="text" class="form-control" placeholder="Password"
+                                                <div class="from-group">
+                                                    <input type="text" class="form-control" id="mail_mailers_smtp_password" placeholder="Password"
                                                         name="mail_mailers_smtp_password"
                                                         value="{{ $setting['mail.mailers.smtp.password'] }}" required />
                                                 </div>
@@ -348,7 +351,7 @@
                                                 <label class="form-label">Mail From Name <span
                                                         class="text-danger">*</span></label>
                                                 <div class="">
-                                                    <input type="text" class="form-control" placeholder="Mail From Name"
+                                                    <input type="text" class="form-control" id="mail_from_name" placeholder="Mail From Name"
                                                         name="mail_from_name"
                                                         value="{{ $setting['mail.from.name'] }}" required />
                                                 </div>
@@ -359,14 +362,15 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Mail From Address <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
+                                                <div class="input-group">
                                                     <span class="input-group-text"><i
                                                             class="icon-base bx bx-envelope"></i></span>
-                                                    <input type="text" class="form-control"
+                                                    <input type="text" class="form-control" id="mail_from_address"
                                                         placeholder="Mail From Address"
                                                         name="mail_from_address"
                                                         value="{{ $setting['mail.from.address'] }}" required />
                                                 </div>
+                                                 <label id="mail_from_address-error" class="error" for="mail_from_address" style="display:none;"></label>
                                             </div>
                                         </div>
 
@@ -406,7 +410,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Secret key <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
+                                                <div class="from-group input-group-merge">
                                                     <input type="text" class="form-control" required
                                                         value="{{ $setting['setting.google_recaptcha_secret_key'] }}"
                                                         name="setting_google_recaptcha_secret_key" id="secret_key"
@@ -418,7 +422,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Public key <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
+                                                <div class="from-group input-group-merge">
                                                     <input type="text" class="form-control" required
                                                         value="{{ $setting['setting.google_recaptcha_public_key'] }}"
                                                         name="setting_google_recaptcha_public_key" id="public_key"
@@ -460,7 +464,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Google Client ID <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
+                                                <div class="from-group input-group-merge">
                                                     <input type="text" class="form-control"
                                                         value="{{ $setting['services.google_client_id'] }}" required
                                                         name="services_google_client_id"
@@ -474,7 +478,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Google Client Secret <span
                                                         class="text-danger">*</span></label>
-                                                <div class="input-group input-group-merge">
+                                                <div class="form-group input-group-merge">
                                                     <input type="text" class="form-control" required
                                                         value="{{ $setting['services.google_client_secret'] }}"
                                                         name="services_google_client_secret" placeholder="Google client secret">
@@ -562,43 +566,189 @@
         $('.ajax-file-form-logo').validate({
             submitHandler: function(form) {
                 app.ajaxFileForm(form);
+            },
+            rules: {
+                image: {
+                    required: true
+                }
+            },
+            messages: {
+                image: {
+                    required: "Please enter the app logo"
+                }
             }
-        })
+        });
+
         $('.ajax-file-form-favicon').validate({
             submitHandler: function(form) {
                 app.ajaxFileForm(form);
             },
-        })
+            rules: {
+                image: {
+                    required: true
+                }
+            },
+            messages: {
+                image: {
+                    required: "Please enter the app favicon"
+                }
+            }
+        });
+
         $('.ajax-form').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
+            },
+             rules: {
+                setting_app_name: {
+                    required: true
+                },
+                setting_admin_email:{
+                    required:true
+                }
+            },
+            messages: {
+                setting_app_name: {
+                     required: "Please enter the app name"
+                },
+                setting_admin_email:{
+                    required: "Please enter the admin contact email"
+                }
             }
-        })
+        });
+
         $('.ajax-form-mail').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
             },
-        })
+            rules: {
+                mail_mailers_smtp_host: {
+                    required: true
+                },
+                mail_mailers_smtp_username: {
+                    required: true
+                },
+                mail_mailers_smtp_password: {
+                    required: true
+                },
+                mail_from_name: {
+                    required: true
+                },
+                mail_from_address: {
+                    required: true,
+                    email: true
+                }
+            },
+            messages: {
+                mail_mailers_smtp_host: {
+                    required: "Please enter the mail host"
+                },
+                mail_mailers_smtp_username: {
+                    required: "Please enter the mail username"
+                },
+                mail_mailers_smtp_password: {
+                    required: "Please enter the  password"
+                },
+                mail_from_name: {
+                    required: "Please enter the mail from name"
+                },
+                mail_from_address: {
+                    required: "Please enter the mail from address",
+                    email: "Please enter a valid email address"
+                }
+            }
+        });
+        $('.ajax-form-mail-test').validate({
+            submitHandler: function(form) {
+                app.ajaxForm(form);
+            },
+             rules: {
+                email: {
+                    required: true,
+                    email: true
+                }
+            },
+            messages: {
+                email: {
+                    required: "Please enter the email address",
+                    email: "Enter a valid email address."
+            }
+        },
+        });
+
         $('.ajax-form-captcha').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
             },
-        })
+            rules: {
+                setting_google_recaptcha_secret_key: {
+                    required: true
+                },
+                setting_google_recaptcha_public_key: {
+                    required:true
+                }
+            },
+            messages: {
+                setting_google_recaptcha_secret_key: {
+                    required: "Please enter the secret key"
+                },
+                setting_google_recaptcha_public_key: {
+                    required: "Please enter the public key"
+                }
+            }
+        });
+
         $('.ajax-form-social').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
             },
-        })
+             rules: {
+                services_google_client_id: {
+                    required: true
+                },
+                services_google_client_secret: {
+                    required:true
+                }
+            },
+            messages: {
+                services_google_client_id: {
+                    required: "Please enter the google client id"
+                },
+                services_google_client_secret: {
+                    required: "Please enter the google client secret"
+                }
+            }
+            
+        });
+
         $('.ajax-form-content').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
             },
-        })
+            rules: {
+                setting_header_content: {
+                    required: true
+                },
+                setting_footer_content: {
+                    required:true
+                }
+            },
+            messages: {
+                setting_header_content: {
+                    required: "Please enter the header content"
+                },
+                setting_footer_content: {
+                    required: "Please enter the footer content"
+                }
+            }
+        });
+
         $('.ajax-form-mail-test').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
             }
-        })
+        });
     });
 </script>
+
 @endpush

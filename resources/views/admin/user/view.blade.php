@@ -48,16 +48,16 @@ User View
               <span class="fw-medium mx-2">Username:</span>
               <span>{{ $model->first_name.' '.$model->last_name }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
+            <li class="d-flex mb-4">
               <i class="icon-base bx bx-envelope"></i>
               <span class="fw-medium mx-2">Email:</span>
-              <span>{{ $model->email }}</span>
+              <span class="text-break">{{ $model->email }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-phone"></i>
-              <span class="fw-medium mx-2">Phone Number:</span>
-              <span>{{ $model->phone }}</span>
-            </li>
+            <!--<li class="d-flex align-items-center mb-4">-->
+            <!--  <i class="icon-base bx bx-phone"></i>-->
+            <!--  <span class="fw-medium mx-2">Phone Number:</span>-->
+            <!--  <span>{{ $model->phone }}</span>-->
+            <!--</li>-->
             <li class="d-flex align-items-center mb-4">
               <i class="icon-base bx bx-check"></i>
               <span class="fw-medium mx-2">Status:</span>
@@ -96,12 +96,12 @@ User View
 
           <div class="d-flex justify-content-center mb-3" style="gap: 10px;">
             <a href="{{ route('admin/user/autologin', ['id' => $model->id]) }}" class="btn btn-primary"
-              style="width: 170px; height: 45px;" title="Login as User">
+              style="width: 170px; height: 60px;" title="Login as User">
               Login as User
             </a>
 
             <a href="{{ route('admin/user/send-tfa-mail', ['id' => $model->id]) }}"
-              class="btn btn-primary" style="width: 170px; height: 45px;"
+              class="btn btn-primary" style="width: 170px; height: 60px;"
               title="Verify Two-Factor Authentication">
               Re-send Verification Mail
             </a>

@@ -4,10 +4,7 @@ Pages
 @endsection
 @section('content')
 
-
-
 <!-- Content -->
-
 <div class="breadcrumb-box">
     <h4 class="fw-bold py-3 mb-4">Pages</h4>
     <nav aria-label="breadcrumb">
@@ -26,7 +23,7 @@ Pages
         <h4 class="align-middle d-sm-inline-block d-none">Pages</h4>
     </div>
     <div class="card-datatable table-responsive">
-        <table class=" table table-bordered table-responsive" id="data-table">
+        <table class=" table table-bordered" id="data-table">
             <thead>
                 <tr>
                     <th>#</th>
