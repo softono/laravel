@@ -144,8 +144,8 @@ class General
         try {
             $recaptcha = request('g-recaptcha-response');
             $url = 'https://www.google.com/recaptcha/api/siteverify?secret=' . config('setting.google_recaptcha_secret_key') . '&response=' . $recaptcha;
-            $response = @file_get_contents($url);;
-            $response = @json_decode($response);;
+            $response = @file_get_contents($url);
+            $response = @json_decode($response);
             return !$response->success;
         } catch (\Exception $e) {
             return false;
@@ -407,7 +407,6 @@ class General
      */
     public function sendEmail(string $to, string $template, array $data, $queue = false)
     {
-
         $templateData = (new \App\Models\EmailTemplate())->getEmailTemplate($template, $data);
         if ($queue && function_exists("proc_open")) {
             // Dispatch email job (queue must be running)
@@ -430,7 +429,6 @@ class General
             //         ->to($to)
             //         ->subject($subject);
             // });
-
             $transport = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport(
                 config('mail.mailers.smtp.host'),
                 config('mail.mailers.smtp.port'),
@@ -450,7 +448,6 @@ class General
                     ->to($to)
                     ->subject($subject);
             });
-
             \Log::info('Email Sent : ' . $to . ' : ' . $subject);
             return ['status' => 1, 'message' => 'Email sent successfully'];
         } catch (\Exception $e) {
@@ -688,7 +685,6 @@ class General
 
     public function dateFormat($dateOrField, $type = 1, $format = '')
     {
-        
         //$type  for date, 1 for datetime
         if ($format == '') {
             $format = $type ? config('setting.date_time_format', 'Y-m-d H:i:s') : config('setting.date_format', 'Y-m-d');

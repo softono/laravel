@@ -75,7 +75,7 @@
                     </li>
                     <?php } else { ?>
                     <li class="menu-item {{ $general->routeMatchClass('login')}}">
-                        <a href="login" class="menu-link btn rounded-pill btn-primary text-white pjax">
+                        <a href="login" class="menu-link btn rounded-pill btn-primary text-white pjax" data-pjax-layout="blank">
                             <div data-i18n="Login">Login
                                 <span class="icon-base bx bx-log-in-circle icon-sm "></span>
                             </div>
@@ -83,7 +83,7 @@
                     </li>
                     <br>
                     <li class="menu-item {{ $general->routeMatchClass('register')}} ms-2">
-                        <a href="register" class="menu-link btn rounded-pill btn-primary text-white pjax">
+                        <a href="register" class="menu-link btn rounded-pill btn-primary text-white pjax" data-pjax-layout="blank">
                             <div data-i18n="Register">Register <span class="icon-base bx bx-user icon-sm "></span></div>
                         </a>
                     </li>

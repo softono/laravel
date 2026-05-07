@@ -294,7 +294,7 @@
                                                 <div class="form-group form-submail">
                                                     <button type="submit" class="btn btn-primary">Submit</button>
                                                     <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                                        data-bs-target="#exampleModal">Email </button> -->
+                                                            data-bs-target="#exampleModal">Email </button> -->
                                                 </div>
                                             </div>
 
@@ -304,7 +304,8 @@
                                 <div class="tab-pane fade" id="navs-top-logo" role="tabpanel">
                                     <div class="row" style="margin-left:0%">
                                         <div class="col-6">
-                                            <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form" method="post" enctype="multipart/form-data">
+                                            <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form"
+                                                method="post" enctype="multipart/form-data">
                                                 {{ csrf_field() }}
                                                 <input type="hidden" name="key" value="logo">
                                                 <div class="form-row row">
@@ -343,7 +344,8 @@
                                             </form>
                                         </div>
                                         <div class="col-6">
-                                            <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form" method="post" enctype="multipart/form-data">
+                                            <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form"
+                                                method="post" enctype="multipart/form-data">
                                                 {{ csrf_field() }}
                                                 <input type="hidden" name="key" value="fevicon">
                                                 <div class="form-row row">
@@ -395,9 +397,11 @@
                                                         value="{{ config('setting.google_recaptcha') }}"
                                                         name="google_recaptcha">
                                                         <option value="1"
-                                                            <?= config('setting.google_recaptcha') == '1' ? 'selected' : '' ?>>Yes</option>
+                                                            <?= config('setting.google_recaptcha') == '1' ? 'selected' : '' ?>>
+                                                            Yes</option>
                                                         <option value="0"
-                                                            <?= config('setting.google_recaptcha') == '0' ? 'selected' : '' ?>>No</option>
+                                                            <?= config('setting.google_recaptcha') == '0' ? 'selected' : '' ?>>
+                                                            No</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -511,16 +515,22 @@
                                         </div>
                                     </form>
                                 </div>
-                               <div class="tab-pane fade" id="navs-top-payment" role="tabpanel">
+                                <div class="tab-pane fade" id="navs-top-payment" role="tabpanel">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
                                         <div class="form-row row">
                                             <div class="col-md-6">
                                                 <div class="mb-3">
                                                     <label class="body">Stripe Enable</label>
-                                                    <select class="form-control" value="{{ config('setting.stripe_enable') }}" name="stripe_enable">
-                                                        <option value="1" {{ config('setting.stripe_enable') == '1' ? 'selected' : '' }}>Enable</option>
-                                                        <option value="0" {{ config('setting.stripe_enable') == '0' ? 'selected' : '' }}>Disable</option>
+                                                    <select class="form-control"
+                                                        value="{{ config('setting.stripe_enable') }}"
+                                                        name="stripe_enable">
+                                                        <option value="1"
+                                                            {{ config('setting.stripe_enable') == '1' ? 'selected' : '' }}>
+                                                            Enable</option>
+                                                        <option value="0"
+                                                            {{ config('setting.stripe_enable') == '0' ? 'selected' : '' }}>
+                                                            Disable</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -576,7 +586,8 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input type="email" class="form-control" id="email" placeholder="Email Address" name="email" aria-label="Name" required />
+                            <input type="email" class="form-control" id="email" placeholder="Email Address"
+                                name="email" aria-label="Name" required />
                         </div>
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Submit</button>
@@ -589,8 +600,8 @@
         <!-- / Content -->
         <div class="content-backdrop fade"></div>
     </div>
-    @endsection
-    @push('scripts')
+@endsection
+@push('scripts')
     <script type="text/javascript">
         documentReady(function() {
             $('.ajax-file-form').validate({

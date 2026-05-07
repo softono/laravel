@@ -746,9 +746,10 @@
         $('.ajax-form-mail-test').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
-            }
+            }   
         });
     });
 </script>
+
 
 @endpush

@@ -12,6 +12,7 @@ class PermissionService
      */
     public function hasPermission($permission = '', $userPermission = ''): bool
     {
+        // dd($permission);
         if ($permission == '') {
             $permission = \Route::getCurrentRoute()->uri;
         }
@@ -105,7 +106,7 @@ class PermissionService
             ],
             [
                 'title' => 'User',
-                'key' => 'admin_user',
+                'key' => 'admin/user',
                 'list' => [
                     [
                         'title' => 'List',

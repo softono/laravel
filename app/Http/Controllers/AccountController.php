@@ -32,6 +32,8 @@ class AccountController extends Controller
      */
     public function updateProcess(Request $request)
     {
+
+
         return response()->json((new AccountService())->updateProcess($request, auth()->user()));
     }
 
@@ -52,8 +54,9 @@ class AccountController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePasswordProcess(Request $request)
+    public function passwordChangeProcess(Request $request)
     {
+
         return response()->json((new AccountService())->changePassword($request, auth()->user()));
     }
 
@@ -91,23 +94,32 @@ class AccountController extends Controller
     /**
      * Show TFA settings page.
      */
-
     public function tfa()
     {
         $model = auth()->user();
-        $userAuthList = DB::table('user_auth')
-            ->leftjoin('user', 'user_auth.device_uid', '=', 'user.ignore_tfa_device')
-            ->where('user.ignore_tfa_device', $model->ignore_tfa_device)
-            ->select('user_auth.*', 'user.ignore_tfa_device')
-            ->get();
+
+        $userAuthList = UserAuth::getUserDevices($model->id);
 
         foreach ($userAuthList as $key => $userAuth) {
-            $userAuthList[$key]->client =  (new General())->deviceName($userAuth->client) . ' ' . ($userAuth->device_uid == @$_COOKIE[config("setting.app_uid") . '_token'] ? ' (This Device)' : '');
-            $userAuthList[$key]->location = (new General)->getIpLocation($userAuth->ip);
-        }
-        return view('account/tfa', compact('model', 'userAuthList'));
-    }
 
+            $userAuthList[$key]->client =
+                (new General())->deviceName($userAuth->client) . ' ' .
+                ($userAuth->device_uid == ($_COOKIE[config("setting.app_uid") . '_token'] ?? null)
+                    ? ' (This Device)'
+                    : '');
+
+            $userAuthList[$key]->location =
+                (new General())->getIpLocation($userAuth->ip);
+        }
+
+        $trustedDevices = [];
+
+        if (!empty($model->ignore_tfa_device)) {
+            $trustedDevices = explode(',', $model->ignore_tfa_device);
+        }
+
+        return view('account/tfa', compact('model', 'userAuthList', 'trustedDevices'));
+    }
 
     /**
      * Toggle TFA status.
@@ -163,9 +175,24 @@ class AccountController extends Controller
      */
     public function deviceLogout(Request $request)
     {
-        (new UserAuth())->forceLogout($request->input('id'));
+        $id = $request->input('id');
 
-        return response()->json(['status' => 1, 'message' => 'Device Logout Successfully', 'next' => 'reload']);
+        $device = new \App\Models\Device();
+
+        $result = $device->forceLogout($id);
+
+        if ($result === false) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Cannot logout current device'
+            ]);
+        }
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Device Logout Successfully',
+            'next' => 'reload'
+        ]);
     }
 
     /**
@@ -188,7 +215,6 @@ class AccountController extends Controller
     {
         return response()->json((new UserActivity())->list($request->all(), auth()->id()));
     }
-
 
     public function accountDeactivate()
     {

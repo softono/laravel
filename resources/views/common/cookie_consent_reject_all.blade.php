@@ -2,18 +2,27 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.css">
     <script type="module">
         import 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.umd.js';
+
         window.addEventListener('load', function() {
             if (window.templateCustomizer?.settings?.style === 'dark') {
                 document.documentElement.classList.add('cc--darkmode');
             }
             
+            setTimeout(function(){
+                if(CookieConsent.getUserPreferences().rejectedCategories.indexOf('necessary')>=0){
+                    console.log('revision');
+                    CookieConsent.show(true);
+                }
+            }, 800);
+            
             CookieConsent.run({
+                
                 // root: 'body',
                 // autoShow: true,
                 //disablePageInteraction: true,
                 // hideFromBots: true,
                 // mode: 'opt-in',
-                //revision: 100,
+                revision: 100,
 
                 cookie: {
                     name: 'cc_cookie',
@@ -38,24 +47,44 @@
                     }
                 },
 
-                onChange: ({changedCategories, changedServices}) => {
-                    alert(changedCategories);
-                    alert(changedServices,changedServices);
-                    if(CookieConsent.getUserPreferences().rejectedCategories.indexOf('necessary')<0){
-                        app.setCookie('cookie_consent',1);
-                    }
+                onFirstConsent: ({cookie}) => {
+                    console.log('onFirstConsent fired',cookie);
                 },
-               
-                onModalHide: ({modalName}) => {
+
+                onConsent: ({cookie}) => {
+                    console.log('onConsent fired!', cookie);
+                    
+                },
+
+                onChange: ({changedCategories, changedServices}) => {
+                    console.log('onChange fired!', changedCategories, changedServices);
                     if(CookieConsent.getUserPreferences().rejectedCategories.indexOf('necessary')<0){
                         app.setCookie('cookie_consent',1);
                     }
                 },
 
+                onModalReady: ({modalName}) => {
+                    console.log('ready:', modalName);
+                },
+
+                onModalShow: ({modalName}) => {
+                    console.log('visible:', modalName);
+                },
+
+                onModalHide: ({modalName}) => {
+                    console.log('hidden:', modalName);
+                    setTimeout(function(){
+                        if(CookieConsent.getUserPreferences().rejectedCategories.indexOf('necessary')>=0){
+                            console.log('revision');
+                            window.location.reload();
+                        }
+                    }, 800);
+                },
+
                 categories: {
                     necessary: {
-                        enabled: true,  // this category is enabled by default
-                        readOnly: true  // this category cannot be disabled
+                        enabled: false,  // this category is enabled by default
+                        readOnly: false  // this category cannot be disabled
                     },
                     analytics: {
                         autoClear: {
@@ -68,6 +97,7 @@
                                 }
                             ]
                         },
+
                         // https://cookieconsent.orestbida.com/reference/configuration-reference.html#category-services
                         services: {
                             ga: {
@@ -93,7 +123,7 @@
                                 title: 'We use cookies',
                                 description: 'We use cookies to provide our services and for analytics and marketing. To find out more about our use of cookies, please see our Privacy Policy. By continuing to browse our website, you agree to our use of cookies. <a href="page/cookie-policy">Cookie policy</a>',
                                 acceptAllBtn: 'Accept all',
-                                acceptNecessaryBtn: 'Accept Necessary',
+                                acceptNecessaryBtn: 'Reject all',
                                 showPreferencesBtn: 'Manage Individual preferences',
                                 // closeIconLabel: 'Reject all and close modal',
                                 footer: ``,
@@ -101,7 +131,7 @@
                             preferencesModal: {
                                 title: 'Manage cookie preferences',
                                 acceptAllBtn: 'Accept all',
-                                acceptNecessaryBtn: 'Accept Necessary',
+                                acceptNecessaryBtn: 'Reject all',
                                 savePreferencesBtn: 'Accept current selection',
                                 closeIconLabel: 'Close modal',
                                 serviceCounterLabel: 'Service|Services',

@@ -197,6 +197,7 @@ class Setting extends Model
                 'setting.google_recaptcha_public_key' => $postData['setting_google_recaptcha_public_key'],
             ];
         } else if ($postData['type'] == 'social') {
+            $postData['services_google_login'] = $postData['services_google_login'] ?? 0;
             $validator = Validator::make($postData, [
                 'services_google_client_id' => 'required|string',
                 'services_google_client_secret' => 'required|string',

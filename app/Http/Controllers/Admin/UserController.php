@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\UserAuth;
 use App\Models\User;
+use App\Models\ContactMessages;
 use App\Models\UserActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Services\TfaService;
+use App\Helpers\General;
+use Illuminate\Support\Facades\DB as DBFacade;
 
 /**
  * Class UserController
@@ -29,6 +32,23 @@ class UserController extends Controller
         return view('admin/user/index');
     }
 
+    public function sendMail(Request $request)
+    {
+        $to = $request->to;
+        $subject = $request->subject;
+        $message = $request->message;
+
+        $data = [
+            'subject' => $subject,
+            'message' => $message
+        ];
+
+        $status = (new General())->sendEmail($to, 'send_mail', $data);
+
+        return redirect()->route('admin/dashboard')->with('success', 'Email send successfully');
+
+    }
+
     /**
      * Get a list of users.
      *
@@ -37,6 +57,7 @@ class UserController extends Controller
      */
     public function list(Request $request)
     {
+
         return response()->json((new User())->list($request->all()));
     }
 
@@ -47,7 +68,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin/user/create');
+        $countrilist = User::getCountryList();
+
+        return view('admin/user/create', compact('countrilist'));
     }
 
     /**
@@ -65,8 +88,9 @@ class UserController extends Controller
         if ($user->type == 1 && !in_array('admin/user/update', $permission)) {
             return redirect('admin/users')->with('error', 'No permission To Update User');
         }
+        $countrilist = User::getCountryList();
 
-        return view('admin/user/update', compact('permission', 'model'));
+        return view('admin/user/update', compact('permission', 'model', 'countrilist'));
     }
 
     /**
@@ -89,6 +113,11 @@ class UserController extends Controller
     public function view(Request $request)
     {
         $id = $request->input('id');
+
+        $contactMessages = ContactMessages::where('user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $logData = UserActivity::where('user_id', $id)
             ->orderBy('created_at', 'desc')
             ->limit(10)
@@ -99,7 +128,8 @@ class UserController extends Controller
             ->get();
         $model = User::where('id', $id)->first();
 
-        return view('admin/user/view', compact('model', 'logData', 'userAuthList'));
+
+        return view('admin/user/view', compact('model', 'logData', 'userAuthList', 'ContactMessages'));
     }
 
     /**
@@ -157,32 +187,32 @@ class UserController extends Controller
         $model->save();
         return response()->json(['status' => 1, 'message' => 'Your devices revoked successfully.']);
     }
-    
-    
+
+
     public function autoLogin(Request $request)
     {
-        $id = $request->id; 
+        $id = $request->id;
         $user = User::find($id);
         if (!$user) {
             return redirect()->route('admin/dashboard')->with('error', 'User Not Found.');
         }
-        $adminId = Auth::id(); 
+        $adminId = Auth::id();
         session([
             'admin_id' => $adminId
         ]);
         Auth::guard('web')->login($user);
         return redirect()->route('dashboard');
     }
-    
+
     public function sendTfaMail(Request $request)
     {
-        $id = $request->id; 
+        $id = $request->id;
         $user = User::find($id);
-        if(!$user){
-            return redirect() ->route('admin/dashboard')->with('error','User Not Found');
+        if (!$user) {
+            return redirect()->route('admin/dashboard')->with('error', 'User Not Found');
         }
-        $tfaService=new TfaService();
-        $tfaService->resendOTP(['type'=>'otp','code'=>$tfaService->encryptCode($user->email)]);
-        return redirect() ->route('admin/dashboard')->with('success','Email send successfully');
+        $tfaService = new TfaService();
+        $tfaService->resendOTP(['type' => 'otp', 'code' => $tfaService->encryptCode($user->email)]);
+        return redirect()->route('admin/dashboard')->with('success', 'Email send successfully');
     }
 }

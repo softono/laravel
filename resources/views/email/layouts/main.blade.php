@@ -1,8 +1,10 @@
-<?php 
-$primaryColor = 'green'; 
+<?php
+$primaryColor = 'green';
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
+
 <head>
     <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
@@ -14,7 +16,7 @@ $primaryColor = 'green';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <title>{{$subject}}</title>
+    <title>{{ $subject }}</title>
     <style type="text/css" media="screen">
         /* Linked Styles */
         * {
@@ -62,12 +64,30 @@ $primaryColor = 'green';
             background: #85b33a;
         }
 
+        td.description {
+            padding-bottom: 0 !important;
+        }
+
+        .im {
+            color: #666666 !important;
+        }
+
+        .ii a[href],
+        a {
+            color: #666666 !important;
+        }
+
         /* Mobile styles */
         @media only screen and (max-device-width: 480px),
         only screen and (max-width: 480px) {
             .mobile-shell {
                 width: 100% !important;
                 min-width: 100% !important;
+            }
+
+            .text-h2,
+            .text-size-h2 {
+                font-size: 24px !important;
             }
 
             .m-center {
@@ -215,14 +235,17 @@ $primaryColor = 'green';
     </style>
 </head>
 
-<body class="body" style="padding:0 !important; margin:0 !important; display:block !important; min-width:100% !important; width:100% !important; background:#d9d9d9; -webkit-text-size-adjust:none;">
+<body class="body"
+    style="padding:0 !important; margin:0 !important; display:block !important; min-width:100% !important; width:100% !important; background:#d9d9d9; -webkit-text-size-adjust:none;">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="center" valign="top">
                 <!-- Main -->
-                <table style="width:100%; max-width:650px; padding: 14px;" border="0" cellspacing="0" cellpadding="0" class="mobile-shell">
+                <table style="width:100%; max-width:650px; padding: 14px;" border="0" cellspacing="0"
+                    cellpadding="0" class="mobile-shell">
                     <tr>
-                        <td class="td" style="width:100%; max-width:650px; font-size:0pt; line-height:0pt; padding:0; margin:0; font-weight:normal;">
+                        <td class="td"
+                            style="width:100%; max-width:650px; font-size:0pt; line-height:0pt; padding:0; margin:0; font-weight:normal;">
                             <!-- Header -->
                             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                 <tr>
@@ -232,14 +255,17 @@ $primaryColor = 'green';
                                 <!-- END Top bar -->
                                 <!-- Logo -->
                                 <tr>
-                                    <td bgcolor="#ffffff" class="p30-15 img-center" style="padding: 30px; border-radius: 20px 20px 0px 0px; text-align:center;">
-                                        <img src="{{$general->getFileUrl(config('setting.app_logo'),'setting')}}" height="50" border="0" alt="" />
+                                    <td bgcolor="#ffffff" class="p30-15 img-center"
+                                        style="padding:16px; border-radius: 20px 20px 0px 0px; text-align:center;">
+                                        <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
+                                            height="50" border="0" alt="" />
                                     </td>
                                 </tr>
                                 <!-- END Logo -->
                                 <!-- Nav -->
                                 <tr>
-                                    <td class="text-nav-white bg-primary" style="color:#85b33a;font-size:12px; line-height:22px; text-align:center; text-transform:uppercase; padding:3px 0px;">
+                                    <td class="text-nav-white bg-primary"
+                                        style="color:#85b33a;font-size:12px; line-height:22px; text-align:center; text-transform:uppercase; padding:2px 0px;">
                                     </td>
                                 </tr>
                                 <!-- END Nav -->
@@ -249,13 +275,18 @@ $primaryColor = 'green';
                             <!-- Footer -->
                             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                 <tr>
-                                    <td class="p30-15-0" bgcolor="#ffffff" style="border-radius: 0px 0px 20px 20px; padding: 70px 30px 0px 30px;">
+                                    <td class="p30-15-0" bgcolor="#ffffff" style="border-radius: 0px 0px 20px 20px;">
                                         <table width="100%" border="0" cellspacing="0" cellpadding="0">
                                             <tr>
-                                                <td align="center" class="p30-15" style="border-top: 1px solid #ebebeb; padding: 30px;">
-                                                    <table class="center" border="0" cellspacing="0" cellpadding="0" style="text-align:center;">
+                                                <td align="center" class="p30-15"
+                                                    style="border-top: 1px solid #ebebeb; padding: 30px;">
+                                                    <table class="center" border="0" cellspacing="0" cellpadding="0"
+                                                        style="text-align:center;">
                                                         <tr>
-                                                            <td class="text-center" style="color:#5d5c5c;font-size:14px; line-height:22px; text-align:center; ">&copy; {{config('app.APP_NAME')}} {{date('Y')}}. All rights reserved.</td>
+                                                            <td class="text-center"
+                                                                style="color:#5d5c5c;font-size:14px; line-height:22px; text-align:center; ">
+                                                                &copy; {{ config('app.APP_NAME') }} {{ date('Y') }}.
+                                                                All rights reserved.</td>
                                                         </tr>
                                                     </table>
                                                 </td>
@@ -277,4 +308,5 @@ $primaryColor = 'green';
         </tr>
     </table>
 </body>
+
 </html>

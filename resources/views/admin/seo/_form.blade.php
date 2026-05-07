@@ -62,7 +62,7 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="priority">Last Modified</label>
-                    <input type="datetime" class="form-control" id="priority" placeholder="Priority" name="last_modified" value="{{ $general->currentTime() }}" />
+                        <input type="datetime" class="form-control" id="priority" placeholder="Priority" name="last_modified" value="{{ $general->currentTime() }}" />
                 </div>
             </div>
         </div>

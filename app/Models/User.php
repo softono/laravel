@@ -43,11 +43,11 @@ class User extends Authenticatable
         'email_verified',
         'otp',
     ];
-
+    
 
     public $userRole = [4];
-    public $superAdminRole = 1;
-    public $adminRole = [1,2,3];
+    public $superAdminRole = [0];
+    public $adminRole = [1, 2, 3];
 
     public function isUser()
     {
@@ -111,14 +111,14 @@ class User extends Authenticatable
 
             if (auth()->user()->role == 0) {
                 $result['data'][$key]->action = '<div class="act-btns">
-                <a href="admin/admin/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;
+                <a href="admin/admin/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp
                 <a href="admin/admin/update?id=' . $row->id . '" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>
                 <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/admin/delete" data-id="' . $row->id . '" class="text-body pjax" title="Delete"><i class="bx bxs-trash icon-base"></i></button></div>';
             } else {
                 $result['data'][$key]->action = '';
                 if ($sessionUser->hasPermission('admin/admin/view')) {
                     $result['data'][$key]->action .= '
-                    <a href="admin/admin/view?id=' . $row->id . '" class="text-body  pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;';
+                    <a href="admin/admin/view?id=' . $row->id . '" class="text-body  pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp';
                 }
                 if ($sessionUser->hasPermission('admin/admin/update')) {
                     $result['data'][$key]->action .= '
@@ -134,12 +134,19 @@ class User extends Authenticatable
     }
 
     public function list($postData)
-    { 
+    {
         $userObj = new User();
 
-        $query = DB::table('user')->select('*')->whereIn('role', $userObj->userRole)
-            ->where('id', '!=', auth()->user()->id); // Exclude current user from the list
-        /**/
+        $query = DB::table('user')
+            ->select(
+                'user.*',
+                'country.name as country_name',
+
+            )
+            ->join('country', 'user.country', '=', 'country.sortname')
+            ->whereIn('user.role', $userObj->userRole)
+            ->where('user.id', '!=', auth()->user()->id);
+
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%' . $searchText . '%';
@@ -156,7 +163,7 @@ class User extends Authenticatable
         /**/
         $result = (new Pagination())->getDataTable($query, $postData);
         $sessionUser = auth()->user();
-        $general= new General();
+        $general = new General();
         foreach ($result['data'] as $key => $row) {
             $imageUrl = $general->getFileUrl($row->image, 'profile');
             if ($row->image) {
@@ -166,16 +173,18 @@ class User extends Authenticatable
             $result['data'][$key]->first_name = $row->first_name . ' ' . $row->last_name;
             $result['data'][$key]->email = $row->email;
             $result['data'][$key]->phone = $row->phone;
+            $result['data'][$key]->country = $row->country_name ?? '';
             $result['data'][$key]->status = $userObj->getStatusBadge($row->status);
             $result['data'][$key]->created_at = $general->dateFormat($row->created_at);
             $result['data'][$key]->updated_at = $general->dateFormat($row->updated_at);
 
             if (auth()->user()->role == 0) {
                 $result['data'][$key]->action = '
-            <div class="act-btns"><a href="admin/user/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>;
+            <div class="act-btns"><a href="admin/user/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>
             <a href="admin/user/update?id=' . $row->id . '" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>
             <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/user/delete" data-id="' . $row->id . '" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button></div>';
             } else {
+
                 $result['data'][$key]->action = '';
                 if ($sessionUser->hasPermission('admin/user/view')) {
                     $result['data'][$key]->action .= '
@@ -190,7 +199,6 @@ class User extends Authenticatable
                     <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/user/delete" data-id="' . $row->id . '" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button>';
                 }
             }
-            
         }
         return $result;
     }
@@ -202,7 +210,7 @@ class User extends Authenticatable
         $id = $postData['id'] ?? null;
         $existingPassword = $postData['pass'] ?? null;
 
-        // Define validation rules
+
         $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -251,6 +259,7 @@ class User extends Authenticatable
         $model->last_name = $postData['last_name'];
         $model->email = $postData['email'];
         $model->phone = $postData['phone'];
+        $model->country = $postData['country'] ?? null;
         $model->status = (bool) $postData['status'];
         $model->permission = implode(',', $postData['permission']);
         $model->role = $postData['role'];
@@ -261,6 +270,7 @@ class User extends Authenticatable
             ? $service->encryptPassword($postData['password'])
             : $existingPassword;
         // Save model
+
         $model->save();
         // Set response message
         $message = $id ? 'Admin updated successfully.' : 'Admin created successfully.';
@@ -283,6 +293,7 @@ class User extends Authenticatable
      */
     public function store(array $postData): array
     {
+
         $general = new General();
         $id = $postData['id'] ?? null;
         $pass = $postData['pass'] ?? null;
@@ -290,7 +301,7 @@ class User extends Authenticatable
         $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:user,email|max:255',
+            'email' => 'required|email|max:255|unique:user,email,' . $id,
             'phone' => 'required|digits:10|numeric',
             'status' => 'required|boolean',
         ];
@@ -325,7 +336,7 @@ class User extends Authenticatable
                 $model->image = $image;
             }
         }
-    
+
         // Assign IP and other properties
         $model->first_name = $postData['first_name'];
         $model->last_name = $postData['last_name'];
@@ -341,7 +352,7 @@ class User extends Authenticatable
         } else {
             $model->password = $pass;
         }
-       
+
         // Save the model
         $model->save();
 
@@ -352,5 +363,13 @@ class User extends Authenticatable
             'next' => 'load',
             'url' => 'admin/user',
         ];
+    }
+
+    public static function getCountryList()
+    {
+        return DB::table('country')
+            ->select('id', 'name', 'sortname', 'phonecode')
+            ->orderBy('name', 'asc')
+            ->get();
     }
 }

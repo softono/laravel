@@ -10,7 +10,6 @@ Route::get('cron/schedule/run', function () {
     return $artisan::output();
 })->name('cron/schedule/run');
 
-
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', '\App\Http\Controllers\FrontController@index')->name('home');
     Route::get('page/{slug}', '\App\Http\Controllers\FrontController@page')->name('page');
@@ -44,10 +43,10 @@ Route::group(['middleware' => ['web', 'user']], function () {
     Route::get('otp.verify', '\App\Http\Controllers\AuthController@verifyOtpModal')->name('otp.verify');
     Route::post('otp.confirm', '\App\Http\Controllers\AuthController@optVerifyProcess')->name('otp.confirm');
     Route::get('backup-code', '\App\Http\Controllers\AuthController@backupCode')->name('backup-code');
-    Route::get('backup-codes.regenerate', '\App\Http\Controllers\AuthController@optVerifyProcess')->name('backup-codes.regenerate');
-   Route::get('/copy-secret-key', '\App\Http\Controllers\AuthController@getTotpModel')->name('copy.secret.key');
-       Route::post('/remove-totp', '\App\Http\Controllers\AuthController@removeTotp')->name('remove-totp');
-       
+    Route::post('backup-codes-regenerate', '\App\Http\Controllers\AuthController@regenerateBackupProcess')->name('backup-codes-regenerate');
+    Route::get('/copy-secret-key', '\App\Http\Controllers\AuthController@getTotpModel')->name('copy.secret.key');
+    Route::post('/remove-totp', '\App\Http\Controllers\AuthController@removeTotp')->name('remove-totp');
+
     Route::get('account/update', '\App\Http\Controllers\AccountController@update')->name('account/update');
     Route::post('account/update-process', '\App\Http\Controllers\AccountController@updateProcess')->name('account/update-process');
     Route::get('account/image', '\App\Http\Controllers\AccountController@image')->name('account/image');
@@ -66,7 +65,6 @@ Route::group(['middleware' => ['web', 'user']], function () {
     Route::get('account/user-activity', '\App\Http\Controllers\AccountController@userActivity')->name('account/user-activity');
     Route::post('account/user-activity-list', '\App\Http\Controllers\AccountController@userActivityList')->name('account/user-activity-list');
     Route::post('account/deactivate', '\App\Http\Controllers\Admin\AccountController@accountDeactivate')->name('account/deactivate');
-
 });
 
 
@@ -115,6 +113,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function (
     Route::get('user/update', '\App\Http\Controllers\Admin\UserController@update')->name('admin/user/update');
     Route::post('user/save', '\App\Http\Controllers\Admin\UserController@save')->name('admin/user/save');
     Route::get('user/view', '\App\Http\Controllers\Admin\UserController@view')->name('admin/user/view');
+    Route::post('user/mail', '\App\Http\Controllers\Admin\UserController@sendMail')->name('admin/user/mail');
     Route::post('user/delete', '\App\Http\Controllers\Admin\UserController@delete')->name('admin/user/delete');
     Route::post('user/change_status', '\App\Http\Controllers\Admin\UserController@changeStatus')->name('admin/user/change_status');
     Route::get('user/autologin', '\App\Http\Controllers\Admin\UserController@autoLogin')->name('admin/user/autologin');
@@ -149,7 +148,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function (
     Route::get('setting/cache-clear', '\App\Http\Controllers\Admin\SettingController@cacheClear')->name('admin/setting/cache-clear');
     Route::post('setting/mail-process', '\App\Http\Controllers\Admin\SettingController@mailProcess')->name('admin/setting/mail-process');
 
-
     Route::get('user-activity', '\App\Http\Controllers\Admin\UserActivityController@index')->name('admin/user-activity');
     Route::post('user-activity/list', '\App\Http\Controllers\Admin\UserActivityController@list')->name('admin/user-activity/list');
 
@@ -168,3 +166,4 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function (
     // Route::get('/get-qr-modal',' \App\Http\Controllers\QrcodeControlle@getModel')->name('get/qr/modal');
 
 });
+

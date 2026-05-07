@@ -31,6 +31,9 @@ const pjax = {
         const ajaxUrl = `${url}${url.includes("?") ? "&" : "?"}partial=1&layout=${this.$mainContainer.data("layout")}`;
 
         $.ajax({
+            xhrFields: {
+                withCredentials: true
+            },
             url: ajaxUrl,
             method: "GET",
             success: (response) => {
@@ -82,6 +85,13 @@ const pjax = {
 
             if (!href || href.match(/#|javascript:void|undefined/)) return;
             if (e.ctrlKey || target.target === "_blank") return window.open(href, "_blank");
+
+            if (target.hasAttribute("data-pjax-layout")) {
+                const layout = target.hasAttribute("data-pjax-cache");
+                if (layout !== pjax.$mainContainer.data("layout")) {
+                    return;
+                }
+            }
 
             e.preventDefault();
 
@@ -141,85 +151,94 @@ const pjax = {
 
         this.activeMenuList = $('.active-menu');
         this.updateActiveMenu(window.location.href);
-        
+
         runDocumentReady();
     }
 };
 
 /**
- * AppCache class for storing and retrieving page data in sessionStorage.
+ * AppCache class for storing and retrieving page data in internal storage.
  */
 class AppCache {
     static cacheEnabled = true;
+
+    // Custom in-memory storage
+    static storage = {};
+
     /**
      * Encode a key to Base64 format.
-     * @param {string} key - The key to encode.
-     * @returns {string} - The Base64 encoded key.
      */
     static encodeKey(key) {
         return btoa(key.replace($("base").attr("href")));
     }
 
     /**
-     * Save data to sessionStorage using an encoded key.
-     * @param {string} key - The key under which data is stored.
-     * @param {string} value - The string value to store.
+     * Save string value in AppCache.storage
      */
     static set(key, value) {
         if (!AppCache.cacheEnabled) return false;
         const encodedKey = this.encodeKey(key);
-        try {
-            sessionStorage.setItem(`cache_${encodedKey}`, value);
-        } catch (e) {
-            AppCache.clear();
-        }
-    }
 
-    static setData(key, data) {
-        if (!AppCache.cacheEnabled) return false;
-        const encodedKey = this.encodeKey(key);
         try {
-            sessionStorage.setItem(`cache_${encodedKey}`, JSON.stringify(data));
+            AppCache.storage[`cache_${encodedKey}`] = value;
         } catch (e) {
             AppCache.clear();
         }
     }
 
     /**
-     * Retrieve data from sessionStorage.
-     * @param {string} key - The key of the stored data.
-     * @returns {string | null} - The retrieved string data or null if not found.
+     * Save JSON data in AppCache.storage
+     */
+    static setData(key, data) {
+        if (!AppCache.cacheEnabled) return false;
+        const encodedKey = this.encodeKey(key);
+
+        try {
+            AppCache.storage[`cache_${encodedKey}`] = JSON.stringify(data);
+        } catch (e) {
+
+        }
+    }
+
+    /**
+     * Retrieve string data
      */
     static get(key) {
         if (!AppCache.cacheEnabled) return false;
         const encodedKey = this.encodeKey(key);
-        return sessionStorage.getItem(`cache_${encodedKey}`);
+
+        return AppCache.storage[`cache_${encodedKey}`] || null;
     }
 
+    /**
+     * Retrieve JSON data
+     */
     static getData(key) {
         if (!AppCache.cacheEnabled) return false;
         const encodedKey = this.encodeKey(key);
-        let cachedData = sessionStorage.getItem(`cache_${encodedKey}`);
+
+        let cachedData = AppCache.storage[`cache_${encodedKey}`];
         return cachedData ? JSON.parse(cachedData) : null;
     }
 
     /**
-     * Remove a specific item from sessionStorage.
-     * @param {string} key - The key of the item to remove.
+     * Remove specific item
      */
     static remove(key) {
         if (!AppCache.cacheEnabled) return false;
         const encodedKey = this.encodeKey(key);
-        sessionStorage.removeItem(`cache_${encodedKey}`);
+
+        delete AppCache.storage[`cache_${encodedKey}`];
     }
 
     /**
-     * Clear all cache data from sessionStorage.
+     * Clear all cached data
      */
     static clear() {
-        sessionStorage.clear();
+        AppCache.storage = {};
     }
 }
+
 
 /**
  * Executes all registered document-ready functions.

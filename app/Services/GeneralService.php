@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Services;
 
 use App\Helpers\General;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Models\ContactMessages;
 
 class GeneralService
 {
@@ -98,7 +100,7 @@ class GeneralService
         $startDate = date('Y-m-d', strtotime('-6 days'));
         $endDate = date('Y-m-d');
 
-        
+
         $result = DB::select("
         SELECT COUNT(*) AS total, DATE(FROM_UNIXTIME(created_at)) AS date
         FROM `user`
@@ -118,18 +120,19 @@ class GeneralService
             'data' => array_reverse($data)
         ];
     }
-    
+
     public function contactProcess($postData)
     {
+
         // Check reCAPTCHA validation
         $general = new General();
         if ($general->rateLimit('contact')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
         }
 
-        if ($general->recaptchaFails()) {
-            return ['status' => 0,'message' => 'Please check reCAPTCHA.'];
-        }
+        // if ($general->recaptchaFails()) {
+        //     return ['status' => 0, 'message' => 'Please check reCAPTCHA.'];
+        // }
 
         $validator = Validator::make($postData, [
             'name' => 'required|string|max:255',
@@ -144,11 +147,23 @@ class GeneralService
             'email.regex' => 'Please enter a valid email address.',
         ]);
 
+
         if ($validator->fails()) {
-            return ['status'=>0,'message'=> $validator->errors()->first()];
+            return ['status' => 0, 'message' => $validator->errors()->first()];
         }
+
+        /* SAVE CONTACT MESSAGE TO DATABASE */
+
+        ContactMessages::create([
+            'user_id' => auth()->id(),
+            'email' => $postData['email'],
+            'subject' => $postData['subject'],
+            'message' => $postData['message']
+        ]);
+
+        /* SEND EMAIL TO ADMIN */
         $general->sendEmail(config("setting.admin_email"), 'admin_contact', $postData);
 
-        return ['status' => 1,'message' => 'Submit request successfully','next' => 'refresh'];
+        return ['status' => 1, 'message' => 'Submit request successfully', 'next' => 'refresh'];
     }
 }

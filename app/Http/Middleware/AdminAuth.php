@@ -33,7 +33,7 @@ class AdminAuth
                  if ($request->ajax()) {
                      return Response::make("unauthorized");
                  } else {
-                     return redirect('/')->with('error', 'You are not authorized');
+                     return redirect('admin/auth/login')->with('error', 'You are not authorized');
                  }
              }
              if(session('verify_tfa')){

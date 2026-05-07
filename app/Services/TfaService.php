@@ -100,6 +100,7 @@ class TfaService
             $message = 'login';
         }
 
+
         $otp = $this->generateOtp();
         $user->otp = $otp . '_' . time();
         $user->otp_failed = 0;
@@ -147,6 +148,7 @@ class TfaService
      */
     public function verifyProcess(array $postData, $type = 1): array
     {
+        \Log::info('verifyProcess POST DATA:', $postData);  // DEBUG
         $general = new General();
         if ($general->rateLimit('verify_tfa')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
@@ -169,7 +171,22 @@ class TfaService
         }
 
         $result = $this->checkOtp($postData['otp'], $user->otp);
-        $resultTotp = $this->checkTotp($postData['otp'], $user->otp);
+        $resultTotp = $user->totp_secret_key
+            ? $this->checkTotp($user->totp_secret_key, $postData['otp'])
+            : ['status' => 0];
+        // ✅ BACKUP CODE CHECK
+        $backupCodes = $user->backup_code
+            ? array_filter(explode(',', $user->backup_code))
+            : [];
+
+        if (in_array($postData['otp'], $backupCodes)) {
+
+            // remove used backup code
+            $backupCodes = array_diff($backupCodes, [$postData['otp']]);
+            $user->backup_code = implode(',', $backupCodes);
+
+            $result = ['status' => 1];
+        }
 
         if (!$result['status'] && !$resultTotp['status']) {
             $user->otp_failed = $user->otp_failed + 1;
@@ -177,19 +194,37 @@ class TfaService
             return ['status' => 0, 'message' => 'Invalid OTP.'];
         }
 
-
-
         if ($postData['type'] == 'tfa') {
-            if (@$postData['skip_tfa']) {
-                $ignoredDevices = explode(',', $user->ignore_tfa_device);
-                $token = $_COOKIE[config('setting.app_uid') . '_token'] ?? null;
-                if ($token && !in_array($token, $ignoredDevices)) {
-                    $ignoredDevices[] = $token;
-                    $ignoredDevices = array_filter($ignoredDevices);
-                    $ignoredDevices = array_unique($ignoredDevices);
-                    $user->ignore_tfa_device = implode(',', $ignoredDevices);
-                }
+            $skipTfa = $postData['skip_tfa'] ?? null;
+
+            // Force generate cookie if missing
+            $cookieName = config('setting.app_uid') . '_token';
+            $deviceUid = $_COOKIE[$cookieName] ?? null;
+            if (!$deviceUid) {
+                \Log::warning('No device cookie found, skipping trust save');
+            } else {
+                \Log::info('Using cookie deviceUid:', [$deviceUid]);
             }
+
+            if (isset($postData['skip_tfa']) && $postData['skip_tfa'] == '1') {
+                \Log::info('skip_tfa enabled, deviceUid:', [$deviceUid]);
+
+                $existing = $user->ignore_tfa_device
+                    ? array_map('trim', explode(',', $user->ignore_tfa_device))
+                    : [];
+
+                if (!in_array($deviceUid, $existing)) {
+                    $existing[] = $deviceUid;
+                    $user->ignore_tfa_device = implode(',', array_filter($existing));
+                    $user->save();
+                    \Log::info('Saved ignore_tfa_device:', [$user->ignore_tfa_device]);
+                } else {
+                    \Log::info('Device already trusted');
+                }
+            } else {
+                \Log::info('skip_tfa not checked');
+            }
+            // clear session
             Session::forget('verify_tfa');
         } else if ($postData['type'] == 'new_email') {
             $user->email = $user->new_email;
@@ -274,8 +309,8 @@ class TfaService
 
         return false;
     }
-    
-     public function tfaStatusChange()
+
+    public function tfaStatusChange()
     {
         $user = auth()->user();
         $status_tfa = !$user->status_tfa;

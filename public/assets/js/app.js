@@ -168,9 +168,10 @@ const app = {
      * @param {HTMLFormElement} form - Form element to submit
      * @param {Function} cb - Callback function
      */
+    currentAjaxForm:false,
     ajaxForm: function (form, cb) {
-        const $form = $(form);
-        this.ajaxRequest($form.attr("action"), $form.serialize(), cb);
+        this.currentAjaxForm = $(form);
+        this.ajaxRequest(this.currentAjaxForm.attr("action"), this.currentAjaxForm.serialize(), cb);
     },
 
     /**
@@ -696,6 +697,7 @@ class Pagination {
                     _this.loadList($(this).data("page"));
                 });
                 runDocumentReady();
+                scrollToTop();
                 showLoading = false;
             }
         }
@@ -732,6 +734,7 @@ class Pagination {
                     _this.loadList($(this).data("page"));
                 });
                 runDocumentReady();
+                scrollToTop();
             },
             error: function (e) {
                 _this.ajaxContainer.html(e.message);
@@ -1020,6 +1023,7 @@ var fileDropBox = {
                 URL.createObjectURL(file),
                 file.name,
                 false
+                
             );
             fileDropBox.files.push(file);
         });
@@ -1201,6 +1205,13 @@ function initEditor(editorElement) {
  */
 function previewImage(input, target) {
     $(target).attr("src", URL.createObjectURL(input.files[0]));
+}
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 }
 
 function dataTableAjax(params) {

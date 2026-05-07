@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserAuth;
 use App\Models\UserActivity;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -28,6 +29,7 @@ class AdminController extends Controller
      */
     public function list(Request $request)
     {
+       
         return response()->json((new User())->listAdmin($request->all()));
     }
 
@@ -38,8 +40,9 @@ class AdminController extends Controller
      */
     public function create()
     {
+        $countries = DB::table('country')->get();
         $model = new User();
-        return view('admin/admin/create', compact('model'));
+        return view('admin/admin/create', compact('model','countries'));
     }
 
     /**
@@ -54,7 +57,8 @@ class AdminController extends Controller
         if (!$model) {
             return redirect('admin/admin')->withError('error', 'No data found');
         }
-        return view('admin/admin/update', compact('model'));
+        $countries = DB::table('country')->get(); 
+        return view('admin/admin/update', compact('model','countries'));
     }
 
     /**

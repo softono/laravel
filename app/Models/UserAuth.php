@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 use App\Helpers\Pagination;
 use App\Helpers\General;
 use Carbon\Carbon;
@@ -104,7 +105,8 @@ class UserAuth extends Model
 
     public function login($userId, $remember = 1)
     {
-        $deviceUid = @$_COOKIE[config("setting.app_uid") . '_token'];
+        $deviceUid = @$_COOKIE[config("setting.app_uid") . '_token'] ?? 'fallback_' . uniqid('', true) . '_' . time();
+        Log::info('Device UID used: ' . $deviceUid);
 
         if (!$deviceUid) {
             return false;
@@ -181,7 +183,11 @@ class UserAuth extends Model
                 }
             } elseif ($sessionDriver == 'database') {
                 DB::table('sessions')->where('id', $UserAuthModel->session_id)->delete();
-            }
+            } elseif ($sessionDriver == 'redis') {
+                $redis = app('redis');
+                $prefix = config('session.prefix', 'laravel_database_');
+                $redis->del($prefix . $UserAuthModel->session_id);
+            } 
             $UserAuthModel->user_id = 0;
             $UserAuthModel->token = '';
             $UserAuthModel->token_expire_at = null;
@@ -202,13 +208,22 @@ class UserAuth extends Model
 
     public function list($postData, $userId)
     {
-        $query = DB::table('user_auth')->select(['user_auth.*', 'sessions.last_activity'])
-            ->where('user_auth.user_id', $userId)
-            ->where(function ($query) {
-                $query->where('user_auth.token_expire_at', '>', Carbon::now())
-                    ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
-            })
-            ->leftJoin('sessions', 'sessions.id', 'user_auth.session_id');
+        $sessionDriver = config('session.driver');
+        if ($sessionDriver === 'redis') {
+            $query = DB::table('user_auth')->select(['user_auth.*'])
+                ->where('user_auth.user_id', $userId)
+                ->where(function ($query) {
+                    $query->where('user_auth.token_expire_at', '>', Carbon::now());
+                });
+        } else {
+            $query = DB::table('user_auth')->select(['user_auth.*', 'sessions.last_activity'])
+                ->where('user_auth.user_id', $userId)
+                ->where(function ($query) {
+                    $query->where('user_auth.token_expire_at', '>', Carbon::now())
+                        ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
+                })
+                ->leftJoin('sessions', 'sessions.id', 'user_auth.session_id');
+        }
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
@@ -228,7 +243,7 @@ class UserAuth extends Model
             $result['data'][$key]->client = (new General())->deviceName($row->client) . ' ' . ($row->device_uid == @$_COOKIE[config("setting.app_uid") . '_token'] ? ' (This Device)' : '');
             $result['data'][$key]->last_activity = $general->dateFormat(@$row->last_activity ? $row->last_activity : $row->updated_at);
             $result['data'][$key]->action = '<button style="border: none; background: none;"  onclick="app.confirmAction(this);" data-action="account/device-logout?id=' . $row->id . '"  class="text-body pjax" title="logout">                    <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:22px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-</button>';
+            </button>';
         }
         return $result;
     }
@@ -243,13 +258,22 @@ class UserAuth extends Model
     public function listAdmin($postData)
     {
 
-        $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
-            ->join('user', 'user.id', '=', 'user_auth.user_id')
-            ->leftJoin('sessions', 'sessions.id', 'user_auth.session_id')
-            ->where(function ($query) {
-                $query->where('user_auth.token_expire_at', '>', Carbon::now())
-                    ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
-            });
+        $sessionDriver = config('session.driver');
+        if ($sessionDriver === 'redis') {
+            $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
+                ->join('user', 'user.id', '=', 'user_auth.user_id')
+                ->where(function ($query) {
+                    $query->where('user_auth.token_expire_at', '>', Carbon::now());
+                });
+        } else {
+            $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
+                ->join('user', 'user.id', '=', 'user_auth.user_id')
+                ->leftJoin('sessions', 'sessions.id', 'user_auth.session_id')
+                ->where(function ($query) {
+                    $query->where('user_auth.token_expire_at', '>', Carbon::now())
+                        ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
+                });
+        }
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
@@ -275,9 +299,17 @@ class UserAuth extends Model
             if ($sessionUser->hasPermission('admin/device/logout')) {
                 $result['data'][$key]->action .= '
                 <button style="border: none; background: none;" onclick="app.confirmAction(this);" data-action="admin/device/logout?id=' . $row->deviceId . '" class="text-body pjax" title="logout">                    <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:22px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-</button>';
+                </button>';
             }
         }
         return $result;
     }
+
+    public static function getUserDevices($userId)
+    {
+        return self::where('user_id', $userId)
+            ->select('device_uid', 'client', 'ip')
+            ->orderBy('id', 'desc')
+            ->get();
+    } 
 }

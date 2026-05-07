@@ -2,14 +2,15 @@
     <div class="app-brand demo">
         <a href="{{ route('admin/dashboard') }}" class="app-brand-link">
             <span class="app-brand-logo demo">
-                <span class="avatar me-2">
-                    <img src="{{ $general->getFileUrl(config('setting.app_logo'),'logo') }}"
-                        alt="{{ config('setting.app_name') }}" class="rounded h-px-44" />
+                <span class="avatar  fav-side">
+                    <img src="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}"
+                        alt="{{ config('setting.app_name') }}" class="rounded h-px-38" />
                 </span>
             </span>
-            <span class="app-brand-text demo menu-text fw-bold ms-2">{{ config('setting.app_name') }}</span>
+            <!--<span class="app-brand-text demo menu-text fw-bold ms-2"><img src="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}"-->
+            <!--            alt="{{ config('setting.app_name') }}" class="rounded h-px-38 demo-img-logo " />{{ config('setting.app_name') }}</span>-->
+                        <span class="app-brand-text demo menu-text fw-bold">{{ config('setting.app_name') }}</span>
         </a>
-
         <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
             <i class="icon-base bx bx-chevron-left"></i>
         </a>
@@ -23,7 +24,8 @@
                 <div data-i18n="Dashboard">Dashboard</div>
             </a>
         </li>
-        @if($sessionUser->hasPermission('admin_user'))
+     
+        @if($sessionUser->hasPermission('admin/user'))
         <li
             class="menu-item active-menu" data-active_menu_links="admin/user,admin/user/create,admin/user/view,admin/user/update">
             <a href="{{ route('admin/user') }}" class="menu-link pjax" data-pjax-cache="true" >

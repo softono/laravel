@@ -20,6 +20,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
 
   <head>
     <meta charset="utf-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <base href="{{URL::to('/')}}/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     @if($metaData['title'])
@@ -29,7 +30,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     @else
     <title>@yield('title') | {{config('setting.app_name')}}</title>
     @endif
-    <link rel="shortcut icon" href="{{ config('setting.app_favicon') }}" type="image/x-icon">
+    <link rel="shortcut icon" href="{{$general->getFileUrl(config('setting.app_favicon'),'logo')}}" type="image/x-icon">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -93,6 +94,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <!-- Layout wrapper -->
     <div id="main-container" data-layout="blank">
       <div id="main-content" data-title="@php if($metaData['title']){echo $metaData['title'];}else{ @endphp@yield('title') | {{config('setting.app_name')}}@php }@endphp">
+           <!--{{ view('common/message_alert') }}-->
         @yield('content')
       </div>
     </div>
@@ -121,9 +123,11 @@ if (isset($_GET['partial']) && $_GET['partial']) {
 
     <script src="assets/js/common.js"></script>
     <script src="assets/js/app.js"></script>
+    <script src="assets/js/session-handler.js"></script>
     @stack('scripts')
     {!! config('setting.footer_content') !!}
     <script src="assets/js/pjax.js"></script>
+    
   </body>
   </html>
 <?php } ?>

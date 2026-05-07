@@ -35,10 +35,13 @@ class AuthController extends Controller
         $userToken = $request->cookie(config('setting.app_uid') . '_user_token');
         if ($userToken && !$this->general->rateLimit('remember_login')) {
             $result = (new AuthService())->loginByAuthToken($userToken);
+
             if ($result['status']) {
+
                 return redirect($this->general->authRedirectUrl(config('setting.login_redirect_url')));
             }
         }
+
         return view('auth/login');
     }
 
@@ -50,6 +53,7 @@ class AuthController extends Controller
      */
     public function loginProcess(Request $request)
     {
+
         return response()->json((new AuthService())->loginProcess($request->only(['email', 'password', 'remember'])));
     }
 
@@ -113,7 +117,6 @@ class AuthController extends Controller
      */
     public function resendOTP(Request $request)
     {
-
         return response()->json((new TfaService())->resendOTP($request->only(['type', 'code'])));
     }
 
@@ -183,18 +186,31 @@ class AuthController extends Controller
         if ($data) {
             $userModel = User::find($request->id);
             $userModel->totp_secret_key = $secretKey;
-            $backupCodes = [];
-            for ($i = 0; $i < 5; $i++) {
-                $backupCodes[] = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-            }
+            $backupCodes = collect(range(1, 5))->map(function () {
+                return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            })->toArray();
 
             $userModel->backup_code = implode(',', $backupCodes);
+            $userModel->status_tfa = 1;
 
             $userModel->save();
             return response()->json(['status' => 1, 'message' => 'Verify successfully.', 'next' => 'refresh']);
         } else {
             return response()->json(['status' => 0, 'message' => 'Verify fail.']);
         }
+    }
+
+    // Backup regenerate (5 new codes)
+    public function regenerateBackupProcess(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user->totp_secret_key) {
+            return response()->json(['status' => 0, 'message' => 'TOTP not enabled']);
+        }
+        $backupCodes = collect(range(1, 5))->map(fn() => str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT))->toArray();
+        $user->backup_code = implode(',', $backupCodes);
+        $user->save();
+        return response()->json(['status' => 1, 'message' => 'New backup codes generated!', 'backup_code' => $user->backup_code]);
     }
 
 
@@ -209,9 +225,27 @@ class AuthController extends Controller
     public function removeTotp()
     {
         $user = auth()->user();
-        $user->totp_secret_key     = null;
+        $user->totp_secret_key = null;
+        $user->backup_code = null;
+        // Keep ignore_tfa_device on TOTP remove
+        $user->status_tfa = 0;
         $user->save();
 
         return response()->json(['message' => 'TOTP removed']);
+    }
+
+    /**
+     * Regenerate backup codes
+     */
+    public function regenerateBackupCodes()
+    {
+        $user = auth()->user();
+        if (!$user->status_tfa) {
+            return response()->json(['status' => 0, 'message' => 'TFA not enabled'], 400);
+        }
+        $backupCodes = collect(range(1, 10))->map(fn() => str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT))->toArray();
+        $user->backup_code = implode(',', $backupCodes);
+        $user->save();
+        return response()->json(['status' => 1, 'message' => 'Backup codes regenerated', 'backupCodes' => $backupCodes]);
     }
 }

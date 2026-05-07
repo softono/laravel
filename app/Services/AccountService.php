@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Helpers\General;
 use App\Models\UserActivity;
 use App\Models\User;
+use App\Models\UserAuth;
 use App\Services\AuthService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,6 +23,7 @@ class AccountService
      */
     public function registerProcess(array $postData): array
     {
+
         $general = new General();
         if ($general->rateLimit('register')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
@@ -75,6 +77,7 @@ class AccountService
         } else {
             Auth::guard()->login($user);
             (new UserAuth())->login($user->id, 0);
+            (new \App\Models\Device())->login($user->id, 0);
             (new UserActivity())->add($user->id, 1);
         }
         (new General())->sendEmail($user->email, 'welcome', [
@@ -189,7 +192,7 @@ class AccountService
         }
 
         if ($step == 2) {
-            return ['status' => 1, 'message' => 'Otp is valid', 'next'  => 'step_3'];
+            return ['status' => 1, 'message' => 'Otp is valid', 'next' => 'step_3'];
         } else {
             $user->update([
                 'password' => (new AuthService())->encryptPassword($postData['password']),
@@ -218,24 +221,44 @@ class AccountService
         if ($validator->fails()) {
             return [
                 'status' => 0,
-                'message' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ];
         }
-        $user->update([
-            'first_name' => $request->input('first_name'),
-            'last_name' => $request->input('last_name'),
-        ]);
 
-        if ($request->input('phone') != $user->phone || $request->input('email') != $user->email) {
-            $user->new_phone = $request->input('phone');
-            $user->new_email = $request->input('email');
-            $user->save();
-            (new \App\Services\TfaService())->sendOTP($user, 'otp');
-            return ['status' => 1, 'message' => 'Account Updated Successfully', 'next' => 'redirect', 'url' => 'auth/verify?type=new_email'];
+        // Always update basic info
+        $user->first_name = $request->input('first_name');
+        $user->last_name = $request->input('last_name');
+
+        // Check if phone/email changed
+        $phoneChanged = $request->input('phone') !== $user->phone;
+        $emailChanged = $request->input('email') !== $user->email;
+
+        if ($phoneChanged || $emailChanged) {
+            $user->phone = $request->input('phone');
+            $user->email = $request->input('email');
         }
 
-        return ['status' => 1, 'message' => 'Account Updated Successfully', 'next' => 'reload'];
+        $user->save();
+
+        // Send OTP only if phone/email actually changed
+        if ($phoneChanged || $emailChanged) {
+            (new \App\Services\TfaService())->sendOTP($user, 'otp');
+
+            return [
+                'status' => 1,
+                'message' => 'Account Updated Successfully',
+                'next' => 'redirect',
+                'url' => 'auth/verify?type=email',
+            ];
+        }
+
+        return [
+            'status' => 1,
+            'message' => 'Account Updated Successfully',
+            'next' => 'reload',
+        ];
     }
+
 
     /**
      * Change user password.

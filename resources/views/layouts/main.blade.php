@@ -35,7 +35,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         @else
         <title>@yield('title') | {{config('setting.app_name')}}</title>
         @endif
-        <link rel="shortcut icon" href="{{ config('setting.app_favicon') }}" type="image/x-icon">
+        <link rel="shortcut icon"  href="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}" type="image/x-icon">
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

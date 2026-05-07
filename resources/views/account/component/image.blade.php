@@ -5,11 +5,13 @@
 <div class="modal-body">
     <div class="col-md-12 text-center">
         <div id="file-input-container" method="POST">
-            <input type='file' onchange="imageCrop.setCropFile(this.files[0])" style="display:none" accept="image/png, image/gif, image/jpeg, image/webp , image/jpg">
-            <button type="button" class="btn btn-secondary file-btn fdgmage" onclick="$(this).prev().click()"><i class="fa fa-folder-open me-1" aria-hidden="true"></i> Choose File</button>
+            <input type='file' onchange="imageCrop.setCropFile(this.files[0])" style="display:none"
+                accept="image/png, image/gif, image/jpeg, image/webp , image/jpg">
+            <button type="button" class="btn btn-secondary file-btn fdgmage" onclick="$(this).prev().click()"><i
+                    class="fa fa-folder-open me-1" aria-hidden="true"></i> Choose File</button>
         </div>
         <div class="image-crop-box " style="max-width:200%;">
-            <img src="{{ $general->getFileUrl(@$model->image,'profile'); }}" id="image-crop">
+            <img src="{{ $general->getFileUrl(@$model->image, 'profile') }}" id="image-crop">
         </div>
         <div class="image-crop-action" style="display:none;max-width:100%;">
             <button onclick="imageCrop.rotateLeft()" class="btn btn-default">Rotate Left</button>
@@ -18,8 +20,9 @@
     </div>
 </div>
 <div class="modal-footer justify-content-between">
-    @if($model->image)
-    <button type="button" class="btn btn-danger" onclick="app.confirmAction(this);" data-action="{{route('account/image-delete')}}" data-id="{{$model->image}}">Delete Image</button>
+    @if ($model->image)
+        <button type="button" class="btn btn-danger" onclick="app.confirmAction(this);"
+            data-action="{{ route('account/image-delete') }}" data-id="{{ $model->image }}">Delete Image</button>
     @endif
     <br>
     <button type="button" class="btn btn-success" class="submit" onclick="imageCrop.uploadImage();">Save</button>
@@ -28,9 +31,9 @@
     var imageCrop = false;
     documentReady(function() {
         app.addCSS(['https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css'])
-        app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js',function(){
+        app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js', function() {
             imageCrop = new ImageCrop();
-            imageCrop.init('image-crop','account/image-save');
+            imageCrop.init('image-crop', 'account/image-save');
         });
     })
 </script>
