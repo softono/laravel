@@ -100,7 +100,7 @@ class UserAuth extends Model
      *
      * @param int $userId The ID of the user logging in.
      * @param int $remember Whether to remember the login session.
-     * @return Device|false
+        * @return UserAuth|false
      */
 
     public function login($userId, $remember = 1)
@@ -210,7 +210,7 @@ class UserAuth extends Model
     {
         $sessionDriver = config('session.driver');
         if ($sessionDriver === 'redis') {
-            $query = DB::table('user_auth')->select(['user_auth.*'])
+            $query = DB::table('user_auth')->select(['user_auth.*', DB::raw('UNIX_TIMESTAMP(user_auth.updated_at) as last_activity')])
                 ->where('user_auth.user_id', $userId)
                 ->where(function ($query) {
                     $query->where('user_auth.token_expire_at', '>', Carbon::now());
@@ -260,7 +260,7 @@ class UserAuth extends Model
 
         $sessionDriver = config('session.driver');
         if ($sessionDriver === 'redis') {
-            $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
+            $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', DB::raw('UNIX_TIMESTAMP(user_auth.updated_at) as last_activity'), 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
                 ->join('user', 'user.id', '=', 'user_auth.user_id')
                 ->where(function ($query) {
                     $query->where('user_auth.token_expire_at', '>', Carbon::now());

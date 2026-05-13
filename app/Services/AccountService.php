@@ -77,7 +77,6 @@ class AccountService
         } else {
             Auth::guard()->login($user);
             (new UserAuth())->login($user->id, 0);
-            (new \App\Models\Device())->login($user->id, 0);
             (new UserActivity())->add($user->id, 1);
         }
         (new General())->sendEmail($user->email, 'welcome', [

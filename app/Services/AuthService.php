@@ -155,11 +155,8 @@ class AuthService
             $user->login_failed = 0;
             $user->save();
         }
-
-
-        (new \App\Models\Device())->login($user->id, @$postData['remember']);
         Auth::guard()->login($user);
-        $LogObj->add($user->id, 1);
+        $LogObj->add($user->id, 1); 
 
         (new UserAuth())->login($user->id, @$postData['remember']);
         $LogObj->sendNewDeviceMail($user);

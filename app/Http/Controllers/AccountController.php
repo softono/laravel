@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserAuth;
-use App\Models\Device;
 use App\Models\UserActivity;
 use App\Services\AccountService;
 use Illuminate\Http\Request;
@@ -164,7 +163,7 @@ class AccountController extends Controller
      */
     public function deviceList(Request $request)
     {
-        return response()->json((new Device())->list($request->all(), auth()->id()));
+        return response()->json((new UserAuth())->list($request->all(), auth()->id()));
     }
 
     /**
@@ -177,7 +176,7 @@ class AccountController extends Controller
     {
         $id = $request->input('id');
 
-        $device = new \App\Models\Device();
+        $device = new UserAuth();
 
         $result = $device->forceLogout($id);
 
