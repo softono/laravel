@@ -20,7 +20,6 @@
                                 <th>Date</th>
                                 <th>Device</th>
                                 <th>Location </th>
-                                <th>Ip Address</th>
                                 <th>Type</th>
                             </tr>
                         </thead>
@@ -67,10 +66,7 @@
                         orderable: false,
                         responsivePriority: 4
                     },
-                    {
-                        data: "ip",
-                        responsivePriority: 4
-                    },
+                    
                     {
                         data: "type",
                         responsivePriority: 4

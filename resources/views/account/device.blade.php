@@ -18,7 +18,6 @@
                             <tr>
                                 <th>#</th>
                                 <th>Client</th>
-                                <th>Ip</th>
                                 <th>Location</th>
                                 <th>Last Activity</th>
                                 <th>Action</th>
@@ -73,10 +72,7 @@
                         data: "client",
                         responsivePriority: 2,
                     },
-                    {
-                        data: "ip",
-                        responsivePriority: 2
-                    },
+                  
                     {
                         data: "location",
                         responsivePriority: 2,
