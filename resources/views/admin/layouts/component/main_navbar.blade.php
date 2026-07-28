@@ -51,7 +51,7 @@
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" data-bs-popper="static">
                     <li>
-                        <a class="dropdown-item pjax" href="{{ route('admin/account/update') }}">
+                        <a class="dropdown-item pjax" href="{{ route('account/two-factor') }}">
                             <div class="d-flex">
                                 <div class="flex-shrink-0 me-3">
                                     <div class="avatar avatar-online">
@@ -70,7 +70,7 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item pjax" href="{{ route('admin/account/update') }}">
+                        <a class="dropdown-item pjax" href="{{ route('account/two-factor') }}">
                             <i class="icon-base bx bx-user icon-md me-3"></i>
                             <span class="align-middle">My Account</span>
                         </a>

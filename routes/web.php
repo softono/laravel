@@ -16,96 +16,48 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('contact', '\App\Http\Controllers\FrontController@contact')->name('contact');
     Route::post('contact-process', '\App\Http\Controllers\FrontController@contactProcess')->name('contact-process');
 
-    Route::get('register', '\App\Http\Controllers\SiteController@register')->name('register');
-    Route::post('site/register-process', '\App\Http\Controllers\SiteController@registerProcess')->name('site/register-process');
-    Route::get('site/verify-account', '\App\Http\Controllers\SiteController@verifyAccount')->name('site/verify-account');
-    Route::post('site/verify-account-process', '\App\Http\Controllers\SiteController@verifyAccountProcess')->name('site/verify-account-process');
-    Route::get('site/password-forgot', '\App\Http\Controllers\SiteController@passwordForgot')->name('site/password-forgot');
-    Route::post('site/password-forgot-process', '\App\Http\Controllers\SiteController@passwordForgotProcess')->name('site/password-forgot-process');
-
-    Route::get('login', '\App\Http\Controllers\AuthController@login')->name('login');
-    Route::post('auth/login-process', '\App\Http\Controllers\AuthController@loginProcess')->name('auth/login-process');
-    Route::get('logout', '\App\Http\Controllers\AuthController@logout')->name('logout');
-    Route::get('auth/login-otp', '\App\Http\Controllers\AuthController@loginOtp')->name('auth/login-otp');
-    Route::post('auth/login-otp-process', '\App\Http\Controllers\AuthController@loginOtpProcess')->name('auth/login-otp-process');
-    Route::get('auth/verify', '\App\Http\Controllers\AuthController@verify')->name('auth/verify');
-    Route::post('auth/verify-process', '\App\Http\Controllers\AuthController@verifyProcess')->name('auth/verify-process');
-    Route::post('auth/resend-otp', '\App\Http\Controllers\AuthController@resendOTP')->name('auth/resend-otp');
-
-    Route::get('oauth/login/{type}', '\App\Http\Controllers\AuthController@socialLogin')->name('oauth/login');
-    Route::get('oauth/callback/{type}', '\App\Http\Controllers\AuthController@socialLoginCallback')->name('oauth/callback');
+    // register, login, logout, password-forgot, verify-account, login-otp,
+    // verify (2FA), login-link, passkeys and Google OAuth now all live in
+    // routes/auth.php (Next-parity auth stack). The legacy
+    // SiteController/AuthController routes for all of these are removed
+    // here (Phase 7 cutover) - they called Auth::guard()->login($user)
+    // and read old User-model-only columns (otp, totp_secret_key,
+    // backup_code, ignore_tfa_device) that no longer exist on the model
+    // config/auth.php's 'web' guard resolves to (App\Models\Auth\User,
+    // since Phase 4), so they were already broken, not just superseded.
 });
 
 
 Route::group(['middleware' => ['web', 'user']], function () {
     Route::get('dashboard', '\App\Http\Controllers\SiteController@dashboard')->name('dashboard');
-    Route::get('/get-qr-modal', '\App\Http\Controllers\AuthController@getTotpModel')->name('get-qr-modal');
-    Route::get('otp.verify', '\App\Http\Controllers\AuthController@verifyOtpModal')->name('otp.verify');
-    Route::post('otp.confirm', '\App\Http\Controllers\AuthController@optVerifyProcess')->name('otp.confirm');
-    Route::get('backup-code', '\App\Http\Controllers\AuthController@backupCode')->name('backup-code');
-    Route::post('backup-codes-regenerate', '\App\Http\Controllers\AuthController@regenerateBackupProcess')->name('backup-codes-regenerate');
-    Route::get('/copy-secret-key', '\App\Http\Controllers\AuthController@getTotpModel')->name('copy.secret.key');
-    Route::post('/remove-totp', '\App\Http\Controllers\AuthController@removeTotp')->name('remove-totp');
 
-    Route::get('account/update', '\App\Http\Controllers\AccountController@update')->name('account/update');
-    Route::post('account/update-process', '\App\Http\Controllers\AccountController@updateProcess')->name('account/update-process');
-    Route::get('account/image', '\App\Http\Controllers\AccountController@image')->name('account/image');
-    Route::post('account/image-save', '\App\Http\Controllers\AccountController@imageSave')->name('account/image-save');
-    Route::post('account/image-delete', '\App\Http\Controllers\AccountController@imageDelete')->name('account/image-delete');
-    Route::get('account/password-change', '\App\Http\Controllers\AccountController@passwordChange')->name('account/password-change');
-    Route::post('account/password-change-process', '\App\Http\Controllers\AccountController@passwordChangeProcess')->name('account/password-change-process');
-    Route::get('account/tfa', '\App\Http\Controllers\AccountController@tfa')->name('account/tfa');
-    Route::post('account/tfa-status-change', '\App\Http\Controllers\AccountController@tfaStatusChange')->name('account/tfa-status-change');
-    Route::post('account/revoke-all', '\App\Http\Controllers\AccountController@revokeAll')->name('account/revoke-all');
-
-    Route::get('account/device', '\App\Http\Controllers\AccountController@device')->name('account/device');
-    Route::post('account/device-list', '\App\Http\Controllers\AccountController@deviceList')->name('account/device-list');
-    Route::post('account/device-logout', '\App\Http\Controllers\AccountController@deviceLogout')->name('account/device-logout');
-
-    Route::get('account/user-activity', '\App\Http\Controllers\AccountController@userActivity')->name('account/user-activity');
-    Route::post('account/user-activity-list', '\App\Http\Controllers\AccountController@userActivityList')->name('account/user-activity-list');
-    Route::post('account/deactivate', '\App\Http\Controllers\Admin\AccountController@accountDeactivate')->name('account/deactivate');
+    // account/{update,image*,password-change*,tfa*,device*,user-activity*,
+    // deactivate} removed here for the same reason - Admin\AccountController
+    // and the legacy AccountService read/write columns (password, otp,
+    // totp_secret_key, backup_code, ignore_tfa_device) or call
+    // Auth::logout() (which App\Helpers\SessionTokenGuard doesn't implement)
+    // against App\Models\Auth\User, which no longer has them. Replacements
+    // so far: password change is POST /api/auth/change-password, logout is
+    // GET /logout, 2FA is /account/two-factor, passkeys is /account/passkeys.
+    // Profile-update, deactivate, and device/activity self-service for the
+    // new user model are a follow-up, not yet built.
 });
 
 
 /* Admin routes =========================================================================== */
-Route::group(['prefix' => 'admin', 'middleware' => 'web'], function () {
-    Route::get('auth/login', '\App\Http\Controllers\Admin\AuthController@login')->name('admin/auth/login');
-    Route::post('auth/login-process', '\App\Http\Controllers\Admin\AuthController@loginProcess')->name('admin/auth/login-process');
-    Route::get('auth/logout', '\App\Http\Controllers\Admin\AuthController@logout')->name('admin/auth/logout');
-
-    Route::get('auth/verify', '\App\Http\Controllers\Admin\AuthController@verify')->name('admin/auth/verify');
-    Route::post('auth/verify-process', '\App\Http\Controllers\Admin\AuthController@verifyProcess')->name('admin/auth/verify-process');
-    Route::post('auth/resend-otp', '\App\Http\Controllers\Admin\AuthController@resendOTP')->name('admin/auth/resend-otp');
-
-    Route::get('site/password-forgot', '\App\Http\Controllers\Admin\SiteController@passwordForgot')->name('admin/site/password-forgot');
-    Route::post('site/password-forgot-process', '\App\Http\Controllers\Admin\SiteController@passwordForgotProcess')->name('admin/site/password-forgot-process');
-});
+// admin/auth/*, admin/site/password-forgot(-process) removed here (Phase 7
+// cutover) - new admin auth lives in routes/auth.php
+// (Admin\Auth\{LoginController,PageController}).
 
 Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function () {
     Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
     Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 
-    Route::get('account/tfa', '\App\Http\Controllers\Admin\AccountController@tfa')->name('admin/account/tfa');
-    Route::post('account/tfa-status-change', '\App\Http\Controllers\Admin\AccountController@tfaStatusChange')->name('admin/account/tfa-status-change');
-    Route::post('account/revoke-all', '\App\Http\Controllers\Admin\AccountController@revokeAll')->name('admin/account/revoke-all');
-
-    Route::get('account/update', '\App\Http\Controllers\Admin\AccountController@update')->name('admin/account/update');
-    Route::post('account/save', '\App\Http\Controllers\Admin\AccountController@save')->name('admin/account/save');
-    Route::get('account/image', '\App\Http\Controllers\Admin\AccountController@image')->name('admin/account/image');
-    Route::post('account/image-save', '\App\Http\Controllers\Admin\AccountController@imageSave')->name('admin/account/image-save');
-    Route::post('account/image-delete', '\App\Http\Controllers\Admin\AccountController@deleteImage')->name('admin/account/image-delete');
-    Route::get('account/password-change', '\App\Http\Controllers\Admin\AccountController@passwordChange')->name('admin/account/password-change');
-    Route::post('account/password-change-process', '\App\Http\Controllers\Admin\AccountController@changePasswordProcess')->name('admin/account/password-change-process');
-
-    Route::get('account/device', '\App\Http\Controllers\Admin\AccountController@device')->name('admin/account/device');
-    Route::any('account/device-list', '\App\Http\Controllers\Admin\AccountController@deviceList')->name('admin/account/device-list');
-    Route::any('account/device-logout', '\App\Http\Controllers\Admin\AccountController@deviceLogout')->name('admin/account/device-logout');
-
-    Route::get('account/user-activity', '\App\Http\Controllers\Admin\AccountController@userActivity')->name('admin/account/user-activity');
-    Route::any('account/user-activity-list', '\App\Http\Controllers\Admin\AccountController@userActivityList')->name('admin/account/user-activity-list');
-    Route::post('account/deactivate', '\App\Http\Controllers\Admin\AccountController@accountDeactivate')->name('admin/account/deactivate');
-
+    // admin/account/{tfa*,update,save,image*,password-change*,device*,
+    // user-activity*,deactivate} removed for the same reason as the user
+    // side above - Admin\AccountController reads/writes columns that
+    // don't exist on App\Models\Auth\User. The admin's own 2FA is
+    // /account/two-factor (shared with the user side - same `users` table).
 
     Route::get('user', '\App\Http\Controllers\Admin\UserController@index')->name('admin/user');
     Route::any('user/list', '\App\Http\Controllers\Admin\UserController@list')->name('admin/user/list');
@@ -116,7 +68,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function (
     Route::post('user/mail', '\App\Http\Controllers\Admin\UserController@sendMail')->name('admin/user/mail');
     Route::post('user/delete', '\App\Http\Controllers\Admin\UserController@delete')->name('admin/user/delete');
     Route::post('user/change_status', '\App\Http\Controllers\Admin\UserController@changeStatus')->name('admin/user/change_status');
-    Route::get('user/autologin', '\App\Http\Controllers\Admin\UserController@autoLogin')->name('admin/user/autologin');
+    // user/autologin removed - impersonation called Auth::guard('web')->login($user),
+    // which App\Helpers\SessionTokenGuard doesn't implement (no StatefulGuard support).
     Route::get('user/send-tfa-mail', '\App\Http\Controllers\Admin\UserController@sendTfaMail')->name('admin/user/send-tfa-mail');
 
     Route::get('admin', '\App\Http\Controllers\Admin\AdminController@index')->name('admin/admin');
@@ -166,4 +119,3 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function (
     // Route::get('/get-qr-modal',' \App\Http\Controllers\QrcodeControlle@getModel')->name('get/qr/modal');
 
 });
-

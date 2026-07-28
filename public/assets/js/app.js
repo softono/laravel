@@ -158,7 +158,10 @@ const app = {
             url,
             method: "GET",
             dataType: "json",
-            success: this.ajaxSuccess,
+            success: (response) => {
+                this.hideLoading();
+                cb(response);
+            },
             error: this.ajaxError,
         });
     },
@@ -271,9 +274,9 @@ const app = {
     /**
      * Default AJAX error handler
      */
-    ajaxError: function () {
-        app.showMessage("Something went wrong. Please try again later.", "error");
+    ajaxError: function (e) {
         app.hideLoading();
+        app.showMessage(e.message ?? "Something went wrong. Please try again later.", "error");
     },
 
     /**
