@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserAuth;
+use App\Helpers\General;
 use App\Models\UserActivity;
+use App\Models\UserAuth;
 use App\Services\AccountService;
 use Illuminate\Http\Request;
-use App\Helpers\General;
-use Illuminate\Support\Facades\DB;
-
+use Illuminate\View\View;
 
 class AccountController extends Controller
 {
     /**
      * Display the account update form.
      *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * @param  Request  $request
+     * @return View
      */
     public function update()
     {
@@ -26,21 +25,19 @@ class AccountController extends Controller
     /**
      * Save updated account details.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function updateProcess(Request $request)
     {
 
-
-        return response()->json((new AccountService())->updateProcess($request, auth()->user()));
+        return response()->json((new AccountService)->updateProcess($request, auth()->user()));
     }
 
     /**
      * Display the change password form.
      *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * @param  Request  $request
+     * @return View
      */
     public function passwordChange()
     {
@@ -50,19 +47,18 @@ class AccountController extends Controller
     /**
      * Process password change request.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function passwordChangeProcess(Request $request)
     {
 
-        return response()->json((new AccountService())->changePassword($request, auth()->user()));
+        return response()->json((new AccountService)->changePassword($request, auth()->user()));
     }
 
     /**
      * Display the profile image update form.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function image()
     {
@@ -72,12 +68,11 @@ class AccountController extends Controller
     /**
      * Save updated profile image.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function imagesave(Request $request)
     {
-        return response()->json((new AccountService())->saveImage($request, auth()->user()));
+        return response()->json((new AccountService)->saveImage($request, auth()->user()));
     }
 
     /**
@@ -87,7 +82,7 @@ class AccountController extends Controller
      */
     public function deleteImage()
     {
-        return response()->json((new AccountService())->deleteImage(auth()->user()));
+        return response()->json((new AccountService)->deleteImage(auth()->user()));
     }
 
     /**
@@ -102,18 +97,18 @@ class AccountController extends Controller
         foreach ($userAuthList as $key => $userAuth) {
 
             $userAuthList[$key]->client =
-                (new General())->deviceName($userAuth->client) . ' ' .
-                ($userAuth->device_uid == ($_COOKIE[config("setting.app_uid") . '_token'] ?? null)
+                (new General)->deviceName($userAuth->client).' '.
+                ($userAuth->device_uid == ($_COOKIE[config('setting.app_uid').'_token'] ?? null)
                     ? ' (This Device)'
                     : '');
 
             $userAuthList[$key]->location =
-                (new General())->getIpLocation($userAuth->ip);
+                (new General)->getIpLocation($userAuth->ip);
         }
 
         $trustedDevices = [];
 
-        if (!empty($model->ignore_tfa_device)) {
+        if (! empty($model->ignore_tfa_device)) {
             $trustedDevices = explode(',', $model->ignore_tfa_device);
         }
 
@@ -128,9 +123,10 @@ class AccountController extends Controller
     public function tfaStatusChange()
     {
         $user = auth()->user();
-        $status_tfa = !$user->status_tfa;
+        $status_tfa = ! $user->status_tfa;
         $user->status_tfa = $status_tfa;
         $user->save();
+
         return response()->json(['status' => 1, 'next' => 'refresh', 'message' => $status_tfa ? 'Two Factor Authentication is enabled' : 'Two Factor Authentication is disabled']);
     }
 
@@ -141,14 +137,13 @@ class AccountController extends Controller
      */
     public function revokeAll()
     {
-        return response()->json((new AccountService())->revokeAll2FADevices(auth()->user()));
+        return response()->json((new AccountService)->revokeAll2FADevices(auth()->user()));
     }
-
 
     /**
      * Display the device management view.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function device()
     {
@@ -158,46 +153,44 @@ class AccountController extends Controller
     /**
      * Retrieve the list of user's devices.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function deviceList(Request $request)
     {
-        return response()->json((new UserAuth())->list($request->all(), auth()->id()));
+        return response()->json((new UserAuth)->list($request->all(), auth()->id()));
     }
 
     /**
      * Log out the specified device.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function deviceLogout(Request $request)
     {
         $id = $request->input('id');
 
-        $device = new UserAuth();
+        $device = new UserAuth;
 
         $result = $device->forceLogout($id);
 
         if ($result === false) {
             return response()->json([
                 'status' => 0,
-                'message' => 'Cannot logout current device'
+                'message' => 'Cannot logout current device',
             ]);
         }
 
         return response()->json([
             'status' => 1,
             'message' => 'Device Logout Successfully',
-            'next' => 'reload'
+            'next' => 'reload',
         ]);
     }
 
     /**
      * Display the user activity log view.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function userActivity()
     {
@@ -207,12 +200,11 @@ class AccountController extends Controller
     /**
      * Retrieve the list of user activity logs.
      *
-     * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function userActivityList(Request $request)
     {
-        return response()->json((new UserActivity())->list($request->all(), auth()->id()));
+        return response()->json((new UserActivity)->list($request->all(), auth()->id()));
     }
 
     public function accountDeactivate()
@@ -221,6 +213,7 @@ class AccountController extends Controller
         $model->status = 0;
         Auth::logout();
         $model->update();
+
         return redirect('logout');
     }
 }

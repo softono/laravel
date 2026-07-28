@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Services\Auth\LoginLinkService;
 use App\Helpers\ApiResult;
 use App\Helpers\SignedCookie;
+use App\Http\Controllers\Controller;
+use App\Services\Auth\LoginLinkService;
 use Illuminate\Http\Request;
 
 class LoginLinkController extends Controller

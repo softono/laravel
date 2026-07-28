@@ -3,10 +3,10 @@
 namespace App\Services\Auth;
 
 use App\Constants\UserActivity;
+use App\Helpers\ClientInfo;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Models\Auth\UserLoginLink;
-use App\Helpers\ClientInfo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -68,7 +68,7 @@ class LoginLinkService
 
         $approveUrl = rtrim(config('app.url'), '/').'/login/approve?id='.$link->id.'&token='.$linkToken;
 
-        (new General())->sendEmail($email, 'login-link', [
+        (new General)->sendEmail($email, 'login-link', [
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
             'link' => $approveUrl,

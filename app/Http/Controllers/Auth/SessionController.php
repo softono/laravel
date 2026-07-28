@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\ApiResult;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class SessionController extends Controller

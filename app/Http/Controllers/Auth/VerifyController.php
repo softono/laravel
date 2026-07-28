@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ApiResult;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyAccountRequest;
 use App\Models\Auth\User;
 use App\Services\Auth\AccountService;
-use App\Helpers\ApiResult;
 use Illuminate\Http\Request;
 
 class VerifyController extends Controller

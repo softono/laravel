@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('contact_messages')) {
+        if (! Schema::hasTable('contact_messages')) {
             Schema::create('contact_messages', function (Blueprint $table) {
                 $table->id();
                 $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('email_templates')) {
+        if (! Schema::hasTable('email_templates')) {
             Schema::create('email_templates', function (Blueprint $table) {
                 $table->id();
                 $table->string('key')->unique();
@@ -36,7 +36,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('notes')) {
+        if (! Schema::hasTable('notes')) {
             Schema::create('notes', function (Blueprint $table) {
                 $table->id();
                 $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
@@ -48,7 +48,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('pages')) {
+        if (! Schema::hasTable('pages')) {
             Schema::create('pages', function (Blueprint $table) {
                 $table->id();
                 $table->string('slug')->unique();
@@ -61,7 +61,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('seos')) {
+        if (! Schema::hasTable('seos')) {
             Schema::create('seos', function (Blueprint $table) {
                 $table->id();
                 $table->string('type')->default('STATIC');
@@ -83,7 +83,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('settings')) {
+        if (! Schema::hasTable('settings')) {
             Schema::create('settings', function (Blueprint $table) {
                 $table->id();
                 $table->string('key')->unique();

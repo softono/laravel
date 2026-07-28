@@ -10,31 +10,54 @@ namespace App\Constants;
 final class UserActivity
 {
     public const LOGIN_FAILED = 'LOGIN_FAILED';
+
     public const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+
     public const REGISTER = 'REGISTER';
+
     public const LOGIN_WITH_OTP = 'LOGIN_WITH_OTP';
+
     public const LOGIN_WITH_SOCIAL = 'LOGIN_WITH_SOCIAL';
+
     public const LOGIN_WITH_LINK = 'LOGIN_WITH_LINK';
+
     public const REGISTER_WITH_SOCIAL = 'REGISTER_WITH_SOCIAL';
+
     public const LOGOUT = 'LOGOUT';
+
     public const ACCOUNT_DEACTIVATE = 'ACCOUNT_DEACTIVATE';
+
     public const EMAIL_UPDATE = 'EMAIL_UPDATE';
+
     public const PASSWORD_CHANGED = 'PASSWORD_CHANGED';
+
     public const ACCOUNT_UPDATE = 'ACCOUNT_UPDATE';
+
     public const DEVICE_LOGGED_OUT = 'DEVICE_LOGGED_OUT';
+
     public const IMAGE_UPLOADED = 'IMAGE_UPLOADED';
+
     public const PASSWORD_SET = 'PASSWORD_SET';
+
     public const PASSKEY_ADDED = 'PASSKEY_ADDED';
+
     public const PASSKEY_DELETED = 'PASSKEY_DELETED';
+
     public const BACKUP_CODES_REGENERATED = 'BACKUP_CODES_REGENERATED';
+
     public const TFA_ENABLED = 'TFA_ENABLED';
+
     public const TFA_DISABLED = 'TFA_DISABLED';
+
     public const TFA_AUTHENTICATOR_REMOVED = 'TFA_AUTHENTICATOR_REMOVED';
 
     // Admin activity
     public const SETTING_UPDATE = 'SETTING_UPDATE';
+
     public const ADMIN_UPDATE = 'ADMIN_UPDATE';
+
     public const USER_UPDATE = 'USER_UPDATE';
+
     public const DATA_UPDATE = 'DATA_UPDATE';
 
     /** @var array<string,string> key => human label, for the activity log UI */

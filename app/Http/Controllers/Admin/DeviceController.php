@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\UserAuth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -13,15 +13,11 @@ use Illuminate\View\View;
  *
  * Manages device-related operations in the admin panel, including displaying the device list
  * and logging out a device.
- *
- * @package App\Http\Controllers\Admin
  */
 class DeviceController extends Controller
 {
     /**
      * Displays the device index view.
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -31,23 +27,21 @@ class DeviceController extends Controller
     /**
      * Retrieves a list of devices for the admin panel.
      *
-     * @param Request $request The HTTP request containing filter and search parameters.
-     * @return JsonResponse
+     * @param  Request  $request  The HTTP request containing filter and search parameters.
      */
     public function list(Request $request): JsonResponse
     {
-        return response()->json((new UserAuth())->listAdmin($request->all()));
+        return response()->json((new UserAuth)->listAdmin($request->all()));
     }
 
     /**
      * Logs out a device from the admin panel with a SweetAlert success message.
      *
-     * @param Request $request The HTTP request containing the device ID.
-     * @return JsonResponse
+     * @param  Request  $request  The HTTP request containing the device ID.
      */
     public function logout(Request $request): JsonResponse
     {
-        (new UserAuth())->forceLogout($request->input('id'));
+        (new UserAuth)->forceLogout($request->input('id'));
 
         return response()->json(['status' => 1, 'message' => 'Device Logout Successfully', 'next' => 'reload']);
     }

@@ -2,25 +2,26 @@
 
 namespace App\Models;
 
+use App\Helpers\General;
 use App\Helpers\Pagination;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
-use App\Helpers\General;
 
 /**
  * Class SeoMeta
  *
  * Model for managing SEO metadata in the application.
- *
- * @package App\Models
  */
 class SeoMeta extends Model
 {
     protected $table = 'seos';
+
     public $timestamps = false;
+
     protected $fillable = [
         'type',
         'url',
@@ -49,11 +50,11 @@ class SeoMeta extends Model
     public function getMetaData(): ?array
     {
         $currentUrl = Route::current()?->getName();
-        if (!$currentUrl) {
+        if (! $currentUrl) {
             return null;
         }
 
-        $cacheKey = 'seo_meta_' . $currentUrl;
+        $cacheKey = 'seo_meta_'.$currentUrl;
         $metaData = Cache::get($cacheKey);
 
         if ($metaData) {
@@ -66,21 +67,22 @@ class SeoMeta extends Model
                 'keyword' => $siteMeta->keyword,
                 'description' => $siteMeta->description,
             ];
-        }else{
-            $metaData =[
+        } else {
+            $metaData = [
                 'title' => '',
                 'keyword' => '',
                 'description' => '',
             ];
         }
         Cache::put($cacheKey, $metaData, 86400); // Cache for 1 day
+
         return $metaData;
     }
 
     /**
      * Get the HTML badge for status.
      *
-     * @param int $status Status value (1 for Active, 0 for Inactive).
+     * @param  int  $status  Status value (1 for Active, 0 for Inactive).
      * @return string HTML badge for the status.
      */
     public function getStatusBadge(int $status): string
@@ -93,9 +95,9 @@ class SeoMeta extends Model
     /**
      * Retrieve active status records from the SEO meta table.
      *
-     * @return \Illuminate\Support\Collection Collection of active records.
+     * @return Collection Collection of active records.
      */
-    public function getActiveStatus(): \Illuminate\Support\Collection
+    public function getActiveStatus(): Collection
     {
         return DB::table($this->table)->where('sitemap_enable', 1)->get();
     }
@@ -103,7 +105,7 @@ class SeoMeta extends Model
     /**
      * Retrieve a paginated list of admin SEO metadata records.
      *
-     * @param array $postData Data from the request, typically for pagination and search.
+     * @param  array  $postData  Data from the request, typically for pagination and search.
      * @return array Paginated list of SEO metadata with action buttons.
      */
     public function listAdmin(array $postData): array
@@ -112,15 +114,15 @@ class SeoMeta extends Model
         $searchText = $postData['search']['value'] ?? '';
 
         if (strlen($searchText) > 2) {
-            $query->where("title", 'like', '%' . $searchText . '%');
+            $query->where('title', 'like', '%'.$searchText.'%');
         }
 
-        $pagination = new Pagination();
+        $pagination = new Pagination;
         $result = $pagination->getDataTable($query, $postData);
 
         foreach ($result['data'] as $row) {
             $row->action = sprintf(
-                '<a href="page/%s" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;' .
+                '<a href="page/%s" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;'.
                 '<a href="admin/page/update?id=%d" class="btn btn-info pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>',
                 e($row->slug),
                 $row->id
@@ -133,7 +135,7 @@ class SeoMeta extends Model
     /**
      * Retrieve a paginated list of SEO metadata records with search and filter options.
      *
-     * @param array $postData Data from the request, typically for pagination and search.
+     * @param  array  $postData  Data from the request, typically for pagination and search.
      * @return array Paginated list of SEO metadata with action buttons and status badges.
      */
     public function Seometalist(array $postData): array
@@ -143,21 +145,21 @@ class SeoMeta extends Model
 
         if (strlen($searchText) > 2) {
             $query->where(function ($query) use ($searchText) {
-                $searchPattern = '%' . $searchText . '%';
-                $query->where("title", 'like', $searchPattern)
-                      ->orWhere("keyword", 'like', $searchPattern)
-                      ->orWhere("url", 'like', $searchPattern)
-                      ->orWhere("description", 'like', $searchPattern)
-                      ->orWhere("sitemap_enable", 'like', $searchPattern);
+                $searchPattern = '%'.$searchText.'%';
+                $query->where('title', 'like', $searchPattern)
+                    ->orWhere('keyword', 'like', $searchPattern)
+                    ->orWhere('url', 'like', $searchPattern)
+                    ->orWhere('description', 'like', $searchPattern)
+                    ->orWhere('sitemap_enable', 'like', $searchPattern);
             });
         }
 
-        $pagination = new Pagination();
+        $pagination = new Pagination;
         $result = $pagination->getDataTable($query, $postData);
         $sessionUser = auth()->user();
 
         foreach ($result['data'] as $row) {
-            $row->sitemap_enable = $this->getStatusBadge((int)$row->sitemap_enable);
+            $row->sitemap_enable = $this->getStatusBadge((int) $row->sitemap_enable);
             $row->action = '';
 
             if ($sessionUser->hasPermission('admin/seo/update')) {
@@ -177,6 +179,7 @@ class SeoMeta extends Model
 
         return $result;
     }
+
     public function store(array $postData)
     {
         $validator = Validator::make($postData, [
@@ -192,14 +195,14 @@ class SeoMeta extends Model
             ];
         }
         $id = $postData['id'] ?? null;
-        $seometa = $id ? self::find($id) : new self();
-        if ($id && !$seometa) {
+        $seometa = $id ? self::find($id) : new self;
+        if ($id && ! $seometa) {
             return ['status' => 0, 'message' => 'Seo meta not found.'];
         }
         // Prepare tags
-    
+
         // Slugify and assign values
-        $general = new General();
+        $general = new General;
         $seometa->url = $postData['url'];
         $seometa->title = $postData['title'];
         $seometa->keyword = $postData['keyword'];
@@ -209,17 +212,9 @@ class SeoMeta extends Model
         $seometa->change_frequency = $postData['frequency'];
         $seometa->priority = $postData['priority'];
         // Handle main image
-    
 
-  
         return $seometa->save()
             ? ['status' => 1, 'message' => 'Seo Saved successfully', 'next' => 'load', 'url' => 'admin/seo/meta']
             : ['status' => 0, 'message' => 'Failed to save the Seo Meta.'];
     }
-
-
-
-
-
-
 }

@@ -3,18 +3,13 @@
 namespace App\Models;
 
 use App\Helpers\Pagination;
-use App\Helpers\General;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 /**
  * Class Page
  *
  * Model for the `page` table.
  * Handles listing pages for admin with search and pagination.
- *
- * @package App\Models
  */
 class ContactMessages extends Model
 {
@@ -42,8 +37,7 @@ class ContactMessages extends Model
     /**
      * Retrieves paginated list of pages for admin with search capability.
      *
-     * @param array $postData The data passed for pagination and search.
+     * @param  array  $postData  The data passed for pagination and search.
      * @return array The paginated and formatted list of pages.
      */
-
 }

@@ -3,28 +3,23 @@
 namespace App\Services;
 
 use App\Helpers\General;
-use App\Models\UserActivity;
 use App\Models\User;
+use App\Models\UserActivity;
 use App\Models\UserAuth;
-use App\Services\AuthService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
 
 class AccountService
 {
-
     /**
      * Process user registration.
-     *
-     * @param array $postData
-     * @return array
      */
     public function registerProcess(array $postData): array
     {
 
-        $general = new General();
+        $general = new General;
         if ($general->rateLimit('register')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
         }
@@ -39,7 +34,7 @@ class AccountService
             'email' => 'required|email|unique:user,email',
             'password' => [
                 'required',
-                $general->passwordType()
+                $general->passwordType(),
             ],
             'password_confirm' => 'required|same:password',
         ]);
@@ -48,19 +43,19 @@ class AccountService
         }
 
         $result = $general->verifyEmail($postData['email']);
-        if (!$result['status']) {
+        if (! $result['status']) {
             return $result;
         }
 
         $ip = $general->getClientIp();
-        $userObj = new User();
+        $userObj = new User;
 
         $user = $userObj->create([
             'first_name' => $postData['first_name'],
             'last_name' => $postData['last_name'],
             'email' => $postData['email'],
             'phone' => $postData['phone'],
-            'password' => (new AuthService())->encryptPassword($postData['password']),
+            'password' => (new AuthService)->encryptPassword($postData['password']),
             'country' => $general->getIpInfoCountry($ip),
             'status' => 1,
             'timezone' => $general->getClientTimezone(),
@@ -68,33 +63,35 @@ class AccountService
             'role' => 4,
         ]);
 
-        (new UserActivity())->add($user->id, 3);
+        (new UserActivity)->add($user->id, 3);
 
         if (config('setting.user_email_verify')) {
-            (new TfaService())->sendOTP($user, 'verify_account');
+            (new TfaService)->sendOTP($user, 'verify_account');
             $token = base64_encode($user->email);
-            return ['status' => 1, 'message' => 'Thank you for registration, Please verify your email.', 'next' => 'redirect', 'url' => 'site/verify-account?code=' . $token];
+
+            return ['status' => 1, 'message' => 'Thank you for registration, Please verify your email.', 'next' => 'redirect', 'url' => 'site/verify-account?code='.$token];
         } else {
             Auth::guard()->login($user);
-            (new UserAuth())->login($user->id, 0);
-            (new UserActivity())->add($user->id, 1);
+            (new UserAuth)->login($user->id, 0);
+            (new UserActivity)->add($user->id, 1);
         }
-        (new General())->sendEmail($user->email, 'welcome', [
+        (new General)->sendEmail($user->email, 'welcome', [
             'first_name' => $user->first_name,
-            'last_name' => $user->last_name
+            'last_name' => $user->last_name,
         ]);
+
         return ['status' => 1, 'message' => 'Thank you for registration', 'next' => 'redirect', 'url' => config('setting.login_redirect_url')];
     }
 
     /**
      * Verify the OTP process.
      *
-     * @param array $postData The post data containing the OTP and other details.
+     * @param  array  $postData  The post data containing the OTP and other details.
      * @return array The result of the OTP verification process.
      */
     public function verifyAccountProcess(array $postData): array
     {
-        $general = new General();
+        $general = new General;
         if ($general->rateLimit('verify_tfa')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
         }
@@ -106,7 +103,7 @@ class AccountService
         if ($validator->fails()) {
             return ['status' => 0, 'message' => $validator->errors()->first()];
         }
-        $tfaService = (new TfaService());
+        $tfaService = (new TfaService);
         $email = $tfaService->decryptCode($postData['code']);
         $user = User::where('email', $email)->first();
 
@@ -117,28 +114,30 @@ class AccountService
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
         }
         $result = $tfaService->checkOtp($postData['otp'], $user->otp);
-        if (!$result['status']) {
+        if (! $result['status']) {
             $user->otp_failed = $user->otp_failed + 1;
             $user->save();
+
             return $result;
         }
 
         $user->email_verified = 1;
         $user->otp = '';
         $user->save();
+
         return ['status' => 1, 'message' => 'OTP verified successfully.', 'next' => 'redirect', 'url' => 'login'];
     }
 
     /**
      * Process the password forgot.
      *
-     * @param array $postData
-     * @param int $type
+     * @param  array  $postData
+     * @param  int  $type
      * @return array
      */
     public function passwordForgotProcess($postData)
     {
-        $general = new General();
+        $general = new General;
         if ($general->rateLimit('password_forgot')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
         }
@@ -155,7 +154,7 @@ class AccountService
             $validationRules['otp'] = 'required';
             $validationRules['password'] = [
                 'required',
-                $general->passwordType()
+                $general->passwordType(),
             ];
             $validationRules['password_confirm'] = 'required|same:password';
         }
@@ -167,15 +166,16 @@ class AccountService
 
         $user = User::where(function ($query) use ($postData) {
             $query->where('email', $postData['email'])
-                ->orWhere("phone", $postData['email']);
+                ->orWhere('phone', $postData['email']);
         })->first();
 
-        if (!$user) {
+        if (! $user) {
             return ['status' => 0, 'message' => 'Email Not Valid'];
         }
-        $tfaService = new TfaService();
+        $tfaService = new TfaService;
         if ($step == 1) {
             $tfaService->sendOTP($user, 'forgot_password');
+
             return ['status' => 1, 'message' => 'Otp sent successfully', 'next' => 'step_2'];
         }
 
@@ -184,9 +184,10 @@ class AccountService
         }
 
         $result = $tfaService->checkOtp($postData['otp'], $user->otp);
-        if (!$result['status']) {
+        if (! $result['status']) {
             $user->otp_failed = $user->otp_failed + 1;
             $user->save();
+
             return $result;
         }
 
@@ -194,19 +195,16 @@ class AccountService
             return ['status' => 1, 'message' => 'Otp is valid', 'next' => 'step_3'];
         } else {
             $user->update([
-                'password' => (new AuthService())->encryptPassword($postData['password']),
+                'password' => (new AuthService)->encryptPassword($postData['password']),
                 'data' => $user->otp = '',
             ]);
+
             return ['status' => 1, 'message' => 'Password reset successfully. You can now log in', 'next' => 'redirect', 'url' => 'admin/auth/login'];
         }
     }
 
     /**
      * Save user account details.
-     *
-     * @param Request $request
-     * @param User $user
-     * @return array
      */
     public function updateProcess(Request $request, User $user): array
     {
@@ -241,7 +239,7 @@ class AccountService
 
         // Send OTP only if phone/email actually changed
         if ($phoneChanged || $emailChanged) {
-            (new \App\Services\TfaService())->sendOTP($user, 'otp');
+            (new TfaService)->sendOTP($user, 'otp');
 
             return [
                 'status' => 1,
@@ -258,22 +256,17 @@ class AccountService
         ];
     }
 
-
     /**
      * Change user password.
-     *
-     * @param Request $request
-     * @param User $user
-     * @return array
      */
     public function changePassword(Request $request, User $user): array
     {
-        $general = new General();
+        $general = new General;
         $validator = Validator::make($request->all(), [
             'current_password' => 'required',
             'password' => [
                 'required',
-                $general->passwordType()
+                $general->passwordType(),
             ],
             'confirm_password' => 'required|same:password',
         ]);
@@ -282,7 +275,7 @@ class AccountService
             return ['status' => 0, 'message' => $validator->errors()->first()];
         }
 
-        if (!Hash::check($request->input('current_password'), $user->password)) {
+        if (! Hash::check($request->input('current_password'), $user->password)) {
             return ['status' => 0, 'message' => 'Old password does not match!'];
         }
 
@@ -293,22 +286,18 @@ class AccountService
 
     /**
      * Save user profile image.
-     *
-     * @param Request $request
-     * @param User $user
-     * @return array
      */
     public function saveImage(Request $request, User $user): array
     {
-        $general = new General();
+        $general = new General;
         $validator = Validator::make($request->all(), [
-            'image' => 'required|' . $general->fileRules('image'),
+            'image' => 'required|'.$general->fileRules('image'),
         ]);
         if ($validator->fails()) {
             return ['status' => 0, 'message' => $validator->errors()->first()];
         }
         $uploadResult = $general->uploadFile($request->file('image'), 'profile');
-        if (!$uploadResult['status']) {
+        if (! $uploadResult['status']) {
             return $uploadResult;
         }
         if ($uploadResult['file_name']) {
@@ -316,38 +305,36 @@ class AccountService
                 $general->deleteFile($user->image, 'profile');
             }
             $user->update(['image' => $uploadResult['file_name']]);
+
             return ['status' => 1, 'message' => 'Account Updated Successfully', 'next' => 'hide_modal,reload'];
         }
+
         return ['status' => 0, 'message' => 'Upload Unsuccessful'];
     }
 
     /**
      * Delete user profile image.
-     *
-     * @param User $user
-     * @return array
      */
     public function deleteImage(User $user): array
     {
-        $general = new General();
-        if (!$user->image) {
+        $general = new General;
+        if (! $user->image) {
             return ['status' => 0, 'message' => 'Image not found'];
         }
         $general->deleteFile($user->image, 'profile');
         $user->update(['image' => null]);
+
         return ['status' => 1, 'message' => 'Image Deleted Successfully', 'next' => 'reload'];
     }
 
     /**
      * Revoke all TFA devices for the user.
-     *
-     * @param User $user
-     * @return array
      */
     public function revokeAll2FADevices(User $user): array
     {
         $user->ignore_tfa_device = '';
         $user->save();
+
         // dd($user);
         return ['status' => 1, 'message' => 'Your Devices Revoked Successfully.', 'next' => 'refresh'];
     }

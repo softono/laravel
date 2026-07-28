@@ -9,7 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Class Setting
- * 
+ *
  * Represents application settings stored in the database.
  * Provides methods to retrieve, update, and cache settings.
  */
@@ -38,12 +38,13 @@ class Setting extends Model
     /**
      * Retrieves the value of a setting by key.
      *
-     * @param string $key The key of the setting.
+     * @param  string  $key  The key of the setting.
      * @return string|bool The value of the setting if found, false otherwise.
      */
     public function getOne(string $key): string|bool
     {
         $setting = $this->where('key', $key)->first();
+
         return $setting ? $setting->value : false;
     }
 
@@ -51,9 +52,8 @@ class Setting extends Model
      * Sets a setting by key. If the setting does not exist, it is created.
      * If the setting exists and its value differs, it is updated.
      *
-     * @param string $key The key of the setting.
-     * @param string $value The value to set or update.
-     * @return void
+     * @param  string  $key  The key of the setting.
+     * @param  string  $value  The value to set or update.
      */
     public function setOne(string $key, string $value): void
     {
@@ -68,11 +68,10 @@ class Setting extends Model
     /**
      * Updates the value of an existing setting by key if it differs from the current value.
      *
-     * @param string $key The key of the setting.
-     * @param string|null $value The new value to update.
-     * @return void
+     * @param  string  $key  The key of the setting.
+     * @param  string|null  $value  The new value to update.
      */
-    public function updateOne(string $key, string|null $value): void
+    public function updateOne(string $key, ?string $value): void
     {
         $setting = $this->where('key', $key)->first();
 
@@ -85,8 +84,7 @@ class Setting extends Model
      * Updates multiple settings based on an associative array of key-value pairs.
      * Clears the cache after updating all settings.
      *
-     * @param array $data An associative array of key-value pairs to update.
-     * @return void
+     * @param  array  $data  An associative array of key-value pairs to update.
      */
     public function updateAll(array $data): void
     {
@@ -98,8 +96,6 @@ class Setting extends Model
 
     /**
      * Clears the settings cache by re-caching all settings for one day.
-     *
-     * @return void
      */
     public function clearCache(): void
     {
@@ -139,8 +135,9 @@ class Setting extends Model
     /**
      * Stores settings provided in the post data after validation.
      *
-     * @param array $postData The associative array containing setting data.
+     * @param  array  $postData  The associative array containing setting data.
      * @return array An associative array indicating the status and message.
+     *
      * @throws ValidationException
      */
     public function store(array $postData): array
@@ -166,7 +163,7 @@ class Setting extends Model
                 'setting.admin_email' => $postData['setting_admin_email'],
                 'setting.cookie_consent' => $postData['setting_cookie_consent'],
             ];
-        } else if ($postData['type'] == 'smtp') {
+        } elseif ($postData['type'] == 'smtp') {
             $validator = Validator::make($postData, [
                 'mail_mailers_smtp_host' => 'required|string',
                 'mail_mailers_smtp_username' => 'required|string',
@@ -185,7 +182,7 @@ class Setting extends Model
                 'mail.from.address' => $postData['mail_from_address'],
                 'mail.from.name' => $postData['mail_from_name'],
             ];
-        } else if ($postData['type'] == 'captcha') {
+        } elseif ($postData['type'] == 'captcha') {
             $validator = Validator::make($postData, [
                 'setting_google_recaptcha' => 'required|string',
                 'setting_google_recaptcha_secret_key' => 'required|string',
@@ -196,7 +193,7 @@ class Setting extends Model
                 'setting.google_recaptcha_secret_key' => $postData['setting_google_recaptcha_secret_key'],
                 'setting.google_recaptcha_public_key' => $postData['setting_google_recaptcha_public_key'],
             ];
-        } else if ($postData['type'] == 'social') {
+        } elseif ($postData['type'] == 'social') {
             $postData['services_google_login'] = $postData['services_google_login'] ?? 0;
             $validator = Validator::make($postData, [
                 'services_google_client_id' => 'required|string',
@@ -208,7 +205,7 @@ class Setting extends Model
                 'services.google_client_secret' => $postData['services_google_client_secret'],
                 'services.google_login' => $postData['services_google_login'],
             ];
-        } else if ($postData['type'] == 'content') {
+        } elseif ($postData['type'] == 'content') {
             $validator = Validator::make($postData, [
                 'setting_header_content' => 'string|nullable',
                 'setting_footer_content' => 'string|nullable',

@@ -4,6 +4,7 @@ namespace App\Models\Auth;
 
 use App\Constants\UserRole;
 use App\Constants\UserStatus;
+use App\Services\PermissionService;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -97,7 +98,7 @@ class User extends Authenticatable
             return true;
         }
 
-        return (new \App\Services\PermissionService())->hasPermission($permission, $this->permission);
+        return (new PermissionService)->hasPermission($permission, $this->permission);
     }
 
     public function accounts(): HasMany

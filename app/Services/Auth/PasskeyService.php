@@ -3,9 +3,9 @@
 namespace App\Services\Auth;
 
 use App\Constants\UserActivity;
+use App\Helpers\SignedCookie;
 use App\Models\Auth\User;
 use App\Models\Auth\UserPasskey;
-use App\Helpers\SignedCookie;
 use Cose\Algorithm\Manager as AlgorithmManager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
 use Cose\Algorithm\Signature\RSA\RS256;
@@ -52,7 +52,7 @@ class PasskeyService
 
     protected function attestationSupportManager(): AttestationStatementSupportManager
     {
-        return new AttestationStatementSupportManager([new NoneAttestationStatementSupport()]);
+        return new AttestationStatementSupportManager([new NoneAttestationStatementSupport]);
     }
 
     protected function serializer()
@@ -62,7 +62,7 @@ class PasskeyService
 
     protected function ceremonyFactory(): CeremonyStepManagerFactory
     {
-        $factory = new CeremonyStepManagerFactory();
+        $factory = new CeremonyStepManagerFactory;
         $factory->setAlgorithmManager(AlgorithmManager::create()->add(ES256::create(), RS256::create()));
         $factory->setAllowedOrigins([rtrim(config('app.url'), '/')]);
 

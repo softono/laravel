@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
+use App\Helpers\SignedCookie;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Auth\User;
+use App\Services\Auth\AccountService;
 use App\Services\Auth\AuthService;
+use App\Services\Auth\DeviceService;
 use App\Services\Auth\SessionService;
-use App\Helpers\ApiResult;
-use App\Helpers\SignedCookie;
+use App\Services\Auth\TfaService;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
@@ -42,7 +45,7 @@ class LoginController extends Controller
         $user = $result['user'];
 
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
-            app(\App\Services\Auth\AccountService::class)->sendOtp('verify', $user);
+            app(AccountService::class)->sendOtp('verify', $user);
 
             return ApiResult::failure('Please verify your account', [
                 'next' => 'verify-account',
@@ -52,8 +55,8 @@ class LoginController extends Controller
 
         $remember = $request->boolean('remember');
 
-        if ($result['requiresTfa'] && class_exists(\App\Services\Auth\TfaService::class) && ! $this->deviceIsTrusted($request, $user)) {
-            return app(\App\Services\Auth\TfaService::class)->startLoginChallenge($request, $user, $remember);
+        if ($result['requiresTfa'] && class_exists(TfaService::class) && ! $this->deviceIsTrusted($request, $user)) {
+            return app(TfaService::class)->startLoginChallenge($request, $user, $remember);
         }
 
         return $this->issueSessionResponse($request, $user, $remember);
@@ -79,11 +82,11 @@ class LoginController extends Controller
 
     protected function deviceIsTrusted(Request $request, User $user): bool
     {
-        if (! class_exists(\App\Services\Auth\DeviceService::class)) {
+        if (! class_exists(DeviceService::class)) {
             return false;
         }
 
-        return app(\App\Services\Auth\DeviceService::class)->isTrusted($request, $user->id);
+        return app(DeviceService::class)->isTrusted($request, $user->id);
     }
 
     public function apiLogout(Request $request)

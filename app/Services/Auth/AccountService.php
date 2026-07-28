@@ -77,7 +77,7 @@ class AccountService
             'tfa' => 'two-factor verification',
         ];
 
-        (new General())->sendEmail($user->email, 'otp', [
+        (new General)->sendEmail($user->email, 'otp', [
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
             'message' => $messages[$purpose] ?? $purpose,

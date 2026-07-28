@@ -2,10 +2,9 @@
 
 namespace App\Services\Auth;
 
+use App\Helpers\ClientInfo;
 use App\Models\Auth\User;
 use App\Models\Auth\UserSession;
-use App\Helpers\ClientInfo;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 

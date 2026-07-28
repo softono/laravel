@@ -10,7 +10,9 @@ namespace App\Constants;
 final class UserRole
 {
     public const SUPER_ADMIN = 'SUPER_ADMIN';
+
     public const ADMIN = 'ADMIN';
+
     public const USER = 'USER';
 
     /** @var string[] */

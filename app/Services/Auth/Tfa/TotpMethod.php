@@ -21,7 +21,7 @@ class TotpMethod
 
     public function __construct()
     {
-        $this->engine = new Google2FA();
+        $this->engine = new Google2FA;
         $this->engine->setWindow((int) config('auth_next.totp_window'));
     }
 
@@ -60,7 +60,7 @@ class TotpMethod
     {
         $renderer = new ImageRenderer(
             new RendererStyle(200),
-            new SvgImageBackEnd(),
+            new SvgImageBackEnd,
         );
 
         return (new Writer($renderer))->writeString($otpAuthUri);

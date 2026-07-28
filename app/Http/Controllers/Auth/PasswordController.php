@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ApiResult;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Services\Auth\AccountService;
-use App\Helpers\ApiResult;
+use App\Services\Auth\AuthService;
 use Illuminate\Http\Request;
 
 class PasswordController extends Controller
@@ -59,7 +60,7 @@ class PasswordController extends Controller
 
         $user = $request->user();
 
-        $result = app(\App\Services\Auth\AuthService::class)->changePassword(
+        $result = app(AuthService::class)->changePassword(
             $request,
             $user,
             (string) $request->input('current_password'),

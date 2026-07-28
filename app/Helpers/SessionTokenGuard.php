@@ -4,7 +4,6 @@ namespace App\Helpers;
 
 use App\Models\Auth\User;
 use App\Services\Auth\SessionService;
-use App\Helpers\SignedCookie;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;

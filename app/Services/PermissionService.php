@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 namespace App\Services;
 
 class PermissionService
@@ -6,9 +7,8 @@ class PermissionService
     /**
      * Check if the user has a specific permission.
      *
-     * @param string|array $permission The permission(s) to check.
-     * @param string $userPermission The user's permissions.
-     * @return bool
+     * @param  string|array  $permission  The permission(s) to check.
+     * @param  string  $userPermission  The user's permissions.
      */
     public function hasPermission($permission = '', $userPermission = ''): bool
     {
@@ -17,8 +17,8 @@ class PermissionService
             $permission = \Route::getCurrentRoute()->uri;
         }
         if (is_null($userPermission)) {
-        $userPermission = $this->permission ?? ''; 
-    }
+            $userPermission = $this->permission ?? '';
+        }
 
         if (is_array($permission)) {
             foreach ($permission as $p) {
@@ -26,6 +26,7 @@ class PermissionService
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -35,22 +36,20 @@ class PermissionService
     /**
      * Check if the user has a specific permission in the permission list.
      *
-     * @param string $permission The permission to check.
-     * @param string $userPermission The user's permissions.
-     * @return bool
+     * @param  string  $permission  The permission to check.
+     * @param  string  $userPermission  The user's permissions.
      */
     public function checkPermission(string $permission, string $userPermission): bool
     {
         if (in_array($permission, $this->getPermissionList())) {
             return in_array($permission, explode(',', $userPermission));
         }
+
         return true;
     }
 
     /**
      * Get the list of all permissions.
-     *
-     * @return array
      */
     public function getPermissionList(): array
     {
@@ -63,13 +62,12 @@ class PermissionService
                 }
             }
         }
+
         return $permissionList;
     }
 
     /**
      * Get the permission data list.
-     *
-     * @return array
      */
     public function getPermissionListData(): array
     {
@@ -88,21 +86,21 @@ class PermissionService
                     ],
                     [
                         'title' => 'Create',
-                        'key' => 'admin/admin/create'
+                        'key' => 'admin/admin/create',
                     ],
                     [
                         'title' => 'Update',
-                        'key' => 'admin/admin/update'
+                        'key' => 'admin/admin/update',
                     ],
                     [
                         'title' => 'Delete',
-                        'key' => 'admin/admin/delete'
+                        'key' => 'admin/admin/delete',
                     ],
-                      [
+                    [
                         'title' => 'Autologin',
-                        'key' => 'admin/admin/autologin'
+                        'key' => 'admin/admin/autologin',
                     ],
-                ]
+                ],
             ],
             [
                 'title' => 'User',
@@ -118,18 +116,18 @@ class PermissionService
                     ],
                     [
                         'title' => 'Create',
-                        'key' => 'admin/user/create'
+                        'key' => 'admin/user/create',
                     ],
                     [
                         'title' => 'Update',
-                        'key' => 'admin/user/update'
+                        'key' => 'admin/user/update',
                     ],
                     [
                         'title' => 'Delete',
-                        'key' => 'admin/user/delete'
+                        'key' => 'admin/user/delete',
                     ],
-                    
-                ]
+
+                ],
             ],
             [
                 'title' => 'Page',
@@ -141,13 +139,13 @@ class PermissionService
                     ],
                     [
                         'title' => 'Update',
-                        'key' => 'admin/page/update'
+                        'key' => 'admin/page/update',
                     ],
                     [
                         'title' => 'View',
-                        'key' => 'page/'
+                        'key' => 'page/',
                     ],
-                ]
+                ],
             ],
             [
                 'title' => 'Seo meta',
@@ -163,13 +161,13 @@ class PermissionService
                     ],
                     [
                         'title' => 'Update',
-                        'key' => 'admin/seo/update'
+                        'key' => 'admin/seo/update',
                     ],
                     [
                         'title' => 'Delete',
-                        'key' => 'admin/seo/delete'
+                        'key' => 'admin/seo/delete',
                     ],
-                ]
+                ],
             ],
             [
                 'title' => 'Setting',
@@ -179,7 +177,7 @@ class PermissionService
                         'title' => 'Update',
                         'key' => 'admin/setting/update',
                     ],
-                ]
+                ],
             ],
             [
                 'title' => 'Devices',
@@ -193,7 +191,7 @@ class PermissionService
                         'title' => 'Action',
                         'key' => 'admin/device/logout',
                     ],
-                ]
+                ],
             ],
             [
                 'title' => 'Activity',
@@ -204,8 +202,8 @@ class PermissionService
                         'key' => 'admin/activity',
                     ],
 
-                ]
-            ]
+                ],
+            ],
         ];
     }
 }

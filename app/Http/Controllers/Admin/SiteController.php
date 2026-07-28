@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Admin\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
 use App\Services\AccountService;
 use App\Services\GeneralService;
-
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class SiteController
- * 
+ *
  * Controller for handling admin site functionalities such as dashboard statistics and chart data.
  */
 class SiteController extends Controller
@@ -19,22 +20,22 @@ class SiteController extends Controller
     /**
      * Display the admin dashboard with user statistics.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function dashboard()
     {
-        $userModel = new User();
+        $userModel = new User;
         $totalUser = User::whereIn('role', $userModel->userRole)->count();
         $activeUser = User::whereIn('role', $userModel->userRole)->where('status', 1)->count();
         $deactiveUser = User::whereIn('role', $userModel->userRole)->where('status', 0)->count();
+
         return view('admin.site.dashboard', compact('totalUser', 'activeUser', 'deactiveUser'));
     }
 
     /**
      * Get user chart data based on the selected duration.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getChartUser(Request $request)
     {
@@ -43,13 +44,13 @@ class SiteController extends Controller
 
         switch ($duration) {
             case 'day':
-                $userChartData = (new GeneralService())->getUserLast7DaysChartData();
+                $userChartData = (new GeneralService)->getUserLast7DaysChartData();
                 break;
             case 'month':
-                $userChartData = (new GeneralService())->getUserLast6MonthsChartData();
+                $userChartData = (new GeneralService)->getUserLast6MonthsChartData();
                 break;
             default:
-                $userChartData = (new GeneralService())->getUserMonthlyChartData();
+                $userChartData = (new GeneralService)->getUserMonthlyChartData();
                 break;
         }
 
@@ -59,17 +60,17 @@ class SiteController extends Controller
     /**
      * Display the user chart view.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function getChartUser2()
     {
-        return view("admin.site.userchart");
+        return view('admin.site.userchart');
     }
 
     /**
      * Display the password forgot view.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function passwordForgot()
     {
@@ -79,12 +80,11 @@ class SiteController extends Controller
     /**
      * Process password forgot request.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function passwordForgotProcess(Request $request)
     {
 
-        return (new AccountService())->passwordForgotProcess($request->only(['email', 'otp', 'password', 'password_confirm', 'step']));
+        return (new AccountService)->passwordForgotProcess($request->only(['email', 'otp', 'password', 'password_confirm', 'step']));
     }
 }

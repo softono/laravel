@@ -3,18 +3,21 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\UserAuth;
 use App\Models\UserActivity;
+use App\Models\UserAuth;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class AdminController extends Controller
 {
     /**
      * Display the admin dashboard index page.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function index()
     {
@@ -24,75 +27,73 @@ class AdminController extends Controller
     /**
      * List the admins based on the request data.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function list(Request $request)
     {
-       
-        return response()->json((new User())->listAdmin($request->all()));
+
+        return response()->json((new User)->listAdmin($request->all()));
     }
 
     /**
      * Show the form for creating a new admin.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function create()
     {
         $countries = DB::table('country')->get();
-        $model = new User();
-        return view('admin/admin/create', compact('model','countries'));
+        $model = new User;
+
+        return view('admin/admin/create', compact('model', 'countries'));
     }
 
     /**
      * Show the form for updating an existing admin.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\View\View
+     * @return RedirectResponse|View
      */
     public function update(Request $request)
     {
         $model = User::find($request->input('id'));
-        if (!$model) {
+        if (! $model) {
             return redirect('admin/admin')->withError('error', 'No data found');
         }
-        $countries = DB::table('country')->get(); 
-        return view('admin/admin/update', compact('model','countries'));
+        $countries = DB::table('country')->get();
+
+        return view('admin/admin/update', compact('model', 'countries'));
     }
 
     /**
      * Save a new admin or update an existing admin.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function save(Request $request)
     {
-        return response()->json((new User())->storeAdmin($request->all()));
+        return response()->json((new User)->storeAdmin($request->all()));
     }
 
     /**
      * Delete an existing admin.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
     public function delete(Request $request)
     {
         $model = User::find($request->input('id'));
-        if (!$model) {
+        if (! $model) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
         $model->delete();
+
         return response()->json(['status' => 1, 'message' => 'Data deleted successfully.', 'next' => 'table_refresh']);
     }
 
     /**
      * View details of a specific admin.
      *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function view(Request $request)
     {

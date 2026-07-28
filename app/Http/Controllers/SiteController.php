@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Services\AccountService;
 use Illuminate\Http\Request;
 
@@ -37,12 +36,12 @@ class SiteController extends Controller
     /**
      * Handle the registration process.
      *
-     * @param Request $request The incoming request.
+     * @param  Request  $request  The incoming request.
      * @return \Illuminate\Http\RedirectResponse
      */
     public function registerProcess(Request $request)
     {
-        return response()->json((new AccountService())->registerProcess($request->all()));
+        return response()->json((new AccountService)->registerProcess($request->all()));
     }
 
     /**
@@ -53,18 +52,18 @@ class SiteController extends Controller
     public function verifyAccount(Request $request)
     {
         $code = $request->get('code', '');
+
         return view('site.verify_account', compact('code'));
     }
 
-    /** 
+    /**
      * Process TFA OTP verification.
      *
-     * @param Request $request
      * @return RedirectResponse
      */
     public function verifyAccountProcess(Request $request)
     {
-        return response()->json((new AccountService())->verifyAccountProcess($request->only(['otp', 'code'])));
+        return response()->json((new AccountService)->verifyAccountProcess($request->only(['otp', 'code'])));
     }
 
     /**
@@ -80,12 +79,11 @@ class SiteController extends Controller
     /**
      * Process password forgot request.
      *
-     * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function passwordForgotProcess(Request $request)
     {
 
-        return (new AccountService())->passwordForgotProcess($request->only(['email', 'otp', 'password', 'password_confirm', 'step']));
+        return (new AccountService)->passwordForgotProcess($request->only(['email', 'otp', 'password', 'password_confirm', 'step']));
     }
 }

@@ -3,16 +3,14 @@
 namespace App\Services;
 
 use App\Helpers\General;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 use App\Models\ContactMessages;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class GeneralService
 {
     /**
      * Get user monthly chart data.
-     *
-     * @return array
      */
     public function getUserMonthlyChartData(): array
     {
@@ -37,16 +35,15 @@ class GeneralService
             }
             $data[] = $monthData;
         }
+
         return [
             'label' => $label,
-            'data' => $data
+            'data' => $data,
         ];
     }
 
     /**
      * Get user data for the last 6 months for chart.
-     *
-     * @return array
      */
     public function getUserLast6MonthsChartData(): array
     {
@@ -64,12 +61,12 @@ class GeneralService
                 $year -= 1;
             }
 
-            $label[] = $monthList[$monthIndex] . ' ' . $year;
+            $label[] = $monthList[$monthIndex].' '.$year;
             $monthData = 0;
 
             $result = DB::select("SELECT count(*) as total FROM `user` WHERE role = 2 AND YEAR(FROM_UNIXTIME(created_at)) = $year AND MONTH(FROM_UNIXTIME(created_at)) = $monthIndex + 1");
 
-            if (!empty($result)) {
+            if (! empty($result)) {
                 $monthData = $result[0]->total;
             }
 
@@ -78,14 +75,12 @@ class GeneralService
 
         return [
             'label' => array_reverse($label),
-            'data' => array_reverse($data)
+            'data' => array_reverse($data),
         ];
     }
 
     /**
      * Get user data for the last 7 days for chart.
-     *
-     * @return array
      */
     public function getUserLast7DaysChartData(): array
     {
@@ -99,7 +94,6 @@ class GeneralService
 
         $startDate = date('Y-m-d', strtotime('-6 days'));
         $endDate = date('Y-m-d');
-
 
         $result = DB::select("
         SELECT COUNT(*) AS total, DATE(FROM_UNIXTIME(created_at)) AS date
@@ -117,7 +111,7 @@ class GeneralService
 
         return [
             'label' => array_reverse($labels),
-            'data' => array_reverse($data)
+            'data' => array_reverse($data),
         ];
     }
 
@@ -125,7 +119,7 @@ class GeneralService
     {
 
         // Check reCAPTCHA validation
-        $general = new General();
+        $general = new General;
         if ($general->rateLimit('contact')) {
             return ['status' => 0, 'message' => 'Too many attempts, please try again later.'];
         }
@@ -147,7 +141,6 @@ class GeneralService
             'email.regex' => 'Please enter a valid email address.',
         ]);
 
-
         if ($validator->fails()) {
             return ['status' => 0, 'message' => $validator->errors()->first()];
         }
@@ -158,11 +151,11 @@ class GeneralService
             'user_id' => auth()->id(),
             'email' => $postData['email'],
             'subject' => $postData['subject'],
-            'message' => $postData['message']
+            'message' => $postData['message'],
         ]);
 
         /* SEND EMAIL TO ADMIN */
-        $general->sendEmail(config("setting.admin_email"), 'admin_contact', $postData);
+        $general->sendEmail(config('setting.admin_email'), 'admin_contact', $postData);
 
         return ['status' => 1, 'message' => 'Submit request successfully', 'next' => 'refresh'];
     }

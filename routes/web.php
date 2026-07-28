@@ -1,12 +1,14 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
 /* User routes =========================================================================== */
 
 Route::get('cron/schedule/run', function () {
-    $artisan = new \Illuminate\Support\Facades\Artisan();
-    $artisan::call("schedule:run");
+    $artisan = new Artisan;
+    $artisan::call('schedule:run');
+
     return $artisan::output();
 })->name('cron/schedule/run');
 
@@ -26,7 +28,6 @@ Route::group(['middleware' => ['web']], function () {
     // config/auth.php's 'web' guard resolves to (App\Models\Auth\User,
     // since Phase 4), so they were already broken, not just superseded.
 });
-
 
 Route::group(['middleware' => ['web', 'user']], function () {
     Route::get('dashboard', '\App\Http\Controllers\SiteController@dashboard')->name('dashboard');
@@ -48,7 +49,6 @@ Route::group(['middleware' => ['web', 'user']], function () {
     Route::post('account/user-activity-list', '\App\Http\Controllers\AccountController@userActivityList')->name('account/user-activity-list');
     Route::post('account/deactivate', '\App\Http\Controllers\AccountController@accountDeactivate')->name('account/deactivate');
 });
-
 
 /* Admin routes =========================================================================== */
 // admin/auth/*, admin/site/password-forgot(-process) removed here (Phase 7

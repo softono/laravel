@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\SignedCookie;
 use App\Http\Controllers\Controller;
 use App\Services\Auth\OAuthService;
 use App\Services\Auth\SessionService;
-use App\Helpers\SignedCookie;
 use Illuminate\Http\Request;
 
 class GoogleController extends Controller

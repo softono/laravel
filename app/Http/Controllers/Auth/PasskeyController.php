@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ApiResult;
 use App\Http\Controllers\Controller;
 use App\Services\Auth\PasskeyService;
-use App\Helpers\ApiResult;
 use Illuminate\Http\Request;
 
 class PasskeyController extends Controller

@@ -2,47 +2,44 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use App\Helpers\Pagination;
 use App\Helpers\General;
+use App\Helpers\Pagination;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use App\Models\UserAuth;
 
 /**
  * Class UserActivity
- * 
- * Represents the Log model for tracking user activity logs.
  *
- * @package App\Models
+ * Represents the Log model for tracking user activity logs.
  */
 class UserActivity extends Model
 {
     use HasUlids;
 
     /**
-     * @var string $table The table associated with the model.
+     * @var string The table associated with the model.
      */
     protected $table = 'user_activities';
 
     /**
-     * @var string $primaryKey The primary key associated with the table.
+     * @var string The primary key associated with the table.
      */
     protected $primaryKey = 'id';
 
     /**
-     * @var string $keyType The data type of the primary key.
+     * @var string The data type of the primary key.
      */
     protected $keyType = 'string';
 
     /**
-     * @var bool $incrementing Indicates if the primary key is auto-incrementing.
+     * @var bool Indicates if the primary key is auto-incrementing.
      */
     public $incrementing = false;
 
     /**
-     * @var bool $timestamps Indicates if the model should be timestamped.
-     *
+     * @var bool Indicates if the model should be timestamped.
      * @var bool
      */
     public $timestamps = true;
@@ -55,7 +52,7 @@ class UserActivity extends Model
     const UPDATED_AT = null;
 
     /**
-     * @var array $fillable The attributes that are mass assignable.
+     * @var array The attributes that are mass assignable.
      */
     protected $fillable = [
         'user_id',
@@ -72,27 +69,27 @@ class UserActivity extends Model
     /**
      * Add a new log entry.
      *
-     * @param int $userId The user ID.
-     * @param string $type The type of log entry.
+     * @param  int  $userId  The user ID.
+     * @param  string  $type  The type of log entry.
      * @return bool Whether the log was added successfully.
      */
     public function add($userId, $type)
     {
-        if (!config('setting.save_user_log')) {
+        if (! config('setting.save_user_log')) {
             return false;
         }
-        $deviceUid = @$_COOKIE[config("setting.app_uid") . '_token'];
-        if (!$deviceUid) {
+        $deviceUid = @$_COOKIE[config('setting.app_uid').'_token'];
+        if (! $deviceUid) {
         }
 
         $device = UserAuth::where(['device_uid' => $deviceUid])->first();
-        if (!$device) {
+        if (! $device) {
             return false;
         }
 
         $client = @$_SERVER['HTTP_USER_AGENT'];
-        $general = new General();
-        $activity = new UserActivity();
+        $general = new General;
+        $activity = new UserActivity;
         $ip = $general->getClientIp();
         $activity->ip = $ip;
         $activity->client = $client;
@@ -101,24 +98,23 @@ class UserActivity extends Model
         $activity->type = $type;
         $activity->device_id = $device->id;
 
-
         $activity->save();
     }
 
     /**
      * Sends an email notification if a user logs in from a new device or location.
      *
-     * @param object $user The user object.
+     * @param  object  $user  The user object.
      * @return bool Whether the email was sent successfully.
      */
     public function sendNewDeviceMail(object $user): bool
     {
-        if (!config('setting.save_user_log')) {
+        if (! config('setting.save_user_log')) {
             return false;
         }
 
-        $general = new General();
-        $deviceUid = $_COOKIE[config("setting.app_uid") . '_token'] ?? '';
+        $general = new General;
+        $deviceUid = $_COOKIE[config('setting.app_uid').'_token'] ?? '';
         $ip = $general->getClientIp();
         $client = request()->header('User-Agent', 'Unknown Client');
 
@@ -126,7 +122,7 @@ class UserActivity extends Model
             ->whereRaw('(device_id = ? OR ip = ?)', [$deviceUid, $ip])
             ->first();
 
-        if (!$existingLog) {
+        if (! $existingLog) {
             $general->sendEmail($user->email, 'new_device_login', [
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
@@ -142,21 +138,21 @@ class UserActivity extends Model
     /**
      * Retrieves logs for the admin with search and pagination.
      *
-     * @param array $postData The data for filtering and pagination.
+     * @param  array  $postData  The data for filtering and pagination.
      * @return array The paginated log data.
      */
     public function listAdmin($postData)
-    { 
+    {
         $query = DB::table($this->table)->select(['user_activities.created_at as created_at', 'user_activities.type As type', 'user_activities.ip', 'user_activities.client', 'users.first_name', 'users.email', 'users.last_name'])
             ->join('users', 'users.id', '=', 'user_activities.user_id');
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
-            $searchText = '%' . $searchText . '%';
+            $searchText = '%'.$searchText.'%';
             $query->where(function ($query) use ($searchText) {
-                $query->where("client", 'like', $searchText)
+                $query->where('client', 'like', $searchText)
                     ->orwhereRaw("concat(first_name,' ' ,last_name) like ?", $searchText)
-                    ->orWhere("email", 'like', $searchText)
-                    ->orWhere('user_activities.created_at', 'LIKE', '%' . $searchText . '%')
+                    ->orWhere('email', 'like', $searchText)
+                    ->orWhere('user_activities.created_at', 'LIKE', '%'.$searchText.'%')
                     ->orWhere(function ($query) use ($searchText) {
                         if (stripos($searchText, '%fai%') !== false) {
                             $query->where('user_activities.type', '=', 0);
@@ -176,42 +172,43 @@ class UserActivity extends Model
                     });
             });
         }
-        $result = (new Pagination())->getDataTable($query, $postData);
-        $general = new General();
+        $result = (new Pagination)->getDataTable($query, $postData);
+        $general = new General;
         foreach ($result['data'] as $key => $row) {
             $deviceName = $general->deviceName($row->client);
-            $result['data'][$key]->first_name = $row->first_name . ' ' . $row->last_name;
+            $result['data'][$key]->first_name = $row->first_name.' '.$row->last_name;
             $result['data'][$key]->location = $general->getIpLocation($row->ip);
             $result['data'][$key]->device = $deviceName;
             $result['data'][$key]->type = $this->getType($row->type);
             $result['data'][$key]->created_at = $general->dateFormat($row->created_at);
             $result['data'][$key]->action = '<button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="icon-base bx bx-dots-vertical-rounded"></i></button>
             <div class="dropdown-menu">
-                <label class="dropdown-item">Ip: ' . $row->ip . '</label>
-                <label class="dropdown-item">Created At: ' . $row->created_at . '</label>
+                <label class="dropdown-item">Ip: '.$row->ip.'</label>
+                <label class="dropdown-item">Created At: '.$row->created_at.'</label>
             </div>';
         }
+
         return $result;
     }
 
     /**
      * Retrieves logs for a specific user with search and pagination.
      *
-     * @param array $postData The data for filtering and pagination.
-     * @param int $userId The user ID.
+     * @param  array  $postData  The data for filtering and pagination.
+     * @param  int  $userId  The user ID.
      * @return array The paginated log data.
      */
     public function list(array $postData, int $userId): array
-    { 
+    {
         $query = DB::table($this->table)
             ->select('*')
             ->where('user_id', $userId);
 
         $this->applySearchFilter($query, $postData['search']['value'] ?? '');
 
-        $result = (new Pagination())->getDataTable($query, $postData);
+        $result = (new Pagination)->getDataTable($query, $postData);
 
-        $general = new General();
+        $general = new General;
         foreach ($result['data'] as $key => $row) {
             $row->location = $general->getIpLocation($row->ip);
             $row->client = $general->deviceName($row->client);
@@ -225,7 +222,7 @@ class UserActivity extends Model
     /**
      * Returns the user type in a formatted string.
      *
-     * @param int $type The user type.
+     * @param  int  $type  The user type.
      * @return string The formatted user type.
      */
     public function getUserType(int $type): string
@@ -236,7 +233,7 @@ class UserActivity extends Model
     /**
      * Returns the log type in a formatted string.
      *
-     * @param int $type The log type.
+     * @param  int  $type  The log type.
      * @return string The formatted log type.
      */
     public function getType(int $type): string
@@ -254,18 +251,17 @@ class UserActivity extends Model
     /**
      * Applies search filters to a query.
      *
-     * @param \Illuminate\Database\Query\Builder $query The query builder.
-     * @param string $searchText The search text.
-     * @return void
+     * @param  Builder  $query  The query builder.
+     * @param  string  $searchText  The search text.
      */
     private function applySearchFilter($query, string $searchText): void
     {
         if (strlen($searchText) > 2) {
-            $searchText = '%' . $searchText . '%';
+            $searchText = '%'.$searchText.'%';
             $query->where(function ($query) use ($searchText) {
                 $query->where('client', 'like', $searchText)
                     ->orWhere('ip', 'like', $searchText)
-                    ->orWhere("created_at", 'LIKE', $searchText);
+                    ->orWhere('created_at', 'LIKE', $searchText);
             });
         }
     }

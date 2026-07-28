@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller; // Fixed namespace for the base Controller
-use Illuminate\Http\Request;
 use App\Models\UserActivity;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * Class AccountActivityController
- * 
+ *
  * This controller handles the log management in the admin panel.
  */
 class UserActivityController extends Controller
@@ -16,7 +18,7 @@ class UserActivityController extends Controller
     /**
      * Display the log index view.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function index()
     {
@@ -26,12 +28,12 @@ class UserActivityController extends Controller
     /**
      * List logs for admin.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function list(Request $request)
     {
-        $logs = (new UserActivity())->listAdmin($request->all());
+        $logs = (new UserActivity)->listAdmin($request->all());
+
         return response()->json($logs);
     }
 }

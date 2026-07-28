@@ -3,20 +3,22 @@
 namespace App\Models;
 
 use App\Helpers\General;
-use Illuminate\Support\Facades\Validator;
 use App\Helpers\Pagination;
+use App\Services\AuthService;
+use App\Services\PermissionService;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\DB;
-use App\Services\PermissionService;
-use App\Services\AuthService;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class User extends Authenticatable
 {
-
     protected $table = 'users';
+
     protected $primaryKey = 'id';
+
     public $timestamps = true;
+
     protected $fillable = [
         'email',
         'email_verified',
@@ -41,10 +43,11 @@ class User extends Authenticatable
         'email_verified',
         'otp',
     ];
-    
 
     public $userRole = [4];
+
     public $superAdminRole = [0];
+
     public $adminRole = [1, 2, 3];
 
     public function isUser()
@@ -61,9 +64,10 @@ class User extends Authenticatable
     {
         return $this->role == $this->superAdminRole ? true : false;
     }
+
     public function getPermissionListData(): array
     {
-        return (new PermissionService())->getPermissionListData();
+        return (new PermissionService)->getPermissionListData();
     }
 
     public function hasPermission($permission = '')
@@ -71,7 +75,8 @@ class User extends Authenticatable
         if ($this->isSuperAdmin()) {
             return true;
         }
-        return (new PermissionService())->hasPermission($permission, $this->permission);
+
+        return (new PermissionService)->hasPermission($permission, $this->permission);
     }
 
     public function getStatusBadge($status)
@@ -81,59 +86,60 @@ class User extends Authenticatable
 
     public function listAdmin($postData)
     {
-        $userObj = new User();
+        $userObj = new User;
 
         $query = DB::table('users')->select('*')->whereIn('role', $userObj->adminRole);
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
-            $searchText = '%' . $searchText . '%';
+            $searchText = '%'.$searchText.'%';
             $query->where(function ($query) use ($searchText) {
                 $query->whereRaw("concat(users.first_name,' ' ,users.last_name) like ?", $searchText)
-                    ->orWhere("email", 'like', $searchText);
+                    ->orWhere('email', 'like', $searchText);
             });
         }
         /**/
-        $result = (new Pagination())->getDataTable($query, $postData);
+        $result = (new Pagination)->getDataTable($query, $postData);
         $sessionUser = auth()->user();
-        $general = new General();
+        $general = new General;
         foreach ($result['data'] as $key => $row) {
             $imageUrl = $general->getFileUrl($row->image, 'profile');
             if ($row->image) {
-                $result['data'][$key]->image = '<a href="upload/profile/' . $row->image . '" data-toggle="lightbox" data-title="Image" class = "noroute pjax" target = "_blank">
-                <img style="width:30px;height:30px" src="' . $imageUrl . '" class="h-auto rounded-circle" alt="blog image"></a>';
+                $result['data'][$key]->image = '<a href="upload/profile/'.$row->image.'" data-toggle="lightbox" data-title="Image" class = "noroute pjax" target = "_blank">
+                <img style="width:30px;height:30px" src="'.$imageUrl.'" class="h-auto rounded-circle" alt="blog image"></a>';
             }
-            $result['data'][$key]->first_name = $row->first_name . ' ' . $row->last_name;
+            $result['data'][$key]->first_name = $row->first_name.' '.$row->last_name;
             $result['data'][$key]->permission = $row->permission;
             $result['data'][$key]->status = $userObj->getStatusBadge($row->status);
             $result['data'][$key]->updated_at = $general->dateFormat($row->updated_at);
 
             if (auth()->user()->role == 0) {
                 $result['data'][$key]->action = '<div class="act-btns">
-                <a href="admin/admin/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp
-                <a href="admin/admin/update?id=' . $row->id . '" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>
-                <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/admin/delete" data-id="' . $row->id . '" class="text-body pjax" title="Delete"><i class="bx bxs-trash icon-base"></i></button></div>';
+                <a href="admin/admin/view?id='.$row->id.'" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp
+                <a href="admin/admin/update?id='.$row->id.'" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>
+                <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/admin/delete" data-id="'.$row->id.'" class="text-body pjax" title="Delete"><i class="bx bxs-trash icon-base"></i></button></div>';
             } else {
                 $result['data'][$key]->action = '';
                 if ($sessionUser->hasPermission('admin/admin/view')) {
                     $result['data'][$key]->action .= '
-                    <a href="admin/admin/view?id=' . $row->id . '" class="text-body  pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp';
+                    <a href="admin/admin/view?id='.$row->id.'" class="text-body  pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp';
                 }
                 if ($sessionUser->hasPermission('admin/admin/update')) {
                     $result['data'][$key]->action .= '
-                    <a href="admin/admin/update?id=' . $row->id . '" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>';
+                    <a href="admin/admin/update?id='.$row->id.'" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>';
                 }
                 if ($sessionUser->hasPermission('admin/admin/delete')) {
                     $result['data'][$key]->action .= '
-                    <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/admin/delete" data-id="' . $row->id . '" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button>';
+                    <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/admin/delete" data-id="'.$row->id.'" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button>';
                 }
             }
         }
+
         return $result;
     }
 
     public function list($postData)
     {
-        $userObj = new User();
+        $userObj = new User;
 
         $query = DB::table('users')
             ->select(
@@ -147,9 +153,9 @@ class User extends Authenticatable
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
-            $searchText = '%' . $searchText . '%';
+            $searchText = '%'.$searchText.'%';
             $query->where(function ($query) use ($searchText) {
-                $query->whereRaw("concat(first_name,' ' ,last_name) like ?", $searchText)->orWhere("email", 'like', $searchText)->orWhere(DB::raw("FROM_UNIXTIME(created_at, '%d-%m-%Y')"), 'LIKE', '%' . $searchText . '%')->orWhere(function ($query) use ($searchText) {
+                $query->whereRaw("concat(first_name,' ' ,last_name) like ?", $searchText)->orWhere('email', 'like', $searchText)->orWhere(DB::raw("FROM_UNIXTIME(created_at, '%d-%m-%Y')"), 'LIKE', '%'.$searchText.'%')->orWhere(function ($query) use ($searchText) {
                     if (stripos($searchText, '%Act%') !== false) {
                         $query->where('status', '=', 1);
                     } elseif (stripos($searchText, '%Inac%') !== false) {
@@ -159,16 +165,16 @@ class User extends Authenticatable
             });
         }
         /**/
-        $result = (new Pagination())->getDataTable($query, $postData);
+        $result = (new Pagination)->getDataTable($query, $postData);
         $sessionUser = auth()->user();
-        $general = new General();
+        $general = new General;
         foreach ($result['data'] as $key => $row) {
             $imageUrl = $general->getFileUrl($row->image, 'profile');
             if ($row->image) {
-                $result['data'][$key]->image = '<a href="upload/profile/' . $row->image . '" data-toggle="lightbox" data-title="Image" class = "noroute pjax" target = "_blank">
-                <img style="width:30px;height:30px" src="' . $imageUrl . '" class="h-auto rounded-circle" alt="blog image"></a>';
+                $result['data'][$key]->image = '<a href="upload/profile/'.$row->image.'" data-toggle="lightbox" data-title="Image" class = "noroute pjax" target = "_blank">
+                <img style="width:30px;height:30px" src="'.$imageUrl.'" class="h-auto rounded-circle" alt="blog image"></a>';
             }
-            $result['data'][$key]->first_name = $row->first_name . ' ' . $row->last_name;
+            $result['data'][$key]->first_name = $row->first_name.' '.$row->last_name;
             $result['data'][$key]->email = $row->email;
             $result['data'][$key]->phone = $row->phone;
             $result['data'][$key]->country = $row->country_name ?? '';
@@ -178,41 +184,41 @@ class User extends Authenticatable
 
             if (auth()->user()->role == 0) {
                 $result['data'][$key]->action = '
-            <div class="act-btns"><a href="admin/user/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>
-            <a href="admin/user/update?id=' . $row->id . '" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>
-            <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/user/delete" data-id="' . $row->id . '" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button></div>';
+            <div class="act-btns"><a href="admin/user/view?id='.$row->id.'" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>
+            <a href="admin/user/update?id='.$row->id.'" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>
+            <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/user/delete" data-id="'.$row->id.'" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button></div>';
             } else {
 
                 $result['data'][$key]->action = '';
                 if ($sessionUser->hasPermission('admin/user/view')) {
                     $result['data'][$key]->action .= '
-                    <a href="admin/user/view?id=' . $row->id . '" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;</div>';
+                    <a href="admin/user/view?id='.$row->id.'" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;</div>';
                 }
                 if ($sessionUser->hasPermission('admin/user/update')) {
                     $result['data'][$key]->action .= '
-                    <a href="admin/user/update?id=' . $row->id . '" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>';
+                    <a href="admin/user/update?id='.$row->id.'" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>';
                 }
                 if ($sessionUser->hasPermission('admin/user/delete')) {
                     $result['data'][$key]->action .= '
-                    <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/user/delete" data-id="' . $row->id . '" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button>';
+                    <button style=" border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/user/delete" data-id="'.$row->id.'" class="text-body" title="Delete"><i class="bx bxs-trash icon-base"></i></button>';
                 }
             }
         }
+
         return $result;
     }
 
     public function storeAdmin(array $postData): array
     {
 
-        $general = new General();
+        $general = new General;
         $id = $postData['id'] ?? null;
         $existingPassword = $postData['pass'] ?? null;
-
 
         $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'email' => 'required|email|max:255|unique:users,email,'.$id,
             'phone' => 'required|digits:10|numeric',
             'status' => 'required|boolean',
             'permission' => 'required|array',
@@ -220,7 +226,7 @@ class User extends Authenticatable
         ];
 
         // Add specific rules for new admin creation
-        if (!$id) {
+        if (! $id) {
             $rules['image'] = 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
         } else {
             $rules['image'] = 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048';
@@ -231,17 +237,17 @@ class User extends Authenticatable
         if ($validator->fails()) {
             return [
                 'status' => 0,
-                'message' => $validator->errors()->first()
+                'message' => $validator->errors()->first(),
             ];
         }
 
         // Find or create a new user instance
-        $model = $id ? User::find($id) : new User();
+        $model = $id ? User::find($id) : new User;
 
         // Handle profile image upload
         if (isset($postData['image']) && $postData['image']->isValid()) {
             $uploadResult = $general->uploadFile($postData['image'], 'profile');
-            if (!$uploadResult['status']) {
+            if (! $uploadResult['status']) {
                 return $uploadResult;
             }
             $image = $uploadResult['file_name'];
@@ -263,8 +269,8 @@ class User extends Authenticatable
         $model->role = $postData['role'];
         $model->registered_ip = $general->getClientIp();
         // Encrypt and set password
-        $service = new AuthService();
-        $model->password = !empty($postData['password'])
+        $service = new AuthService;
+        $model->password = ! empty($postData['password'])
             ? $service->encryptPassword($postData['password'])
             : $existingPassword;
         // Save model
@@ -272,13 +278,15 @@ class User extends Authenticatable
         $model->save();
         // Set response message
         $message = $id ? 'Admin updated successfully.' : 'Admin created successfully.';
+
         return [
             'status' => 1,
             'message' => $message,
             'next' => 'load',
-            'url' => 'admin/admin'
+            'url' => 'admin/admin',
         ];
     }
+
     /**
      * Store or update a user in the database.
      *
@@ -286,25 +294,25 @@ class User extends Authenticatable
      * handles image uploads, and encrypts the password if provided. The user’s IP address and country information
      * are also recorded. After saving the user, a response message is returned.
      *
-     * @param array $postData The input data for the user (can be for new user creation or update).
+     * @param  array  $postData  The input data for the user (can be for new user creation or update).
      * @return array The response array containing status, message, and other related data.
      */
     public function store(array $postData): array
     {
 
-        $general = new General();
+        $general = new General;
         $id = $postData['id'] ?? null;
         $pass = $postData['pass'] ?? null;
         // Define validation rules
         $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $id,
+            'email' => 'required|email|max:255|unique:users,email,'.$id,
             'phone' => 'required|digits:10|numeric',
             'status' => 'required|boolean',
         ];
         // Additional rule for new users
-        if (!$id) {
+        if (! $id) {
             $rules['email'] .= '|unique:users';
             $rules['image'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
         } else {
@@ -319,11 +327,11 @@ class User extends Authenticatable
             ];
         }
         // Retrieve or create user model
-        $model = $id ? User::find($id) : new User();
+        $model = $id ? User::find($id) : new User;
         // Handle image upload if provided
         if (isset($postData['image']) && $postData['image']->isValid()) {
             $uploadResult = $general->uploadFile($postData['image'], 'profile');
-            if (!$uploadResult['status']) {
+            if (! $uploadResult['status']) {
                 return $uploadResult;
             }
             $image = $uploadResult['file_name'];
@@ -345,8 +353,8 @@ class User extends Authenticatable
         $model->role = $postData['role'];
         $model->registered_ip = $general->getClientIp();
         // Encrypt password if provided
-        if (!empty($postData['password'])) {
-            $model->password = (new AuthService())->encryptPassword($postData['password']);
+        if (! empty($postData['password'])) {
+            $model->password = (new AuthService)->encryptPassword($postData['password']);
         } else {
             $model->password = $pass;
         }

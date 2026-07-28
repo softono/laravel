@@ -1,8 +1,17 @@
 <?php
 
+use App\Http\Middleware\AdminAuth;
+use App\Http\Middleware\AuthenticateAdminSession;
+use App\Http\Middleware\AuthenticateSession;
+use App\Http\Middleware\AuthRateLimit;
+use App\Http\Middleware\EnsureDeviceUid;
+use App\Http\Middleware\RedirectIfAdminAuthenticated;
+use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\UserAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,27 +21,27 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             // Kept in its own file so the "replace the old auth" diff
             // against routes/web.php stays obvious.
-            \Illuminate\Support\Facades\Route::middleware('web')
+            Route::middleware('web')
                 ->group(__DIR__.'/../routes/auth.php');
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
-            \App\Http\Middleware\EnsureDeviceUid::class,
+            EnsureDeviceUid::class,
         ]);
 
         $middleware->alias([
             // Legacy auth (removed once the cutover in Phase 7 lands):
-            'user' => \App\Http\Middleware\UserAuth::class,
-            'admin' => \App\Http\Middleware\AdminAuth::class,
+            'user' => UserAuth::class,
+            'admin' => AdminAuth::class,
 
             // Next-parity auth:
-            'device.uid' => \App\Http\Middleware\EnsureDeviceUid::class,
-            'auth.session' => \App\Http\Middleware\AuthenticateSession::class,
-            'guest.redirect' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-            'auth.throttle' => \App\Http\Middleware\AuthRateLimit::class,
-            'admin.session' => \App\Http\Middleware\AuthenticateAdminSession::class,
-            'admin.guest.redirect' => \App\Http\Middleware\RedirectIfAdminAuthenticated::class,
+            'device.uid' => EnsureDeviceUid::class,
+            'auth.session' => AuthenticateSession::class,
+            'guest.redirect' => RedirectIfAuthenticated::class,
+            'auth.throttle' => AuthRateLimit::class,
+            'admin.session' => AuthenticateAdminSession::class,
+            'admin.guest.redirect' => RedirectIfAdminAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

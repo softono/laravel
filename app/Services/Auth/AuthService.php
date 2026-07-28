@@ -3,8 +3,6 @@
 namespace App\Services\Auth;
 
 use App\Constants\UserActivity;
-use App\Constants\UserRole;
-use App\Constants\UserStatus;
 use App\Models\Auth\User;
 use App\Models\Auth\UserAccount;
 use Illuminate\Http\Request;

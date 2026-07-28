@@ -2,8 +2,8 @@
 
 namespace App\Services\Auth;
 
-use App\Models\Auth\UserDevice;
 use App\Helpers\ClientInfo;
+use App\Models\Auth\UserDevice;
 use Illuminate\Http\Request;
 
 /**

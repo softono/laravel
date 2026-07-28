@@ -29,7 +29,7 @@ class BackupCodeMethod
     }
 
     /**
-     * @param string $hashedJson JSON array of hashed codes
+     * @param  string  $hashedJson  JSON array of hashed codes
      * @return array{valid: bool, remaining: ?string} remaining is the updated JSON to persist
      */
     public function verify(string $hashedJson, string $code): array

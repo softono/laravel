@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Http\Request;
+use WhichBrowser\Parser;
 
 /**
  * Port of the Next app's src/server/utils/clientInfo.ts - client IP,
@@ -55,7 +56,7 @@ class ClientInfo
             return '';
         }
 
-        $result = new \WhichBrowser\Parser($ua);
+        $result = new Parser($ua);
 
         if ($result && isset($result->browser->name)) {
             return trim(($result->browser->name ?? '').' on '.($result->os->name ?? ''));

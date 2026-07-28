@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use App\Helpers\Pagination;
 use App\Helpers\General;
+use App\Helpers\Pagination;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -13,8 +14,6 @@ use Illuminate\Support\Facades\Validator;
  *
  * Model for the `page` table.
  * Handles listing pages for admin with search and pagination.
- *
- * @package App\Models
  */
 class Page extends Model
 {
@@ -42,7 +41,7 @@ class Page extends Model
     /**
      * Retrieves paginated list of pages for admin with search capability.
      *
-     * @param array $postData The data passed for pagination and search.
+     * @param  array  $postData  The data passed for pagination and search.
      * @return array The paginated and formatted list of pages.
      */
     public function listAdmin(array $postData): array
@@ -52,11 +51,11 @@ class Page extends Model
         // Apply search filter if search text is provided and is more than 2 characters long
         $searchText = $postData['search']['value'] ?? '';
         if (strlen($searchText) > 2) {
-            $query->where('title', 'like', '%' . $searchText . '%');
+            $query->where('title', 'like', '%'.$searchText.'%');
         }
 
         // Retrieve paginated result using custom Pagination helper
-        $result = (new Pagination())->getDataTable($query, $postData);
+        $result = (new Pagination)->getDataTable($query, $postData);
         $sessionUser = auth()->user();
 
         // Append action links based on permissions
@@ -70,8 +69,8 @@ class Page extends Model
     /**
      * Generates action links based on user permissions for each row.
      *
-     * @param object $row The row data.
-     * @param \Illuminate\Contracts\Auth\Authenticatable|null $sessionUser The authenticated user.
+     * @param  object  $row  The row data.
+     * @param  Authenticatable|null  $sessionUser  The authenticated user.
      * @return string The generated HTML action links.
      */
     protected function generateActionLinks(object $row, $sessionUser): string
@@ -93,18 +92,18 @@ class Page extends Model
             );
         }
 
-        return '<div class="d-flex align-items-center">' . $actionLinks . '</div>';
+        return '<div class="d-flex align-items-center">'.$actionLinks.'</div>';
     }
 
     /**
      * Stores or updates a page record based on provided data.
      *
-     * @param array $postData The data for creating or updating a page.
+     * @param  array  $postData  The data for creating or updating a page.
      * @return array The status and message of the operation.
      */
     public function store(array $postData): array
     {
-        $general = new General();
+        $general = new General;
 
         $validator = Validator::make($postData, [
             'title' => 'required|string|max:255',
@@ -120,7 +119,7 @@ class Page extends Model
 
         $model = self::find($postData['id']);
 
-        if (!$model) {
+        if (! $model) {
             return [
                 'status' => 0,
                 'message' => 'Page not found.',

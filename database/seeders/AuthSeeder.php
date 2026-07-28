@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Hash;
  * legacy `user` table via a pre-existing, unrelated factory call):
  *
  *   php artisan db:seed --class=Database\\Seeders\\AuthSeeder
- *
  */
 class AuthSeeder extends Seeder
 {

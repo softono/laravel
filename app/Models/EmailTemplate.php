@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class EmailTemplate extends Model
 {
-
-
     /**
      * The name of the table associated with the model.
      *
@@ -24,6 +22,7 @@ class EmailTemplate extends Model
      * @var bool
      */
     public $timestamps = false;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -34,7 +33,7 @@ class EmailTemplate extends Model
     /**
      * Retrieves paginated list of email_template for admin with search capability.
      *
-     * @param array $postData The data passed for pagination and search.
+     * @param  array  $postData  The data passed for pagination and search.
      * @return array The paginated and formatted list of pages.
      */
     public function listAdmin(array $postData): array
@@ -45,11 +44,11 @@ class EmailTemplate extends Model
         // Apply search filter if search text is provided and is more than 2 characters long
         $searchText = $postData['search']['value'] ?? '';
         if (strlen($searchText) > 2) {
-            $query->where('title', 'like', '%' . $searchText . '%');
+            $query->where('title', 'like', '%'.$searchText.'%');
         }
 
         // Retrieve paginated result using custom Pagination helper
-        $result = (new Pagination())->getDataTable($query, $postData);
+        $result = (new Pagination)->getDataTable($query, $postData);
         $sessionUser = auth()->user();
 
         // Append action links based on permissions
@@ -63,8 +62,8 @@ class EmailTemplate extends Model
     /**
      * Generates action links based on user permissions for each row.
      *
-     * @param \App\Models\EmailTemplate $row The row data.
-     * @param \App\Models\User $sessionUser The authenticated user.
+     * @param  EmailTemplate  $row  The row data.
+     * @param  User  $sessionUser  The authenticated user.
      * @return string The generated HTML action links.
      */
     protected function generateActionLinks($row, $sessionUser): string
@@ -73,24 +72,21 @@ class EmailTemplate extends Model
 
         // Add update link if user has permission
         if ($sessionUser && $sessionUser->hasPermission('admin/email-template/update')) {
-            $actionLinks .= '<a href="admin/email-template/update?id=' . $row->id . '" class="btn btn-icon pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>';
+            $actionLinks .= '<a href="admin/email-template/update?id='.$row->id.'" class="btn btn-icon pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>';
         }
 
         // Add view link if user has permission
         if ($sessionUser && $sessionUser->hasPermission('admin/email-template/view')) {
-            $actionLinks .= '<a target="_blank" href="admin/email-template/view?id=' . $row->id . '" class="btn btn-icon pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;';
+            $actionLinks .= '<a target="_blank" href="admin/email-template/view?id='.$row->id.'" class="btn btn-icon pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;';
         }
 
-        return '<div class="d-flex align-items-center">' . $actionLinks . '</div>';
+        return '<div class="d-flex align-items-center">'.$actionLinks.'</div>';
     }
-
-
-
 
     /**
      * Stores or updates a page record based on provided data.
      *
-     * @param array $postData The data for creating or updating a page.
+     * @param  array  $postData  The data for creating or updating a page.
      * @return array The status and message of the operation.
      */
     public function store(array $postData): array
@@ -98,7 +94,7 @@ class EmailTemplate extends Model
         $rules = [
             'title' => 'required|string|max:255',
             'subject' => 'required|string|max:255',
-            'body' => 'required|string'
+            'body' => 'required|string',
         ];
         $validator = Validator::make($postData, $rules);
         if ($validator->fails()) {
@@ -110,7 +106,7 @@ class EmailTemplate extends Model
 
         $model = self::find($postData['id']);
 
-        if (!$model) {
+        if (! $model) {
             return [
                 'status' => 0,
                 'message' => 'Page not found.',
@@ -133,26 +129,27 @@ class EmailTemplate extends Model
     /**
      * Retrieves a specific email template by its key and parses it with provided data.
      *
-     * @param string $key The key of the email template.
-     * @param array $data The data to replace in the template.
+     * @param  string  $key  The key of the email template.
+     * @param  array  $data  The data to replace in the template.
      * @return array The parsed subject and body of the email.
      */
     public function getEmailTemplate($key, $data = []): array
     {
         $template = $this->where('key', $key)->first();
+
         return $this->parseTemplate($template, $data);
     }
 
     /**
      * Parses the email template and replaces placeholders with actual data.
      *
-     * @param object $template The email template object.
-     * @param array $data The data to replace in the template.
+     * @param  object  $template  The email template object.
+     * @param  array  $data  The data to replace in the template.
      * @return array The parsed subject and body of the email.
      */
     public function parseTemplate($template, $data = []): array
     {
-        if (!$template) {
+        if (! $template) {
             return ['subject' => '', 'body' => ''];
         }
         $body = $template->body;
@@ -160,12 +157,13 @@ class EmailTemplate extends Model
         if ($data) {
             $data['app_name'] = config('app.name');
             foreach ($data as $key => $value) {
-                $body = str_replace('{{' . $key . '}}', $value, $body);
-                $subject = str_replace('{{' . $key . '}}', $value, $subject);
+                $body = str_replace('{{'.$key.'}}', $value, $body);
+                $subject = str_replace('{{'.$key.'}}', $value, $subject);
             }
         }
-        //add header footer 
+        // add header footer
         $body = view('email/template', ['subject' => $subject, 'body' => $body])->render();
+
         return ['subject' => $subject, 'body' => $body];
     }
 }

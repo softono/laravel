@@ -2,30 +2,29 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\General;
 use App\Http\Controllers\Controller;
-use App\Models\UserAuth;
-use App\Models\User;
 use App\Models\ContactMessages;
+use App\Models\User;
 use App\Models\UserActivity;
+use App\Models\UserAuth;
+use App\Services\TfaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use App\Services\TfaService;
-use App\Helpers\General;
-use Illuminate\Support\Facades\DB as DBFacade;
+use Illuminate\View\View;
 
 /**
  * Class UserController
- * @package App\Http\Controllers\Admin
- *
- * Handles user management functionalities in the admin panel.
  */
 class UserController extends Controller
 {
     /**
      * Display the user index view.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function index()
     {
@@ -40,10 +39,10 @@ class UserController extends Controller
 
         $data = [
             'subject' => $subject,
-            'message' => $message
+            'message' => $message,
         ];
 
-        $status = (new General())->sendEmail($to, 'send_mail', $data);
+        $status = (new General)->sendEmail($to, 'send_mail', $data);
 
         return redirect()->route('admin/dashboard')->with('success', 'Email send successfully');
 
@@ -52,19 +51,18 @@ class UserController extends Controller
     /**
      * Get a list of users.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function list(Request $request)
     {
 
-        return response()->json((new User())->list($request->all()));
+        return response()->json((new User)->list($request->all()));
     }
 
     /**
      * Show the form for creating a new user.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function create()
     {
@@ -76,8 +74,7 @@ class UserController extends Controller
     /**
      * Show the form for updating a specific user.
      *
-     * @param Request $request
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @return View|RedirectResponse
      */
     public function update(Request $request)
     {
@@ -85,7 +82,7 @@ class UserController extends Controller
         $user = auth()->user();
         $permission = explode(',', $user->permission);
         // dd($model);
-        if ($user->type == 1 && !in_array('admin/user/update', $permission)) {
+        if ($user->type == 1 && ! in_array('admin/user/update', $permission)) {
             return redirect('admin/users')->with('error', 'No permission To Update User');
         }
         $countrilist = User::getCountryList();
@@ -96,19 +93,17 @@ class UserController extends Controller
     /**
      * Save or update user data.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function save(Request $request)
     {
-        return response()->json((new User())->store($request->all()));
+        return response()->json((new User)->store($request->all()));
     }
 
     /**
      * View a specific user's details along with logs and devices.
      *
-     * @param Request $request
-     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+     * @return View|RedirectResponse
      */
     public function view(Request $request)
     {
@@ -128,31 +123,29 @@ class UserController extends Controller
             ->get();
         $model = User::where('id', $id)->first();
 
-
         return view('admin/user/view', compact('model', 'logData', 'userAuthList', 'ContactMessages'));
     }
 
     /**
      * Delete a specific user.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
     public function delete(Request $request)
     {
         $model = User::find($request->input('id'));
-        if (!$model) {
+        if (! $model) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
         $model->delete();
+
         return response()->json(['status' => 1, 'message' => 'User deleted successfully.', 'next' => 'table_refresh']);
     }
 
     /**
      * Change the status of a user.
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function changeStatus(Request $request)
     {
@@ -167,40 +160,42 @@ class UserController extends Controller
         $id = $request->input('id');
         $model = User::find($id);
 
-        if (!$model) {
+        if (! $model) {
             return response()->json(['status' => 0, 'message' => 'User not found']);
         }
 
-        $model->update(['status' => !$model->status]);  // Toggle the status
+        $model->update(['status' => ! $model->status]);  // Toggle the status
+
         return response()->json(['status' => 1, 'message' => 'User status updated successfully.', 'next' => 'refresh']);
     }
 
     /**
      * Revoke all devices for the currently authenticated user.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function revokeAll()
     {
         $model = Auth::user();
         $model->ignore_tfa_device = '';
         $model->save();
+
         return response()->json(['status' => 1, 'message' => 'Your devices revoked successfully.']);
     }
-
 
     public function autoLogin(Request $request)
     {
         $id = $request->id;
         $user = User::find($id);
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('admin/dashboard')->with('error', 'User Not Found.');
         }
         $adminId = Auth::id();
         session([
-            'admin_id' => $adminId
+            'admin_id' => $adminId,
         ]);
         Auth::guard('web')->login($user);
+
         return redirect()->route('dashboard');
     }
 
@@ -208,11 +203,12 @@ class UserController extends Controller
     {
         $id = $request->id;
         $user = User::find($id);
-        if (!$user) {
+        if (! $user) {
             return redirect()->route('admin/dashboard')->with('error', 'User Not Found');
         }
-        $tfaService = new TfaService();
+        $tfaService = new TfaService;
         $tfaService->resendOTP(['type' => 'otp', 'code' => $tfaService->encryptCode($user->email)]);
+
         return redirect()->route('admin/dashboard')->with('success', 'Email send successfully');
     }
 }

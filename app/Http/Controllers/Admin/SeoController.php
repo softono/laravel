@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\SeoMeta;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
@@ -13,10 +16,8 @@ class SeoController extends Controller
 {
     /**
      * Update the sitemap file with enabled SEO metadata.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function sitemapUpdate(): \Illuminate\Http\JsonResponse
+    public function sitemapUpdate(): JsonResponse
     {
         $data = [];
         $seoRecords = SeoMeta::select('url', 'last_modified', 'change_frequency', 'priority')
@@ -54,46 +55,37 @@ class SeoController extends Controller
 
     /**
      * Show the SEO metadata index page.
-     *
-     * @return \Illuminate\Contracts\View\View
      */
-    public function index(): \Illuminate\Contracts\View\View
+    public function index(): View
     {
         return view('admin/seo/index');
     }
 
     /**
      * List all SEO metadata.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function list(Request $request): \Illuminate\Http\JsonResponse
+    public function list(Request $request): JsonResponse
     {
-        $seoMetaList = (new SeoMeta())->Seometalist($request->all());
+        $seoMetaList = (new SeoMeta)->Seometalist($request->all());
+
         return response()->json($seoMetaList);
     }
 
     /**
      * Show the create SEO metadata form.
-     *
-     * @return \Illuminate\Contracts\View\View
      */
-    public function create(): \Illuminate\Contracts\View\View
+    public function create(): View
     {
         return view('admin/seo/create');
     }
 
     /**
      * Show the update form for a specific SEO metadata record.
-     *
-     * @param Request $request
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+    public function update(Request $request): View|RedirectResponse
     {
         $model = SeoMeta::find($request->input('id'));
-        if (!$model) {
+        if (! $model) {
             return redirect()->route('note')->withErrors(['error' => 'No data found.']);
         }
 
@@ -102,23 +94,18 @@ class SeoController extends Controller
 
     /**
      * Save a new or updated SEO metadata record.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function save(Request $request): \Illuminate\Http\JsonResponse
+    public function save(Request $request): JsonResponse
     {
-        $response = (new SeoMeta())->store($request->all());
+        $response = (new SeoMeta)->store($request->all());
+
         return response()->json($response);
     }
 
     /**
      * Delete a specific SEO metadata record.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
      */
-    public function delete(Request $request): \Illuminate\Http\JsonResponse
+    public function delete(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'id' => 'required|exists:seo_meta,id',
@@ -133,14 +120,14 @@ class SeoController extends Controller
 
         $seoMeta = SeoMeta::find($request->input('id'));
 
-        if (!$seoMeta) {
+        if (! $seoMeta) {
             return response()->json([
                 'status' => 0,
                 'message' => 'No data found.',
             ]);
         }
 
-        Cache::forget('seo_meta_' . $seoMeta->url);
+        Cache::forget('seo_meta_'.$seoMeta->url);
         $seoMeta->delete();
 
         return response()->json([

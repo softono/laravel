@@ -9,5 +9,6 @@ namespace App\Constants;
 final class UserStatus
 {
     public const ACTIVE = 'active';
+
     public const INACTIVE = 'inactive';
 }

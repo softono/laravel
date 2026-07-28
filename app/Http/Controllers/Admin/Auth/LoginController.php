@@ -3,13 +3,15 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
+use App\Helpers\SignedCookie;
 use App\Http\Controllers\Admin\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Auth\User;
 use App\Services\Auth\AuthService;
+use App\Services\Auth\DeviceService;
 use App\Services\Auth\SessionService;
-use App\Helpers\ApiResult;
-use App\Helpers\SignedCookie;
+use App\Services\Auth\TfaService;
 use Illuminate\Http\Request;
 
 /**
@@ -51,8 +53,8 @@ class LoginController extends Controller
         $user = $result['user'];
         $remember = $request->boolean('remember');
 
-        if ($result['requiresTfa'] && ! app(\App\Services\Auth\DeviceService::class)->isTrusted($request, $user->id)) {
-            return app(\App\Services\Auth\TfaService::class)->startLoginChallenge($request, $user, $remember);
+        if ($result['requiresTfa'] && ! app(DeviceService::class)->isTrusted($request, $user->id)) {
+            return app(TfaService::class)->startLoginChallenge($request, $user, $remember);
         }
 
         $session = $this->sessions->issue($request, $user->id, $remember);

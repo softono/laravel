@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\ApiResult;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\Auth\AccountService;
-use App\Helpers\ApiResult;
 
 class RegisterController extends Controller
 {
