@@ -31,16 +31,22 @@ Route::group(['middleware' => ['web']], function () {
 Route::group(['middleware' => ['web', 'user']], function () {
     Route::get('dashboard', '\App\Http\Controllers\SiteController@dashboard')->name('dashboard');
 
-    // account/{update,image*,password-change*,tfa*,device*,user-activity*,
-    // deactivate} removed here for the same reason - Admin\AccountController
-    // and the legacy AccountService read/write columns (password, otp,
-    // totp_secret_key, backup_code, ignore_tfa_device) or call
-    // Auth::logout() (which App\Helpers\SessionTokenGuard doesn't implement)
-    // against App\Models\Auth\User, which no longer has them. Replacements
-    // so far: password change is POST /api/auth/change-password, logout is
-    // GET /logout, 2FA is /account/two-factor, passkeys is /account/passkeys.
-    // Profile-update, deactivate, and device/activity self-service for the
-    // new user model are a follow-up, not yet built.
+    Route::get('account/update', '\App\Http\Controllers\AccountController@update')->name('account/update');
+    Route::post('account/update-process', '\App\Http\Controllers\AccountController@updateProcess')->name('account/update-process');
+    Route::get('account/password-change', '\App\Http\Controllers\AccountController@passwordChange')->name('account/password-change');
+    Route::post('account/password-change-process', '\App\Http\Controllers\AccountController@passwordChangeProcess')->name('account/password-change-process');
+    Route::get('account/image', '\App\Http\Controllers\AccountController@image')->name('account/image');
+    Route::post('account/image-save', '\App\Http\Controllers\AccountController@imagesave')->name('account/image-save');
+    Route::post('account/delete-image', '\App\Http\Controllers\AccountController@deleteImage')->name('account/delete-image');
+    Route::get('account/tfa', '\App\Http\Controllers\AccountController@tfa')->name('account/tfa');
+    Route::post('account/tfa-status-change', '\App\Http\Controllers\AccountController@tfaStatusChange')->name('account/tfa-status-change');
+    Route::post('account/revoke-all', '\App\Http\Controllers\AccountController@revokeAll')->name('account/revoke-all');
+    Route::get('account/device', '\App\Http\Controllers\AccountController@device')->name('account/device');
+    Route::post('account/device-list', '\App\Http\Controllers\AccountController@deviceList')->name('account/device-list');
+    Route::post('account/device-logout', '\App\Http\Controllers\AccountController@deviceLogout')->name('account/device-logout');
+    Route::get('account/user-activity', '\App\Http\Controllers\AccountController@userActivity')->name('account/user-activity');
+    Route::post('account/user-activity-list', '\App\Http\Controllers\AccountController@userActivityList')->name('account/user-activity-list');
+    Route::post('account/deactivate', '\App\Http\Controllers\AccountController@accountDeactivate')->name('account/deactivate');
 });
 
 
@@ -53,11 +59,22 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function (
     Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
     Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 
-    // admin/account/{tfa*,update,save,image*,password-change*,device*,
-    // user-activity*,deactivate} removed for the same reason as the user
-    // side above - Admin\AccountController reads/writes columns that
-    // don't exist on App\Models\Auth\User. The admin's own 2FA is
-    // /account/two-factor (shared with the user side - same `users` table).
+    Route::get('account/update', '\App\Http\Controllers\Admin\AccountController@update')->name('admin/account/update');
+    Route::post('account/save', '\App\Http\Controllers\Admin\AccountController@save')->name('admin/account/save');
+    Route::get('account/password-change', '\App\Http\Controllers\Admin\AccountController@passwordChange')->name('admin/account/password-change');
+    Route::post('account/change-password-process', '\App\Http\Controllers\Admin\AccountController@changePasswordProcess')->name('admin/account/change-password-process');
+    Route::get('account/image', '\App\Http\Controllers\Admin\AccountController@image')->name('admin/account/image');
+    Route::post('account/image-save', '\App\Http\Controllers\Admin\AccountController@imagesave')->name('admin/account/image-save');
+    Route::post('account/delete-image', '\App\Http\Controllers\Admin\AccountController@deleteImage')->name('admin/account/delete-image');
+    Route::get('account/tfa', '\App\Http\Controllers\Admin\AccountController@tfa')->name('admin/account/tfa');
+    Route::post('account/tfa-status-change', '\App\Http\Controllers\Admin\AccountController@tfaStatusChange')->name('admin/account/tfa-status-change');
+    Route::post('account/revoke-all', '\App\Http\Controllers\Admin\AccountController@revokeAll')->name('admin/account/revoke-all');
+    Route::get('account/device', '\App\Http\Controllers\Admin\AccountController@device')->name('admin/account/device');
+    Route::post('account/device-list', '\App\Http\Controllers\Admin\AccountController@deviceList')->name('admin/account/device-list');
+    Route::post('account/device-logout', '\App\Http\Controllers\Admin\AccountController@deviceLogout')->name('admin/account/device-logout');
+    Route::get('account/user-activity', '\App\Http\Controllers\Admin\AccountController@userActivity')->name('admin/account/user-activity');
+    Route::post('account/user-activity-list', '\App\Http\Controllers\Admin\AccountController@userActivityList')->name('admin/account/user-activity-list');
+    Route::post('account/deactivate', '\App\Http\Controllers\Admin\AccountController@accountDeactivate')->name('admin/account/deactivate');
 
     Route::get('user', '\App\Http\Controllers\Admin\UserController@index')->name('admin/user');
     Route::any('user/list', '\App\Http\Controllers\Admin\UserController@list')->name('admin/user/list');
