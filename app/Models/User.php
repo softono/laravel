@@ -14,27 +14,25 @@ use Illuminate\Validation\Rule;
 class User extends Authenticatable
 {
 
-    protected $table = 'user';
+    protected $table = 'users';
     protected $primaryKey = 'id';
     public $timestamps = true;
     protected $fillable = [
+        'email',
+        'email_verified',
+        'image',
+        'created_at',
+        'updated_at',
+        'two_factor_enabled',
+        'role',
+        'permission',
+        'status',
         'first_name',
         'last_name',
-        'email',
         'phone',
-        'password',
-        'password_reset_token',
-        'email_verified',
-        'role',
-        'status',
         'country',
         'timezone',
         'registered_ip',
-        'image',
-        'status',
-        'created_at',
-        'updated_at',
-        'permission'
     ];
 
     protected $hidden = [
@@ -85,12 +83,12 @@ class User extends Authenticatable
     {
         $userObj = new User();
 
-        $query = DB::table('user')->select('*')->whereIn('role', $userObj->adminRole);
+        $query = DB::table('users')->select('*')->whereIn('role', $userObj->adminRole);
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%' . $searchText . '%';
             $query->where(function ($query) use ($searchText) {
-                $query->whereRaw("concat(user.first_name,' ' ,user.last_name) like ?", $searchText)
+                $query->whereRaw("concat(users.first_name,' ' ,users.last_name) like ?", $searchText)
                     ->orWhere("email", 'like', $searchText);
             });
         }
@@ -137,15 +135,15 @@ class User extends Authenticatable
     {
         $userObj = new User();
 
-        $query = DB::table('user')
+        $query = DB::table('users')
             ->select(
-                'user.*',
+                'users.*',
                 'country.name as country_name',
 
             )
-            ->join('country', 'user.country', '=', 'country.sortname')
-            ->whereIn('user.role', $userObj->userRole)
-            ->where('user.id', '!=', auth()->user()->id);
+            ->join('country', 'users.country', '=', 'country.sortname')
+            ->whereIn('users.role', $userObj->userRole)
+            ->where('users.id', '!=', auth()->user()->id);
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
@@ -214,7 +212,7 @@ class User extends Authenticatable
         $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:user,email,' . $id,
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone' => 'required|digits:10|numeric',
             'status' => 'required|boolean',
             'permission' => 'required|array',
@@ -301,13 +299,13 @@ class User extends Authenticatable
         $rules = [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:user,email,' . $id,
+            'email' => 'required|email|max:255|unique:users,email,' . $id,
             'phone' => 'required|digits:10|numeric',
             'status' => 'required|boolean',
         ];
         // Additional rule for new users
         if (!$id) {
-            $rules['email'] .= '|unique:user';
+            $rules['email'] .= '|unique:users';
             $rules['image'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
         } else {
             $rules['image'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';

@@ -18,7 +18,7 @@ class Setting extends Model
     /**
      * @var string The table associated with the model.
      */
-    protected $table = 'setting';
+    protected $table = 'settings';
 
     /**
      * @var string The primary key associated with the table.
@@ -28,7 +28,7 @@ class Setting extends Model
     /**
      * @var array The attributes that are mass assignable.
      */
-    protected $fillable = ['key', 'value'];
+    protected $fillable = ['key', 'value', 'type', 'group', 'created_at', 'updated_at'];
 
     /**
      * @var bool Indicates if the model should be timestamped.

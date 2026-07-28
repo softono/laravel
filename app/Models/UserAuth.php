@@ -22,7 +22,7 @@ class UserAuth extends Model
      * @var string
      */
 
-    protected $table = 'user_auth';
+    protected $table = 'user_devices';
 
     /**
      * The primary key for the model.
@@ -61,7 +61,8 @@ class UserAuth extends Model
      * @var array
      */
     protected $dates = [
-        'token_expire_at',
+        'trusted_at',
+        'expires_at',
         'created_at',
         'updated_at'
     ];
@@ -75,11 +76,10 @@ class UserAuth extends Model
     protected $fillable = [
         'user_id',
         'device_uid',
-        'session_id',
-        'token',
-        'token_expire_at',
-        'client',
-        'ip',
+        'ip_address',
+        'user_agent',
+        'trusted_at',
+        'expires_at',
         'created_at',
         'updated_at'
     ];
@@ -210,19 +210,19 @@ class UserAuth extends Model
     {
         $sessionDriver = config('session.driver');
         if ($sessionDriver === 'redis') {
-            $query = DB::table('user_auth')->select(['user_auth.*', DB::raw('UNIX_TIMESTAMP(user_auth.updated_at) as last_activity')])
-                ->where('user_auth.user_id', $userId)
+            $query = DB::table('user_devices')->select(['user_devices.*', DB::raw('UNIX_TIMESTAMP(user_devices.updated_at) as last_activity')])
+                ->where('user_devices.user_id', $userId)
                 ->where(function ($query) {
-                    $query->where('user_auth.token_expire_at', '>', Carbon::now());
+                    $query->where('user_devices.token_expire_at', '>', Carbon::now());
                 });
         } else {
-            $query = DB::table('user_auth')->select(['user_auth.*', 'sessions.last_activity'])
-                ->where('user_auth.user_id', $userId)
+            $query = DB::table('user_devices')->select(['user_devices.*', 'sessions.last_activity'])
+                ->where('user_devices.user_id', $userId)
                 ->where(function ($query) {
-                    $query->where('user_auth.token_expire_at', '>', Carbon::now())
+                    $query->where('user_devices.token_expire_at', '>', Carbon::now())
                         ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
                 })
-                ->leftJoin('sessions', 'sessions.id', 'user_auth.session_id');
+                ->leftJoin('sessions', 'sessions.id', 'user_devices.session_id');
         }
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
@@ -260,17 +260,17 @@ class UserAuth extends Model
 
         $sessionDriver = config('session.driver');
         if ($sessionDriver === 'redis') {
-            $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', DB::raw('UNIX_TIMESTAMP(user_auth.updated_at) as last_activity'), 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
-                ->join('user', 'user.id', '=', 'user_auth.user_id')
+            $query = DB::table('user_devices')->select(['user_devices.updated_at as updated_at', DB::raw('UNIX_TIMESTAMP(user_devices.updated_at) as last_activity'), 'user_devices.id', 'user_devices.ip', 'user_devices.device_uid', 'user_devices.client', 'user_devices.id as deviceId', 'users.first_name', 'users.last_name', 'users.email'])
+                ->join('users', 'users.id', '=', 'user_devices.user_id')
                 ->where(function ($query) {
-                    $query->where('user_auth.token_expire_at', '>', Carbon::now());
+                    $query->where('user_devices.token_expire_at', '>', Carbon::now());
                 });
         } else {
-            $query = DB::table('user_auth')->select(['user_auth.updated_at as updated_at', 'user_auth.id', 'user_auth.ip', 'user_auth.device_uid', 'user_auth.client', 'user_auth.id as deviceId', 'user.first_name', 'user.last_name', 'user.email'])
-                ->join('user', 'user.id', '=', 'user_auth.user_id')
-                ->leftJoin('sessions', 'sessions.id', 'user_auth.session_id')
+            $query = DB::table('user_devices')->select(['user_devices.updated_at as updated_at', 'user_devices.id', 'user_devices.ip', 'user_devices.device_uid', 'user_devices.client', 'user_devices.id as deviceId', 'users.first_name', 'users.last_name', 'users.email'])
+                ->join('users', 'users.id', '=', 'user_devices.user_id')
+                ->leftJoin('sessions', 'sessions.id', 'user_devices.session_id')
                 ->where(function ($query) {
-                    $query->where('user_auth.token_expire_at', '>', Carbon::now())
+                    $query->where('user_devices.token_expire_at', '>', Carbon::now())
                         ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
                 });
         }
@@ -280,8 +280,8 @@ class UserAuth extends Model
             $searchText = '%' . $searchText . '%';
             $query->where(function ($query) use ($searchText) {
                 $query->where(function ($query) use ($searchText) {
-                    $query->where(DB::raw('CONCAT(user.first_name, " ",user.last_name)  '), 'like', $searchText);
-                    $query->orwhere("user_auth.client", 'like', $searchText);
+                    $query->where(DB::raw('CONCAT(users.first_name, " ",users.last_name)  '), 'like', $searchText);
+                    $query->orwhere("user_devices.client", 'like', $searchText);
                     $query->orWhere(DB::raw("FROM_UNIXTIME(last_activity, '%d-%m-%Y')"), 'LIKE', '%' . $searchText . '%');
                 });
             });

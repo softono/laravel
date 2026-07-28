@@ -37,7 +37,7 @@ class ContactMessages extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['user_id', 'email', 'subject', 'message'];
+    protected $fillable = ['user_id', 'to_user', 'subject', 'message', 'created_at'];
 
     /**
      * Retrieves paginated list of pages for admin with search capability.

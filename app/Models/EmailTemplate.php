@@ -16,7 +16,7 @@ class EmailTemplate extends Model
      *
      * @var string
      */
-    protected $table = 'email_template';
+    protected $table = 'email_templates';
 
     /**
      * Indicates if the model should be timestamped.
@@ -29,7 +29,7 @@ class EmailTemplate extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['key', 'title', 'subject', 'body', 'params'];
+    protected $fillable = ['key', 'title', 'subject', 'body', 'params', 'created_at', 'updated_at'];
 
     /**
      * Retrieves paginated list of email_template for admin with search capability.

@@ -23,7 +23,7 @@ class UserActivity extends Model
     /**
      * @var string $table The table associated with the model.
      */
-    protected $table = 'user_activity';
+    protected $table = 'user_activities';
 
     /**
      * @var string $primaryKey The primary key associated with the table.
@@ -59,11 +59,14 @@ class UserActivity extends Model
      */
     protected $fillable = [
         'user_id',
-        'user_type',
+        'device_id',
         'type',
+        'data',
         'ip',
         'client',
-        'created_at'
+        'location',
+        'created_at',
+        'updated_at',
     ];
 
     /**
@@ -144,8 +147,8 @@ class UserActivity extends Model
      */
     public function listAdmin($postData)
     { 
-        $query = DB::table($this->table)->select(['user_activity.created_at as created_at', 'user_activity.type As type', 'user_activity.ip', 'user_activity.client', 'user.first_name', 'user.email', 'user.last_name'])
-            ->join('user', 'user.id', '=', 'user_activity.user_id');
+        $query = DB::table($this->table)->select(['user_activities.created_at as created_at', 'user_activities.type As type', 'user_activities.ip', 'user_activities.client', 'users.first_name', 'users.email', 'users.last_name'])
+            ->join('users', 'users.id', '=', 'user_activities.user_id');
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%' . $searchText . '%';
@@ -153,22 +156,22 @@ class UserActivity extends Model
                 $query->where("client", 'like', $searchText)
                     ->orwhereRaw("concat(first_name,' ' ,last_name) like ?", $searchText)
                     ->orWhere("email", 'like', $searchText)
-                    ->orWhere('user_activity.created_at', 'LIKE', '%' . $searchText . '%')
+                    ->orWhere('user_activities.created_at', 'LIKE', '%' . $searchText . '%')
                     ->orWhere(function ($query) use ($searchText) {
                         if (stripos($searchText, '%fai%') !== false) {
-                            $query->where('user_activity.type', '=', 0);
+                            $query->where('user_activities.type', '=', 0);
                         } elseif (stripos($searchText, '%succ%') !== false) {
-                            $query->where('user_activity.type', '=', 1);
+                            $query->where('user_activities.type', '=', 1);
                         } elseif (stripos($searchText, '%reme%') !== false) {
-                            $query->where('user_activity.type', '=', 2);
+                            $query->where('user_activities.type', '=', 2);
                         } elseif (stripos($searchText, '%Regi%') !== false) {
-                            $query->where('user_activity.type', '=', 3);
+                            $query->where('user_activities.type', '=', 3);
                         } elseif (stripos($searchText, '%otp%') !== false) {
-                            $query->where('user_activity.type', '=', 4);
+                            $query->where('user_activities.type', '=', 4);
                         } elseif (stripos($searchText, '%Login with social media%') !== false) {
-                            $query->where('user_activity.type', '=', 5);
+                            $query->where('user_activities.type', '=', 5);
                         } elseif (stripos($searchText, '%Register with social media%') !== false) {
-                            $query->where('user_activity.type', '=', 6);
+                            $query->where('user_activities.type', '=', 6);
                         }
                     });
             });

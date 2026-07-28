@@ -149,9 +149,9 @@ class DataSeeder extends Seeder
             ['key' => 'footer_content', 'value' => '', 'type' => 1],
         ];
 
-        if (DB::getSchemaBuilder()->hasTable('setting')) {
+        if (DB::getSchemaBuilder()->hasTable('settings')) {
             foreach ($settingsData as $s) {
-                DB::table('setting')->updateOrInsert(
+                DB::table('settings')->updateOrInsert(
                     ['key' => $s['key']],
                     ['key' => $s['key'], 'value' => $s['value'], 'type' => $s['type']]
                 );
@@ -210,9 +210,9 @@ class DataSeeder extends Seeder
             ],
         ];
 
-        if (DB::getSchemaBuilder()->hasTable('email_template')) {
+        if (DB::getSchemaBuilder()->hasTable('email_templates')) {
             foreach ($emailTemplatesData as $tpl) {
-                DB::table('email_template')->updateOrInsert(
+                DB::table('email_templates')->updateOrInsert(
                     ['key' => $tpl['key']],
                     $tpl
                 );
@@ -240,9 +240,9 @@ class DataSeeder extends Seeder
             ],
         ];
 
-        if (DB::getSchemaBuilder()->hasTable('page')) {
+        if (DB::getSchemaBuilder()->hasTable('pages')) {
             foreach ($pagesData as $p) {
-                DB::table('page')->updateOrInsert(
+                DB::table('pages')->updateOrInsert(
                     ['slug' => $p['slug']],
                     $p
                 );
@@ -304,15 +304,15 @@ class DataSeeder extends Seeder
             ],
         ];
 
-        if (DB::getSchemaBuilder()->hasTable('seo_meta')) {
+        if (DB::getSchemaBuilder()->hasTable('seos')) {
             foreach ($seoData as $s) {
-                DB::table('seo_meta')->updateOrInsert(
+                DB::table('seos')->updateOrInsert(
                     ['url' => $s['url']],
                     $s
                 );
             }
         }
-        $this->command?->info('Seeded seo_meta.');
+        $this->command?->info('Seeded seos.');
 
         // -------------------------------------------------------------------
         // 6. Blogs

@@ -19,9 +19,27 @@ use App\Helpers\General;
  */
 class SeoMeta extends Model
 {
-    protected $table = 'seo_meta';
+    protected $table = 'seos';
     public $timestamps = false;
-    protected $fillable = ['url', 'title', 'keyword', 'description'];
+    protected $fillable = [
+        'type',
+        'url',
+        'title',
+        'meta_title',
+        'keyword',
+        'meta_keyword',
+        'description',
+        'meta_description',
+        'image',
+        'canonical',
+        'last_modified',
+        'change_frequency',
+        'priority',
+        'status',
+        'sitemap_enable',
+        'created_at',
+        'updated_at',
+    ];
 
     /**
      * Retrieve meta tags for the current route's URL.

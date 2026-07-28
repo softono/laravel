@@ -23,7 +23,7 @@ class Page extends Model
      *
      * @var string
      */
-    protected $table = 'page';
+    protected $table = 'pages';
 
     /**
      * Indicates if the model should be timestamped.
@@ -37,7 +37,7 @@ class Page extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['slug', 'title', 'body'];
+    protected $fillable = ['slug', 'title', 'body', 'meta_title', 'meta_description', 'status', 'created_at', 'updated_at'];
 
     /**
      * Retrieves paginated list of pages for admin with search capability.
