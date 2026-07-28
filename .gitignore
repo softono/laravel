@@ -51,3 +51,4 @@ composer.lock
 /public/sitemap.xml
 /public/theme_old
 package-lock.json
+docs/local

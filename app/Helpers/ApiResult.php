@@ -5,10 +5,8 @@ namespace App\Helpers;
 use Illuminate\Http\JsonResponse;
 
 /**
- * {status: 1|0, message, data} envelope - the same shape the existing
- * app already uses (see app/Http/Controllers/AuthController.php's
- * `response()->json((new AuthService())->loginProcess(...))` and
- * public/assets/js/app.js's ajaxSuccess).
+ * {status: 1|0, message, data} envelope - the shape the whole app speaks,
+ * consumed by ajaxSuccess() in public/assets/js/app.js.
  *
  * IMPORTANT: the HTTP status is always 200. public/assets/js/app.js's
  * ajaxRequest() uses $.ajax, whose `success` callback (and therefore the
