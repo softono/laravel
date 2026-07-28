@@ -5,10 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Port of src/server/models/user-verification.ts (OTP store for
- * email verification / password reset / signin / 2FA email codes).
- * `identifier` = "{purpose}:{lowercased email}". No FK to users - Next
- * links purely by identifier, so this table has none either.
+ * OTP store for email verification / password reset / signin / 2FA email
+ * codes. `identifier` = "{purpose}:{lowercased email}". No FK to users -
+ * lookups go purely by identifier.
  */
 return new class extends Migration
 {

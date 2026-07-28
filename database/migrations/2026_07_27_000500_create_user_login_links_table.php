@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Port of src/server/models/user-login-link.ts (magic login link /
- * second-device approval flow).
+ * Magic login link / second-device approval flow.
  * `purpose`: 'signin' | 'tfa'. `status`: pending|approved|consumed|rejected|expired.
  */
 return new class extends Migration

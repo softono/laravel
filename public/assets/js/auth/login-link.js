@@ -42,9 +42,9 @@
     }
 
     function poll(requestId, pollToken, remember) {
-        // Mirrors Next's LoginLinkWaiting: check client-side expiry BEFORE
-        // polling, so an expired link doesn't keep burning the 900/300s
-        // poll rate-limit budget on dead requests.
+        // Check client-side expiry BEFORE polling, so an expired link
+        // doesn't keep burning the 900/300s poll rate-limit budget on
+        // dead requests.
         if (expiresAt && new Date(expiresAt) < new Date()) {
             showWaitingError('This login link has expired. Please try again.');
             return;

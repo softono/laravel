@@ -12,8 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Port of the Next app's src/server/modules/auth/account.service.ts:
- * registration, email verification, forgot/reset password, and the
+ * Registration, email verification, forgot/reset password, and the
  * email-OTP sign-in flow's OTP dispatch.
  */
 class AccountService
@@ -110,7 +109,7 @@ class AccountService
 
     /**
      * Always returns a generic success message regardless of whether the
-     * email exists - enumeration-safe, matching Next's forgotPassword.
+     * email exists - enumeration-safe.
      */
     public function forgotPassword(string $email): array
     {

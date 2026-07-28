@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\Auth\PageController as AdminAuthPageController;
-use App\Http\Controllers\Auth\AccountSecurityController;
+use App\Http\Controllers\Account\AccountSecurityController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LoginLinkController;
@@ -16,17 +16,11 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Next-parity auth routes
+| Auth routes
 |--------------------------------------------------------------------------
 |
 | This file replaces the auth-related routes previously defined in
-| routes/web.php (see the deleted blocks there). Route paths mirror the
-| Next app's own /api/auth/* endpoints exactly, so the vanilla JS calling
-| them is a near-literal port.
-|
-| Phases 5-7 (2FA, magic link, passkeys, Google, admin) add more route
-| blocks here as they land - see the plan at
-| C:\Users\himan\.claude\plans\check-db-structure-of-purrfect-pudding.md
+| routes/web.php
 */
 
 // --- HTML pages (guests only - redirect to /dashboard if already signed in) ---

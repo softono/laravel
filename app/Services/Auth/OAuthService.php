@@ -11,15 +11,13 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
 /**
- * Port of the Next app's src/server/modules/auth/oauth.service.ts +
- * src/server/lib/auth/google.ts, built on the already-installed
- * laravel/socialite rather than a hand-rolled OIDC flow (see the plan's
- * "Composer packages" note for why: Socialite exchanges the auth code
- * server-to-server and never consumes an id_token, so there's no JWT to
- * verify and Next's PKCE+nonce step has nothing to protect here).
+ * Google sign-in, built on laravel/socialite rather than a hand-rolled
+ * OIDC flow - Socialite exchanges the auth code server-to-server and
+ * never consumes an id_token, so there's no JWT to verify and no PKCE/nonce
+ * step is needed.
  *
- * Same precedence as Next: link by (provider_id='google', account_id=sub)
- * -> else by email -> else create, and reject unverified Google emails.
+ * Link precedence: (provider_id='google', account_id=sub) -> else by
+ * email -> else create, and reject unverified Google emails.
  */
 class OAuthService
 {

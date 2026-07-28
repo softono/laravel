@@ -31,8 +31,7 @@ use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\TrustPath\EmptyTrustPath;
 
 /**
- * Port of the Next app's src/server/lib/auth/webauthn.ts +
- * src/server/modules/auth/passkey.service.ts, on top of web-auth/webauthn-lib
+ * WebAuthn passkey registration and login, built on web-auth/webauthn-lib
  * v5. rpID = hostname of APP_URL, attestationType 'none', residentKey and
  * userVerification both 'preferred', login omits allowCredentials
  * (discoverable credentials - no email needed).
@@ -192,7 +191,7 @@ class PasskeyService
         $options = PublicKeyCredentialRequestOptions::create(
             challenge: $challenge,
             rpId: $this->rpId(),
-            allowCredentials: [], // discoverable - no allowCredentials, matches Next
+            allowCredentials: [], // discoverable - no allowCredentials needed
             userVerification: AuthenticatorSelectionCriteria::USER_VERIFICATION_REQUIREMENT_PREFERRED,
         );
 

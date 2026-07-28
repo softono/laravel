@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Port of src/server/models/user-login-link.ts - magic login link /
- * second-device approval flow.
+ * Magic login link / second-device approval flow.
  */
 class UserLoginLink extends Model
 {

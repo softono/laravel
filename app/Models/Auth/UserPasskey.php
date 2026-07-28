@@ -7,10 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Port of src/server/models/user-passkey.ts (WebAuthn credentials).
- * Next has `created_at` nullable with no default and no `updated_at` at
- * all, so timestamps are disabled entirely here (matching the Next model
- * which never auto-manages either column).
+ * WebAuthn credentials. `created_at` is nullable with no default and
+ * there is no `updated_at` at all, so timestamps are disabled entirely
+ * here.
  */
 class UserPasskey extends Model
 {

@@ -16,12 +16,7 @@ class VerifyController extends Controller
         parent::__construct();
     }
 
-    /**
-     * GET /verify - the 2FA method picker (wired fully in Phase 5).
-     * Deliberately a different view than resources/views/auth/verify.blade.php,
-     * which is still owned by the legacy GET auth/verify route
-     * (App\Http\Controllers\AuthController@verify) until Phase 7's cutover.
-     */
+    /** GET /verify - the 2FA method picker. */
     public function show()
     {
         return view('auth.verify-tfa');
@@ -51,10 +46,9 @@ class VerifyController extends Controller
     }
 
     /**
-     * Generic OTP resend - mirrors Next's POST /api/auth/otp. Only
-     * 'verify' is wired up in this phase (email verification resend);
-     * 'reset'/'signin'/'tfa' purposes are dispatched by their own flows
-     * (forgot-password, login-otp, tfa/send-otp respectively).
+     * Generic OTP resend. Only 'verify' is wired up (email verification
+     * resend); 'reset'/'signin'/'tfa' purposes are dispatched by their own
+     * flows (forgot-password, login-otp, tfa/send-otp respectively).
      * Enumeration-safe: always a generic success message.
      */
     public function resend(Request $request)

@@ -44,8 +44,6 @@ return [
     |
     */
 
-    // Matches the Next app's `argon2` npm package defaults (m=65536, t=3, p=4)
-    // so password hashes are byte-compatible in both directions.
     'argon' => [
         'memory' => env('ARGON_MEMORY', 65536),
         'threads' => env('ARGON_THREADS', 4),

@@ -6,11 +6,10 @@ use App\Helpers\SignedCookie;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Port of the Next app's src/server/lib/auth/challenge.ts. 2FA and
- * WebAuthn challenges live ONLY in cache (never the database) - the
- * cookie carries a random handle, the cache entry keyed by that handle
- * carries the actual challenge state. Also backs the failed-attempt
- * counter shared by every 2FA verification method.
+ * 2FA and WebAuthn challenges live ONLY in cache (never the database) -
+ * the cookie carries a random handle, the cache entry keyed by that
+ * handle carries the actual challenge state. Also backs the
+ * failed-attempt counter shared by every 2FA verification method.
  */
 class ChallengeService
 {

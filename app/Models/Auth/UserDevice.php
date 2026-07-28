@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Port of src/server/models/user-device.ts - trusted devices for 2FA
- * ("skip 2FA on this device for 30 days").
+ * Trusted devices for 2FA ("skip 2FA on this device for 30 days").
  */
 class UserDevice extends Model
 {

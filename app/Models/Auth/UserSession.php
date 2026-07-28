@@ -6,9 +6,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Port of src/server/models/user-session.ts.
- */
 class UserSession extends Model
 {
     use HasUuids;

@@ -1,25 +1,37 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin\Account;
 
-use App\Helpers\General;
+use App\Http\Controllers\Admin\Controller;
 use App\Models\UserActivity;
 use App\Models\UserAuth;
 use App\Services\AccountService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AccountController extends Controller
 {
     /**
-     * Display the account update form.
+     * Display the user dashboard.
      *
-     * @param  Request  $request
      * @return View
      */
-    public function update()
+    public function dashboard()
     {
-        return view('account/update', ['model' => auth()->user()]);
+        return view('site/dashboard');
+    }
+
+    /**
+     * Display the account update form.
+     *
+     * @return View
+     */
+    public function update(Request $request)
+    {
+        $model = auth()->user();
+
+        return view('admin/account/update', compact('model'));
     }
 
     /**
@@ -27,21 +39,21 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateProcess(Request $request)
+    public function save(Request $request)
     {
-
         return response()->json((new AccountService)->updateProcess($request, auth()->user()));
     }
 
     /**
      * Display the change password form.
      *
-     * @param  Request  $request
      * @return View
      */
-    public function passwordChange()
+    public function passwordChange(Request $request)
     {
-        return view('account.change_password', ['model' => auth()->user()]);
+        $model = auth()->user();
+
+        return view('admin.account.change_password', compact('model'));
     }
 
     /**
@@ -49,9 +61,8 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function passwordChangeProcess(Request $request)
+    public function changePasswordProcess(Request $request)
     {
-
         return response()->json((new AccountService)->changePassword($request, auth()->user()));
     }
 
@@ -62,7 +73,9 @@ class AccountController extends Controller
      */
     public function image()
     {
-        return view('account/component/image', ['model' => auth()->user()]);
+        $model = auth()->user();
+
+        return view('admin.account.component.image', compact('model'));
     }
 
     /**
@@ -85,40 +98,17 @@ class AccountController extends Controller
         return response()->json((new AccountService)->deleteImage(auth()->user()));
     }
 
-    /**
-     * Show TFA settings page.
-     */
     public function tfa()
     {
         $model = auth()->user();
 
-        $userAuthList = UserAuth::getUserDevices($model->id);
-
-        foreach ($userAuthList as $key => $userAuth) {
-
-            $userAuthList[$key]->client =
-                (new General)->deviceName($userAuth->client).' '.
-                ($userAuth->device_uid == ($_COOKIE[config('setting.app_uid').'_token'] ?? null)
-                    ? ' (This Device)'
-                    : '');
-
-            $userAuthList[$key]->location =
-                (new General)->getIpLocation($userAuth->ip);
-        }
-
-        $trustedDevices = [];
-
-        if (! empty($model->ignore_tfa_device)) {
-            $trustedDevices = explode(',', $model->ignore_tfa_device);
-        }
-
-        return view('account/tfa', compact('model', 'userAuthList', 'trustedDevices'));
+        return view('admin.account.tfa', compact('model'));
     }
 
     /**
      * Toggle TFA status.
      *
-     * @return JsonResponse
+     * @return \Illuminate\Http\JsonResponse
      */
     public function tfaStatusChange()
     {
@@ -147,7 +137,7 @@ class AccountController extends Controller
      */
     public function device()
     {
-        return view('account/device', ['model' => auth()->user()]);
+        return view('admin.account.device');
     }
 
     /**
@@ -167,24 +157,9 @@ class AccountController extends Controller
      */
     public function deviceLogout(Request $request)
     {
-        $id = $request->input('id');
+        (new UserAuth)->forceLogout($request->input('id'));
 
-        $device = new UserAuth;
-
-        $result = $device->forceLogout($id);
-
-        if ($result === false) {
-            return response()->json([
-                'status' => 0,
-                'message' => 'Cannot logout current device',
-            ]);
-        }
-
-        return response()->json([
-            'status' => 1,
-            'message' => 'Device Logout Successfully',
-            'next' => 'reload',
-        ]);
+        return response()->json(['status' => 1, 'message' => 'Device Logout Successfully', 'next' => 'reload']);
     }
 
     /**
@@ -194,7 +169,7 @@ class AccountController extends Controller
      */
     public function userActivity()
     {
-        return view('account/user_activity', ['model' => auth()->user()]);
+        return view('admin.account.user_activity');
     }
 
     /**

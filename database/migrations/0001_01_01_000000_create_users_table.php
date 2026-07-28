@@ -11,11 +11,10 @@ return new class extends Migration
      *
      * NOTE: the stock `users` and `password_reset_tokens` tables have been
      * removed from this migration. Auth now lives in `users` created by
-     * 2026_07_27_000100_create_users_table.php (Next-parity schema) and
-     * password resets use `user_verifications`. The `sessions` table is
-     * kept (guarded, since it already exists in the live DB and this app
-     * has never had a `migrations` table) because SESSION_DRIVER can still
-     * fall back to it.
+     * 2026_07_27_000100_create_users_table.php, and password resets use
+     * `user_verifications`. The `sessions` table is kept (guarded, since
+     * it already exists in the live DB and this app has never had a
+     * `migrations` table) because SESSION_DRIVER can still fall back to it.
      */
     public function up(): void
     {

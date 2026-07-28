@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Port of src/server/models/user-two-factor.ts.
- * No timestamps at all, mirroring Next exactly.
+ * No timestamps at all - this table only ever holds current 2FA state.
  */
 class UserTwoFactor extends Model
 {

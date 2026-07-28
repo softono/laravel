@@ -7,8 +7,7 @@ use App\Models\Auth\UserDevice;
 use Illuminate\Http\Request;
 
 /**
- * Port of the Next app's src/server/modules/auth/device.service.ts -
- * trusted devices, keyed on the long-lived device_uid cookie. A trusted
+ * Trusted devices, keyed on the long-lived device_uid cookie. A trusted
  * device short-circuits the 2FA prompt at login for trust_days days.
  */
 class DeviceService

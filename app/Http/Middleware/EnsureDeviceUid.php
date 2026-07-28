@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Port of the Next app's src/proxy.ts withDeviceCookie(). Runs on every
- * web request; if the device_uid cookie is missing, generates one and:
+ * Runs on every web request; if the device_uid cookie is missing,
+ * generates one and:
  *  - stashes it on the request attributes so the CURRENT request (e.g. a
  *    login happening right now) can already record it against a device,
  *  - queues a 1-year cookie for future requests.

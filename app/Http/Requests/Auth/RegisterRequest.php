@@ -7,10 +7,6 @@ use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-/**
- * Mirrors the Next app's registerSchema (zod) in
- * src/modules/auth/register/register.fields.ts.
- */
 class RegisterRequest extends FormRequest
 {
     public function authorize(): bool

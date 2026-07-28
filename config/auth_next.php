@@ -8,9 +8,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | Deliberately separate from APP_KEY: this key signs the auth cookies
-    | (tfa/webauthn/oauth challenge handles) the same way the Next app's
-    | ENCRYPTION_KEY does, so cookie signing stays decoupled from Laravel's
-    | own cipher/key rotation. Must be >= 32 bytes.
+    | (tfa/webauthn/oauth challenge handles), so cookie signing stays
+    | decoupled from Laravel's own cipher/key rotation. Must be >= 32 bytes.
     |
     */
     'encryption_key' => env('ENCRYPTION_KEY'),
@@ -57,8 +56,8 @@ return [
     'tfa_ttl' => 600,
     'tfa_max_attempts' => 5,
     'backup_code_count' => 10,
-    // otplib (Next) defaults to window 0 (current 30s step only). We use a
-    // deliberately wider window for usability - documented divergence.
+    // A single 30s step (window 0) is the strictest option; a wider window
+    // trades some strictness for usability against clock drift.
     'totp_window' => 1,
 
     /*

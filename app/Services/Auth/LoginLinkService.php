@@ -12,11 +12,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Port of the Next app's src/server/modules/auth/login-link.service.ts -
- * magic login link with second-device (or same-device) approval. Only
- * purpose='signin' is wired to routes in this pass; the tfa-via-magic-link
- * variant is a documented simplification, same spirit as a few other
- * TfaService edge cases.
+ * Magic login link with second-device (or same-device) approval. Only
+ * purpose='signin' is wired to routes; the tfa-via-magic-link variant is
+ * a documented simplification.
  */
 class LoginLinkService
 {
@@ -36,9 +34,9 @@ class LoginLinkService
         $expiresAt = now()->addSeconds((int) config('auth_next.login_link_expire_sec'));
 
         // Unknown email: fabricate a requestId AND a plausible-looking code,
-        // write nothing, return an identical shape - enumeration-safe,
-        // exactly like Next (the response shape must not reveal whether
-        // the email exists, so even the code field must be populated).
+        // write nothing, return an identical shape - enumeration-safe (the
+        // response shape must not reveal whether the email exists, so even
+        // the code field must be populated).
         if (! $user) {
             return [
                 'request_id' => (string) Str::uuid(),
@@ -112,7 +110,7 @@ class LoginLinkService
 
         if ($link->status === 'approved') {
             // Conditional update: only the FIRST poll to observe 'approved'
-            // successfully claims it (single-use), matching Next exactly.
+            // successfully claims it (single-use).
             $claimed = UserLoginLink::where('id', $link->id)->where('status', 'approved')->update(['status' => 'consumed']);
 
             if ($claimed === 0) {

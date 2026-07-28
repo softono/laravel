@@ -22,9 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Backs the 'web' guard with the Next-parity session cookie instead
-        // of Laravel's own session-based auth, so auth()->user(),
-        // Auth::id() and @auth keep working across the whole app.
+        // Backs the 'web' guard with the signed session cookie instead of
+        // Laravel's own session-based auth, so auth()->user(), Auth::id()
+        // and @auth keep working across the whole app.
         Auth::extend('session_token', function ($app, $name, array $config) {
             return new SessionTokenGuard($app->make(SessionService::class), $app['request']);
         });

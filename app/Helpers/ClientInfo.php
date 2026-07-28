@@ -6,8 +6,7 @@ use Illuminate\Http\Request;
 use WhichBrowser\Parser;
 
 /**
- * Port of the Next app's src/server/utils/clientInfo.ts - client IP,
- * user agent and device UID extraction shared by every auth flow.
+ * Client IP, user agent and device UID extraction shared by every auth flow.
  */
 class ClientInfo
 {

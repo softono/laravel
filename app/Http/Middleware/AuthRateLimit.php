@@ -10,11 +10,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
- * Port of the rate limits enforced in the Next app's src/proxy.ts.
- * Deliberately NOT Laravel's built-in `throttle` middleware, which
- * returns an HTML/ThrottleRequestsException body shape - these routes
- * must always return the {status,message,data} envelope. Next passes
- * failClosed:true, so a cache failure here also returns 429, not 200.
+ * Rate limits auth endpoints. Deliberately NOT Laravel's built-in
+ * `throttle` middleware, which returns an HTML/ThrottleRequestsException
+ * body shape - these routes must always return the {status,message,data}
+ * envelope. Fails closed: a cache failure here also returns 429, not 200.
  *
  * Usage: ->middleware('auth.throttle:login') etc. `$name` selects the
  * limit pair [maxAttempts, decaySeconds] below.

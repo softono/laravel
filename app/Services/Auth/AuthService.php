@@ -9,10 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Port of the Next app's src/server/modules/auth/auth.service.ts.
  * Handles the password-credential login/admin-login path, logout, and
  * password change/set. Session issuance, 2FA gating and OTP-based flows
- * are wired in from the controllers, matching Next's own layering.
+ * are wired in from the controllers.
  */
 class AuthService
 {

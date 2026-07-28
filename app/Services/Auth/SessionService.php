@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Port of the Next app's src/server/modules/auth/session.service.ts.
- *
  * Token = base64url(random_bytes(32)). DB TTL is 30 days (remember) or
  * 1 day (default). Sessions are cached for session_cache_ttl seconds
  * under auth:session:{token} / auth:user:{id}. Sliding refresh: if the

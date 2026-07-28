@@ -7,9 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Port of src/server/models/user-account.ts. One row per login provider
- * per user - provider_id is 'credential' (password lives here) or
- * 'google'.
+ * One row per login provider per user - provider_id is 'credential'
+ * (password lives here) or 'google'.
  */
 class UserAccount extends Model
 {

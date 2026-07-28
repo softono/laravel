@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Port of src/server/models/user-two-factor.ts.
- * No timestamps at all, mirroring Next exactly.
+ * No timestamps at all - this table only ever holds current 2FA state.
  */
 return new class extends Migration
 {

@@ -9,11 +9,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 
 /**
- * Port of the Next app's proxy.ts rule: /login, /register, / redirect to
- * /dashboard when already signed in. Deliberate refinement over Next:
- * proxy.ts only checks cookie PRESENCE, which bounces a user with a stale
- * cookie between /login and /dashboard in a loop. This does a real
- * (cached) validate() and clears the cookie if it's invalid.
+ * /login, /register, / redirect to /dashboard when already signed in.
+ * Does a real (cached) validate() rather than just checking cookie
+ * presence, and clears the cookie if it's invalid - otherwise a stale
+ * cookie would bounce the user between /login and /dashboard in a loop.
  */
 class RedirectIfAuthenticated
 {

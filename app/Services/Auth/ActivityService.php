@@ -7,9 +7,9 @@ use App\Models\Auth\UserActivity;
 use Illuminate\Http\Request;
 
 /**
- * Port of the Next app's user-activity logging (used across auth.service.ts,
- * account.service.ts, tfa/*, login-link.service.ts, etc). `type` is always
- * one of the App\Constants\UserActivity keys.
+ * User-activity logging, used across the auth, account, 2FA, and
+ * login-link flows. `type` is always one of the App\Constants\UserActivity
+ * keys.
  */
 class ActivityService
 {

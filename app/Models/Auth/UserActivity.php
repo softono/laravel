@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Port of src/server/models/user-activity.ts. `type` stores the
- * App\Constants\UserActivity key, not the display label.
+ * `type` stores the App\Constants\UserActivity key, not the display label.
  */
 class UserActivity extends Model
 {

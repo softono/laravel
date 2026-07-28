@@ -3,8 +3,6 @@
 namespace App\Constants;
 
 /**
- * Transcribed verbatim from the Next app's
- * USER_ACTIVITY map.
  * `user_activities.type` stores the KEY (left side), never the label.
  */
 final class UserActivity

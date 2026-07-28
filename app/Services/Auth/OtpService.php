@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Port of the Next app's src/server/modules/auth/otp.service.ts.
- *
  * identifier = "{purpose}:{lowercased email}". The OTP itself is a 6-digit
  * code, argon2id-hashed into `value`. Prior rows for the same identifier
  * are deleted before issuing a new one (single active OTP per purpose+

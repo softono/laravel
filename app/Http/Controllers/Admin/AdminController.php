@@ -99,11 +99,11 @@ class AdminController extends Controller
     {
         $id = $request->input('id');
         $logData = UserActivity::where('user_id', $id)
-            ->orderBy('id', 'desc')
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
         $deviceData = UserAuth::where('user_id', $id)
-            ->orderBy('id', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->limit(10)
             ->get();
         $model = User::where('id', $id)->first();

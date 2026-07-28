@@ -5,7 +5,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Port of src/server/models/user-activity.ts.
  * `type` stores the activity KEY (e.g. LOGIN_SUCCESS), not a display label.
  */
 return new class extends Migration

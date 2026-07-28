@@ -124,9 +124,10 @@ class UserAuth extends Model
 
         $general = new General;
         $ip = $general->getClientIp();
-        $UserAuthModel->ip = $ip;
-        $UserAuthModel->client = $client;
-        $UserAuthModel->session_id = session()->getId();
+        $UserAuthModel->ip_address = $ip;
+        $UserAuthModel->user_agent = $client;
+        $UserAuthModel->trusted_at = Carbon::now();
+        $UserAuthModel->expires_at = Carbon::now()->addDays(config('setting.device_expire_days', 30));
         $UserAuthModel->save();
 
         return $UserAuthModel;
@@ -145,11 +146,7 @@ class UserAuth extends Model
         }
         $UserAuthModel = self::where(['device_uid' => $deviceUid])->first();
         if ($UserAuthModel) {
-            $UserAuthModel->user_id = 0;
-            $UserAuthModel->token = '';
-            $UserAuthModel->token_expire_at = null;
-            $UserAuthModel->session_id = '';
-            $UserAuthModel->save();
+            $UserAuthModel->delete();
         }
     }
 
@@ -163,29 +160,7 @@ class UserAuth extends Model
     {
         $UserAuthModel = self::where('id', $id)->first();
         if ($UserAuthModel) {
-            $sessionDriver = config('session.driver');
-            if ($sessionDriver == 'file') {
-                if (session()->getId() == $UserAuthModel->session_id) {
-                    auth()->logout();
-                } else {
-                    try {
-                        Session::getHandler()->destroy($UserAuthModel->session_id);
-                        unlink(config('session.files').'/'.$UserAuthModel->session_id);
-                    } catch (\Exception $e) {
-                    }
-                }
-            } elseif ($sessionDriver == 'database') {
-                DB::table('sessions')->where('id', $UserAuthModel->session_id)->delete();
-            } elseif ($sessionDriver == 'redis') {
-                $redis = app('redis');
-                $prefix = config('session.prefix', 'laravel_database_');
-                $redis->del($prefix.$UserAuthModel->session_id);
-            }
-            $UserAuthModel->user_id = 0;
-            $UserAuthModel->token = '';
-            $UserAuthModel->token_expire_at = null;
-            $UserAuthModel->session_id = '';
-            $UserAuthModel->save();
+            $UserAuthModel->delete();
         }
     }
 
@@ -198,31 +173,16 @@ class UserAuth extends Model
      */
     public function list($postData, $userId)
     {
-        $sessionDriver = config('session.driver');
-        if ($sessionDriver === 'redis') {
-            $query = DB::table('user_devices')->select(['user_devices.*', DB::raw('UNIX_TIMESTAMP(user_devices.updated_at) as last_activity')])
-                ->where('user_devices.user_id', $userId)
-                ->where(function ($query) {
-                    $query->where('user_devices.token_expire_at', '>', Carbon::now());
-                });
-        } else {
-            $query = DB::table('user_devices')->select(['user_devices.*', 'sessions.last_activity'])
-                ->where('user_devices.user_id', $userId)
-                ->where(function ($query) {
-                    $query->where('user_devices.token_expire_at', '>', Carbon::now())
-                        ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
-                })
-                ->leftJoin('sessions', 'sessions.id', 'user_devices.session_id');
-        }
+        $query = DB::table('user_devices')
+            ->select(['id', 'device_uid', 'ip_address as ip', 'user_agent as client', 'trusted_at', 'expires_at', 'created_at', 'updated_at'])
+            ->where('user_id', $userId);
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
             $query->where(function ($query) use ($searchText) {
-                $query->orwhere('client', 'like', $searchText);
-                $query->orwhere('ip', 'like', $searchText);
-                // $query->orwhere("location", 'like', $searchText);
-                $query->orWhere(DB::raw("FROM_UNIXTIME(last_activity, '%d-%m-%Y')"), 'LIKE', '%'.$searchText.'%');
+                $query->orwhere('user_agent', 'like', $searchText);
+                $query->orwhere('ip_address', 'like', $searchText);
             });
         }
         $general = new General;
@@ -231,7 +191,7 @@ class UserAuth extends Model
         foreach ($result['data'] as $key => $row) {
             $result['data'][$key]->location = $general->getIpLocation($row->ip);
             $result['data'][$key]->client = (new General)->deviceName($row->client).' '.($row->device_uid == @$_COOKIE[config('setting.app_uid').'_token'] ? ' (This Device)' : '');
-            $result['data'][$key]->last_activity = $general->dateFormat(@$row->last_activity ? $row->last_activity : $row->updated_at);
+            $result['data'][$key]->last_activity = $general->dateFormat($row->updated_at);
             $result['data'][$key]->action = '<button style="border: none; background: none;"  onclick="app.confirmAction(this);" data-action="account/device-logout?id='.$row->id.'"  class="text-body pjax" title="logout">                    <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:22px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             </button>';
         }
@@ -247,33 +207,28 @@ class UserAuth extends Model
      */
     public function listAdmin($postData)
     {
-
-        $sessionDriver = config('session.driver');
-        if ($sessionDriver === 'redis') {
-            $query = DB::table('user_devices')->select(['user_devices.updated_at as updated_at', DB::raw('UNIX_TIMESTAMP(user_devices.updated_at) as last_activity'), 'user_devices.id', 'user_devices.ip', 'user_devices.device_uid', 'user_devices.client', 'user_devices.id as deviceId', 'users.first_name', 'users.last_name', 'users.email'])
-                ->join('users', 'users.id', '=', 'user_devices.user_id')
-                ->where(function ($query) {
-                    $query->where('user_devices.token_expire_at', '>', Carbon::now());
-                });
-        } else {
-            $query = DB::table('user_devices')->select(['user_devices.updated_at as updated_at', 'user_devices.id', 'user_devices.ip', 'user_devices.device_uid', 'user_devices.client', 'user_devices.id as deviceId', 'users.first_name', 'users.last_name', 'users.email'])
-                ->join('users', 'users.id', '=', 'user_devices.user_id')
-                ->leftJoin('sessions', 'sessions.id', 'user_devices.session_id')
-                ->where(function ($query) {
-                    $query->where('user_devices.token_expire_at', '>', Carbon::now())
-                        ->orWhere('sessions.last_activity', '>', time() - (config('session.lifetime') * 60));
-                });
-        }
+        $query = DB::table('user_devices')
+            ->select([
+                'user_devices.id',
+                'user_devices.id as deviceId',
+                'user_devices.device_uid',
+                'user_devices.ip_address as ip',
+                'user_devices.user_agent as client',
+                'user_devices.updated_at',
+                'users.first_name',
+                'users.last_name',
+                'users.email'
+            ])
+            ->join('users', 'users.id', '=', 'user_devices.user_id');
 
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
             $query->where(function ($query) use ($searchText) {
-                $query->where(function ($query) use ($searchText) {
-                    $query->where(DB::raw('CONCAT(users.first_name, " ",users.last_name)  '), 'like', $searchText);
-                    $query->orwhere('user_devices.client', 'like', $searchText);
-                    $query->orWhere(DB::raw("FROM_UNIXTIME(last_activity, '%d-%m-%Y')"), 'LIKE', '%'.$searchText.'%');
-                });
+                $query->where(DB::raw('CONCAT(users.first_name, " ",users.last_name)'), 'like', $searchText)
+                    ->orWhere('users.email', 'like', $searchText)
+                    ->orWhere('user_devices.user_agent', 'like', $searchText)
+                    ->orWhere('user_devices.ip_address', 'like', $searchText);
             });
         }
         $result = (new Pagination)->getDataTable($query, $postData);
@@ -283,7 +238,7 @@ class UserAuth extends Model
             $result['data'][$key]->first_name = $row->first_name.' '.$row->last_name;
             $result['data'][$key]->location = $general->getIpLocation($row->ip);
             $result['data'][$key]->client = (new General)->deviceName($row->client).' '.($row->device_uid == @$_COOKIE[config('setting.app_uid').'_token'] ? ' (This Device)' : '');
-            $result['data'][$key]->last_activity = $general->dateFormat(@$row->last_activity ? $row->last_activity : $row->updated_at);
+            $result['data'][$key]->last_activity = $general->dateFormat($row->updated_at);
 
             $result['data'][$key]->action = '';
             if ($sessionUser->hasPermission('admin/device/logout')) {
@@ -299,7 +254,7 @@ class UserAuth extends Model
     public static function getUserDevices($userId)
     {
         return self::where('user_id', $userId)
-            ->select('device_uid', 'client', 'ip')
+            ->select('device_uid', 'user_agent as client', 'ip_address as ip')
             ->orderBy('id', 'desc')
             ->get();
     }

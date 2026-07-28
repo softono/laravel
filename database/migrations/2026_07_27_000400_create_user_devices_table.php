@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Port of src/server/models/user-device.ts (trusted devices for 2FA).
- * `updated_at` is NOT NULL with no default, mirroring Next.
+ * Trusted devices for 2FA. `updated_at` is NOT NULL with no default -
+ * Eloquent always supplies it; raw inserts must too.
  */
 return new class extends Migration
 {

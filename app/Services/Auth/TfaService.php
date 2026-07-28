@@ -15,10 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Port of the Next app's src/server/modules/auth/tfa/*.ts - registry of
- * verification methods (authenticator app / email OTP / backup code)
- * plus the challenge lifecycle shared across them, and the account-side
- * enable/disable/regenerate-codes flows.
+ * Registry of 2FA verification methods (authenticator app / email OTP /
+ * backup code) plus the challenge lifecycle shared across them, and the
+ * account-side enable/disable/regenerate-codes flows.
  */
 class TfaService
 {

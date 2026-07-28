@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
- * Port of the Next app's `users` table (src/server/models/user.ts).
  * The credential password lives on the related `user_accounts` row
  * (provider_id='credential'), not on this model - see getAuthPassword().
  */

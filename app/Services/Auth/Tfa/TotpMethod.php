@@ -10,10 +10,8 @@ use Illuminate\Support\Facades\Crypt;
 use PragmaRX\Google2FA\Google2FA;
 
 /**
- * TOTP (authenticator app) 2FA method. Mirrors otplib usage in the Next
- * app's tfa/*.ts, with a documented divergence: otplib defaults to
- * window 0 (current 30s step only); we use config('auth_next.totp_window')
- * (default 1, ±1 step) for usability.
+ * TOTP (authenticator app) 2FA method. Uses config('auth_next.totp_window')
+ * (default 1, i.e. ±1 step) to tolerate clock drift.
  */
 class TotpMethod
 {

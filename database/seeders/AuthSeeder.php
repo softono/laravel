@@ -59,8 +59,8 @@ class AuthSeeder extends Seeder
     }
 
     /**
-     * The magic-login-link flow is dead without this template (R-10 in
-     * the plan) - the existing email_template table has no row for it.
+     * The magic-login-link flow is dead without this template - the
+     * email_template table has no row for it by default.
      */
     protected function seedLoginLinkEmailTemplate(): void
     {

@@ -5,12 +5,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Structural port of the Next app's `users` table
- * (src/server/models/user.ts, src/server/db/migrations/20260713131422_init.sql).
- *
- * Postgres `text` PK/FK columns become `char(36) ascii_bin` (UUID, generated
- * in PHP via HasUuids) because MySQL/MariaDB cannot index/PK a bare TEXT
- * column. See the plan's §1 for the full column-by-column justification.
+ * `id` is `char(36) ascii_bin` (UUID, generated in PHP via HasUuids)
+ * rather than an auto-increment int, so it can be shared as a stable
+ * foreign key across every auth table without a join to a separate
+ * identity table.
  */
 return new class extends Migration
 {

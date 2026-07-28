@@ -5,9 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Port of src/server/models/user-passkey.ts (WebAuthn credentials).
- * `created_at` is nullable with no default and there is no `updated_at`,
- * mirroring Next exactly - see UserPasskey model ($timestamps = false).
+ * WebAuthn credentials. `created_at` is nullable with no default and
+ * there is no `updated_at` - see the UserPasskey model ($timestamps = false).
  */
 return new class extends Migration
 {

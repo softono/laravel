@@ -3,6 +3,7 @@
 @section('content')
     <div class="row">
         <div class="col-md-12">
+            {{ view('account/component/account_block', compact('model')) }}
             <div class="main-card mb-3 card">
                 <div class="card-header">
                     <h5 class="mb-2">Passkeys</h5>

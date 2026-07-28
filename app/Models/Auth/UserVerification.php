@@ -6,9 +6,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Port of src/server/models/user-verification.ts - OTP store for email
- * verification / password reset / signin / 2FA email codes.
- * No FK to users - linked purely by `identifier` = "{purpose}:{email}".
+ * OTP store for email verification / password reset / signin / 2FA email
+ * codes. No FK to users - linked purely by `identifier` = "{purpose}:{email}".
  */
 class UserVerification extends Model
 {

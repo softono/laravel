@@ -9,11 +9,10 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;
 
 /**
- * A real Guard backed by the Next-parity session cookie, so the ~70
- * existing Blade views and controllers that call auth()->user(),
- * Auth::id() or @auth keep working unchanged. Resolution is lazy and
- * cached: SessionService::validate() hits Redis (cached 300s), not the
- * database, on the common path.
+ * A real Guard backed by the signed session cookie, so Blade views and
+ * controllers that call auth()->user(), Auth::id() or @auth all work
+ * normally. Resolution is lazy and cached: SessionService::validate()
+ * hits the cache store, not the database, on the common path.
  */
 class SessionTokenGuard implements Guard
 {
