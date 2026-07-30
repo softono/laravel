@@ -25,7 +25,7 @@ Route::group(['middleware' => ['web']], function () {
     // read columns that don't exist on the current `users` model.
 });
 
-Route::group(['middleware' => ['web', 'user']], function () {
+Route::group(['middleware' => ['web', 'auth.user']], function () {
     Route::get('dashboard', '\App\Http\Controllers\SiteController@dashboard')->name('dashboard');
 
     Route::get('account/update', '\App\Http\Controllers\Account\AccountController@update')->name('account/update');
@@ -52,7 +52,7 @@ Route::group(['middleware' => ['web', 'user']], function () {
 // admin/auth/*, admin/site/password-forgot(-process) removed here - admin
 // auth lives in routes/auth.php (Admin\Auth\{LoginController,PageController}).
 
-Route::group(['prefix' => 'admin', 'middleware' => ['web', 'admin']], function () {
+Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], function () {
     Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
     Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 

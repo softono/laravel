@@ -1,13 +1,11 @@
 <?php
 
-use App\Http\Middleware\AdminAuth;
 use App\Http\Middleware\AuthenticateAdminSession;
 use App\Http\Middleware\AuthenticateSession;
 use App\Http\Middleware\AuthRateLimit;
 use App\Http\Middleware\EnsureDeviceUid;
 use App\Http\Middleware\RedirectIfAdminAuthenticated;
 use App\Http\Middleware\RedirectIfAuthenticated;
-use App\Http\Middleware\UserAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -31,16 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            // Legacy auth (removed once the cutover in Phase 7 lands):
-            'user' => UserAuth::class,
-            'admin' => AdminAuth::class,
-
-            // Next-parity auth:
             'device.uid' => EnsureDeviceUid::class,
-            'auth.session' => AuthenticateSession::class,
-            'guest.redirect' => RedirectIfAuthenticated::class,
+            'auth.user' => AuthenticateSession::class,
+            'auth.redirect' => RedirectIfAuthenticated::class,
             'auth.throttle' => AuthRateLimit::class,
-            'admin.session' => AuthenticateAdminSession::class,
+            'auth.admin' => AuthenticateAdminSession::class,
             'admin.guest.redirect' => RedirectIfAdminAuthenticated::class,
         ]);
     })

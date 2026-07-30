@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // --- HTML pages (guests only - redirect to /dashboard if already signed in) ---
-Route::middleware(['device.uid', 'guest.redirect'])->group(function () {
+Route::middleware(['device.uid', 'auth.redirect'])->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::get('/password-forgot', [PasswordController::class, 'showForgot'])->name('password-forgot');
@@ -41,7 +41,7 @@ Route::get('/logout', [LoginController::class, 'logout'])->middleware('device.ui
 Route::get('/login/approve', [LoginLinkController::class, 'showApprove'])
     ->middleware('device.uid')->name('login/approve');
 
-Route::middleware(['device.uid', 'auth.session'])->group(function () {
+Route::middleware(['device.uid', 'auth.user'])->group(function () {
     Route::get('/account/two-factor', [AccountSecurityController::class, 'twoFactor'])->name('account/two-factor');
     Route::get('/account/passkeys', [AccountSecurityController::class, 'passkeys'])->name('account/passkeys');
 });
@@ -95,7 +95,7 @@ Route::post('/api/admin/auth/login', [AdminLoginController::class, 'login'])
     ->middleware(['device.uid', 'auth.throttle:admin_login']);
 
 // --- Authenticated JSON endpoints ---
-Route::middleware(['device.uid', 'auth.session'])->prefix('api/auth')->group(function () {
+Route::middleware(['device.uid', 'auth.user'])->prefix('api/auth')->group(function () {
     Route::post('/change-password', [PasswordController::class, 'changePassword']);
 
     Route::get('/2fa/status', [TfaController::class, 'status']);
