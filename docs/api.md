@@ -233,7 +233,7 @@ If you add a POST endpoint that a non-browser client must call, do **not** exemp
 | GET | `/api/auth/google` | Redirect to Google |
 | GET | `/api/auth/google/callback` | Link/create, then session |
 
-### Authenticated (`auth.session`)
+### Authenticated (`auth.user`)
 
 | Method | Path | Purpose |
 |---|---|---|

@@ -8,7 +8,7 @@ Working guide for AI coding agents on this repository. Read this before making c
 
 A Laravel 12 application with a **public marketing front-end**, a **user account area**, and a **Bootstrap admin panel**. Its defining feature is a hand-rolled authentication system supporting password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys, and Google OAuth.
 
-**The single most important thing to know:** this repo is **mid-migration**. A modern auth stack (`App\*\Auth\*`) lives alongside a legacy one (`App\Services\AuthService`, `App\Models\User`, `UserAuth`/`AdminAuth` middleware). Both are wired and running. Many class names exist twice in different namespaces. See [Legacy vs. Current](#legacy-vs-current-critical) — getting this wrong is the most common way to break the app.
+**The single most important thing to know:** this repo is **mid-migration**. A modern auth stack (`App\*\Auth\*`) lives alongside a legacy one (`App\Services\AuthService`, `App\Models\User`). Both are wired and running. Many class names exist twice in different namespaces. See [Legacy vs. Current](#legacy-vs-current-critical) — getting this wrong is the most common way to break the app.
 
 ---
 
@@ -74,7 +74,7 @@ Request flow:
 ```
 Request
   → web middleware (+ EnsureDeviceUid, appended globally)
-  → route middleware (auth.session / admin.session / auth.throttle / legacy user|admin)
+  → route middleware (auth.user / auth.admin / auth.throttle / auth.redirect)
   → Controller  (thin: validate → call service → return ApiResult)
   → Service     (all business logic lives here)
   → Model       (Eloquent; schema + relationships only)
@@ -98,14 +98,12 @@ Several classes exist twice. **Always confirm which namespace you are importing.
 | Auth service | `App\Services\Auth\AuthService` | `App\Services\AuthService` |
 | 2FA service | `App\Services\Auth\TfaService` | `App\Services\TfaService` |
 | Account service | `App\Services\Auth\AccountService` | `App\Services\AccountService` |
-| User middleware | `auth.session` | `user` (`UserAuth`) |
-| Admin middleware | `admin.session` | `admin` (`AdminAuth`) |
 
 Facts you need:
 
 - **The guard resolves `App\Models\Auth\User`.** So `auth()->user()` always returns the *current* model, even inside legacy controllers.
 - **`App\Models\User` (legacy) now points at the same `users` table** but still uses **integer role codes** (`[1,2,3]`) while the column stores strings (`'ADMIN'`). Its list queries silently return zero rows. Do not copy its role logic.
-- **`routes/web.php` still uses the legacy `user`/`admin` middleware** for every non-auth page. They work because they call `Auth::user()`, which resolves the current model. Do not delete them without migrating those routes.
+- **`routes/web.php` now gates every non-auth page with `auth.user` / `auth.admin`** (the old `user`/`admin` aliases and their `UserAuth`/`AdminAuth` middleware classes have been removed). They work because they call `Auth::user()`, which resolves the current model.
 - The `users` table has **no** `password`, `otp`, `status_tfa`, `totp_secret_key`, `backup_code`, or `ignore_tfa_device` columns. Passwords live in `user_accounts`. Legacy code touching those columns is broken — treat it as a bug, not a pattern.
 
 ---

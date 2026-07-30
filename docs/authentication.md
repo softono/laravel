@@ -101,14 +101,13 @@ Key points:
 | Alias | Class | Behaviour |
 |---|---|---|
 | `device.uid` | `EnsureDeviceUid` | Ensures a device UID exists; stashes it on the request *and* queues the cookie, so a login in the same request can record it |
-| `auth.session` | `AuthenticateSession` | Requires a user. JSON → envelope error; HTML → `redirect('/login?redirect=…')` |
-| `admin.session` | `AuthenticateAdminSession` | Requires a user **+** `isAdmin()` **+** `hasPermission()` |
-| `guest.redirect` | `RedirectIfAuthenticated` | Bounces authenticated users off `/login`, `/register`; clears an invalid cookie |
+| `auth.user` | `AuthenticateSession` | Requires a user. JSON → envelope error; HTML → `redirect('/login?redirect=…')`. Also gates every non-auth page in `routes/web.php` |
+| `auth.admin` | `AuthenticateAdminSession` | Requires a user **+** `isAdmin()` **+** `hasPermission()`. Also gates the admin panel in `routes/web.php` |
+| `auth.redirect` | `RedirectIfAuthenticated` | Bounces authenticated users off `/login`, `/register`; clears an invalid cookie |
 | `admin.guest.redirect` | `RedirectIfAdminAuthenticated` | Admin equivalent → `/admin/dashboard` |
 | `auth.throttle:{name}` | `AuthRateLimit` | Per-tier rate limiting, fails closed |
-| `user` / `admin` | `UserAuth` / `AdminAuth` | **Legacy**, still used throughout `routes/web.php` |
 
-`guest.redirect` deliberately performs a real (cached) `validate()` rather than checking cookie presence — presence-only checks bounce a user with a stale cookie between `/login` and `/dashboard` forever.
+`auth.redirect` deliberately performs a real (cached) `validate()` rather than checking cookie presence — presence-only checks bounce a user with a stale cookie between `/login` and `/dashboard` forever.
 
 ### Rate limiting
 

@@ -21,10 +21,10 @@ HTTP Request
   │
   ├─ Route middleware (per route group)
   │    auth.throttle:{name}   rate limiting, fails closed
-  │    guest.redirect         bounce authenticated users away from /login
-  │    auth.session           require a valid session
-  │    admin.session          require a session + isAdmin() + hasPermission()
-  │    user | admin           legacy equivalents, still used by routes/web.php
+  │    auth.redirect          bounce authenticated users away from /login
+  │    auth.user              require a valid session
+  │    auth.admin             require a session + isAdmin() + hasPermission()
+  │    admin.guest.redirect   bounce authenticated admins away from /admin/auth/login
   │
   ├─ Controller
   │    FormRequest validates → service call → ApiResult / view
@@ -268,7 +268,7 @@ Columns marked **gone** do not exist. Legacy code touching them either errors on
 
 1. New auth work → `App\Services\Auth\*`, routes in `routes/auth.php`.
 2. Touching a legacy controller → verify which model and columns it assumes before trusting it.
-3. Do not delete `UserAuth`/`AdminAuth` middleware while `routes/web.php` still references them.
+3. `routes/web.php` now gates on `auth.user` / `auth.admin` directly (the old `user`/`admin` aliases and their `UserAuth`/`AdminAuth` middleware classes were removed).
 4. When porting a legacy screen, migrate its data source to the `user_*` tables in the same change — do not leave it half-converted.
 
 Current status and remaining work: `docs/local/task_pending.md`.
@@ -288,7 +288,7 @@ Current status and remaining work: `docs/local/task_pending.md`.
 
 **A new admin screen**
 
-1. Route in `routes/web.php` under the `['web', 'admin']` group.
+1. Route in `routes/web.php` under the `['web', 'auth.admin']` group.
 2. Controller extending `App\Http\Controllers\Admin\Controller`.
 3. Blade view extending `admin.layouts.main`.
 4. Data access through a service — do not add query methods to models.
