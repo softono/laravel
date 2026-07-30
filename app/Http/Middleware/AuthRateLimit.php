@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Helpers\ClientInfo;
 use Closure;
 use Illuminate\Http\Request;
@@ -72,12 +72,7 @@ class AuthRateLimit
 
     protected function tooManyAttempts(int $retryAfter, int $max)
     {
-        // 200 (not 429): see ApiResult's docblock - $.ajax only routes to
-        // the caller's success callback on a 2xx response, and the inline
-        // page scripts need response.message here. Retry-After/X-RateLimit-*
-        // headers still carry the machine-readable detail for any
-        // non-jQuery consumer.
-        $response = ApiResult::failure('Too many requests. Please try again later.')->toResponse();
+        $response = Response::sendError(429,'Too many requests. Please try again later.');
 
         return $response->withHeaders([
             'Retry-After' => $retryAfter,

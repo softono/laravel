@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Constants\UserActivity;
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Helpers\SignedCookie;
 use App\Http\Controllers\Admin\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -45,8 +45,8 @@ class LoginController extends Controller
             requireAdmin: true,
         );
 
-        if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
+        if (! $result['status']) {
+            return Response::sendResult($result);
         }
 
         /** @var User $user */
@@ -67,7 +67,7 @@ class LoginController extends Controller
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return ApiResult::success('Logged in successfully', ['next' => 'admin-dashboard'])->toResponse();
+        return Response::sendData(['next' => 'admin-dashboard'],'Logged in successfully');
     }
 
     public function logout(Request $request)

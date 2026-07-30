@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
@@ -30,8 +30,7 @@ class PasswordController extends Controller
     public function forgot(ForgotPasswordRequest $request)
     {
         $result = $this->account->forgotPassword($request->string('email'));
-
-        return ApiResult::success($result['message'])->toResponse();
+        return Response::sendResult($result);
     }
 
     public function reset(ResetPasswordRequest $request)
@@ -43,11 +42,7 @@ class PasswordController extends Controller
             (string) $request->input('password'),
         );
 
-        if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
-        }
-
-        return ApiResult::success($result['message'])->toResponse();
+        return Response::sendResult($result);
     }
 
     public function changePassword(Request $request)
@@ -66,11 +61,6 @@ class PasswordController extends Controller
             (string) $request->input('current_password'),
             (string) $request->input('password'),
         );
-
-        if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
-        }
-
-        return ApiResult::success($result['message'])->toResponse();
+        return Response::sendResult($result);
     }
 }

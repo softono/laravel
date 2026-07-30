@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +19,7 @@ class AuthenticateSession
     {
         if (Auth::guest()) {
             if ($request->expectsJson() || $request->ajax()) {
-                return ApiResult::failure('Authentication required')->toResponse();
+                return Response::sendError(401,'Authentication required');
             }
 
             return redirect('/login?redirect='.urlencode($request->path()));

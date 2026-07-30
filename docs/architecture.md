@@ -27,10 +27,10 @@ HTTP Request
   │    admin.guest.redirect   bounce authenticated admins away from /admin/auth/login
   │
   ├─ Controller
-  │    FormRequest validates → service call → ApiResult / view
+  │    FormRequest validates → service call → Response / view
   │
   ├─ Service
-  │    business logic, returns array or ApiResult
+  │    business logic, returns array or Response
   │
   └─ Model / Cache / DB
 ```
@@ -57,7 +57,7 @@ class PasswordController extends Controller
     {
         $result = $this->account->forgotPassword($request->string('email'));
 
-        return ApiResult::success($result['message'])->toResponse();
+        return Response::success($result['message']);
     }
 }
 ```
@@ -74,7 +74,7 @@ All business logic. Located in `app/Services/Auth/` for auth concerns.
 Return either:
 
 - a **result array** — `['ok' => bool, 'message' => ?string, ...]` — when the caller decides the HTTP shape, or
-- an **`ApiResult`/`JsonResponse`** when the service must also attach cookies (e.g. `TfaService::verifyLoginChallenge()` issues a session cookie on success).
+- an **`Response`/`JsonResponse`** when the service must also attach cookies (e.g. `TfaService::verifyLoginChallenge()` issues a session cookie on success).
 
 Dependencies are constructor-injected:
 
@@ -140,7 +140,7 @@ Stateless utilities in `app/Helpers/`:
 
 | Helper | Purpose |
 |---|---|
-| `ApiResult` | The `{status, message, data}` envelope |
+| `Response` | The `{status, message, data}` envelope |
 | `SignedCookie` | HMAC-signed cookie naming, signing, verification, base64url |
 | `ClientInfo` | Client IP (XFF-aware), user agent, device name, device UID |
 | `SessionTokenGuard` | The custom auth guard |
@@ -282,7 +282,7 @@ Current status and remaining work: `docs/local/task_pending.md`.
 1. Route in `routes/auth.php` with `auth.throttle:{name}` (add the tier to `AuthRateLimit::LIMITS`).
 2. FormRequest in `App\Http\Requests\Auth\` overriding `failedValidation()` to return the envelope.
 3. Service method returning a result array.
-4. Thin controller mapping the result to `ApiResult`.
+4. Thin controller mapping the result to `Response`.
 5. Log the outcome via `ActivityService` with a `UserActivity` constant.
 6. Exercise it live before calling it done.
 

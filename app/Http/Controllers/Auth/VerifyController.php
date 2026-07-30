@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\VerifyAccountRequest;
 use App\Models\Auth\User;
@@ -37,12 +37,7 @@ class VerifyController extends Controller
             $request->string('email'),
             $request->string('otp'),
         );
-
-        if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
-        }
-
-        return ApiResult::success($result['message'])->toResponse();
+        return Response::sendResult($result);
     }
 
     /**
@@ -64,6 +59,6 @@ class VerifyController extends Controller
             $this->account->sendOtp('verify', $user);
         }
 
-        return ApiResult::success('If the email exists, a new OTP has been sent')->toResponse();
+        return Responsesuccess('If the email exists, a new OTP has been sent');
     }
 }

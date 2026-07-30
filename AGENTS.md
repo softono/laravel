@@ -37,7 +37,7 @@ A Laravel 12 application with a **public marketing front-end**, a **user account
 ```
 app/
   Constants/          UserRole, UserStatus, UserActivity (string constants)
-  Helpers/            ApiResult, SignedCookie, ClientInfo, SessionTokenGuard,
+  Helpers/            Response, SignedCookie, ClientInfo, SessionTokenGuard,
                       General, Pagination, QrGenerator (legacy)
   Http/
     Controllers/
@@ -75,7 +75,7 @@ Request flow:
 Request
   → web middleware (+ EnsureDeviceUid, appended globally)
   → route middleware (auth.user / auth.admin / auth.throttle / auth.redirect)
-  → Controller  (thin: validate → call service → return ApiResult)
+  → Controller  (thin: validate → call service → return Response)
   → Service     (all business logic lives here)
   → Model       (Eloquent; schema + relationships only)
 ```
@@ -200,7 +200,7 @@ All JSON endpoints return the same envelope:
 
 Key conventions:
 
-- Build responses with `ApiResult::success()` / `ApiResult::failure()`, then `->toResponse()`.
+- Build responses with `Response::sendMessage()` / `Response::sendError()`, then ``.
 - **HTTP status is always 200**, deliberately. The jQuery helper in `public/assets/js/app.js` only routes 2xx to the caller's callback, and pages need `data.next` on the failure path too.
 - Validation via FormRequests in `App\Http\Requests\Auth\` — they render errors into the same envelope.
 - Rate limiting via `auth.throttle:{name}` (see `AuthRateLimit::LIMITS`).
@@ -242,7 +242,7 @@ For layout selection, the JS module pattern, CSRF wiring and PJAX behaviour → 
 ## Backend Overview
 
 - **Controllers** validate (via FormRequest) and delegate. They extend `App\Http\Controllers\Controller` (user) or `App\Http\Controllers\Admin\Controller` (admin) — both share `$general` and app settings into every view, so **always call `parent::__construct()`**.
-- **Services** hold business logic and return plain arrays (`['ok' => bool, 'message' => string, …]`) or an `ApiResult`. Dependencies are constructor-injected.
+- **Services** hold business logic and return plain arrays (`['ok' => bool, 'message' => string, …]`) or an `Response`. Dependencies are constructor-injected.
 - **Models** define schema, casts and relationships. The `App\Models\Auth\*` models are query-free by design.
 - **Config:** every auth tunable lives in `config/auth_next.php` (TTLs, attempt caps, window sizes). Never hardcode these values.
 
@@ -325,15 +325,11 @@ Service classes are named for their domain (`OtpService`, `DeviceService`), not 
 
 ## Important Patterns
 
-**Service returns a result array; the controller shapes the response**
+**Service returns a result array; the controller send the response**
 
 ```php
 $result = $this->auth->changePassword($request, $user, $current, $new);
-
-return ($result['ok']
-    ? ApiResult::success($result['message'])
-    : ApiResult::failure($result['message'])
-)->toResponse();
+Response::sendResult($result);
 ```
 
 **Issuing a session after any successful login**
@@ -380,7 +376,7 @@ if ($claimed === 0) { /* someone else won the race */ }
 |---|---|---|
 | Importing `App\Models\User` instead of `App\Models\Auth\User` | Broken role checks, empty query results | Check the [Legacy vs. Current](#legacy-vs-current-critical) table |
 | Moving/renaming a class without re-dumping the autoloader | Fatal "class not found" on a *deleted* path — the optimized classmap is authoritative | `php composer.phar dump-autoload` |
-| Returning a non-200 HTTP status from an auth endpoint | Frontend callback never fires; user sees nothing | Use `ApiResult`, keep 200 |
+| Returning a non-200 HTTP status from an auth endpoint | Frontend callback never fires; user sees nothing | Use `Response`, keep 200 |
 | Adding a column to `users` for auth state | Wrong table — auth state is normalised across `user_*` tables | Use the existing table for that concern |
 | Assuming `php artisan test` is isolated | Runs against the **real** database | Configure a test DB in `phpunit.xml` first |
 | Writing Tailwind classes | Silently unstyled — Tailwind is installed but inactive | Use Bootstrap 5 utilities |
@@ -404,7 +400,7 @@ if ($claimed === 0) { /* someone else won the race */ }
 **While working**
 
 - Change the minimum necessary. Do not opportunistically refactor unrelated code.
-- Reuse `ApiResult`, `SignedCookie`, `ClientInfo`, `ActivityService` — do not reimplement them.
+- Reuse `Response`, `SignedCookie`, `ClientInfo`, `ActivityService` — do not reimplement them.
 - Match surrounding comment density and style.
 - Add new auth routes to `routes/auth.php`, not `routes/web.php`.
 

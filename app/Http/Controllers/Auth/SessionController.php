@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -14,10 +14,10 @@ class SessionController extends Controller
         $user = $request->user();
 
         if (! $user) {
-            return ApiResult::failure('Not authenticated')->toResponse();
+            return Response::sendError(401, 'Not authenticated');
         }
 
-        return ApiResult::success(null, [
+        return Response::sendData([
             'id' => $user->id,
             'email' => $user->email,
             'first_name' => $user->first_name,
@@ -25,6 +25,6 @@ class SessionController extends Controller
             'role' => $user->role,
             'email_verified' => $user->email_verified,
             'two_factor_enabled' => $user->two_factor_enabled,
-        ])->toResponse();
+        ]);
     }
 }

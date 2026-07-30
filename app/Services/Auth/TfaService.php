@@ -3,7 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Constants\UserActivity;
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Helpers\SignedCookie;
 use App\Models\Auth\User;
 use App\Models\Auth\UserAccount;
@@ -42,7 +42,7 @@ class TfaService
         $handle = $this->challenges->createTfa($user->id, $remember);
         SignedCookie::queue('tfa', $handle, (int) config('auth_next.tfa_ttl'));
 
-        return ApiResult::success(null, ['next' => 'tfa'])->toResponse();
+        return Response::sendData(['next' => 'tfa']);
     }
 
     /** @return string[] available challenge methods for the current handle's user */
@@ -79,19 +79,19 @@ class TfaService
         $handle = $cookieValue ? SignedCookie::verify($cookieValue) : null;
 
         if (! $handle) {
-            return ApiResult::failure('Verification session expired. Please log in again.')->toResponse();
+            return Response::sendError(422,'Verification session expired. Please log in again.');
         }
 
         if ($this->challenges->tfaAttemptsExceeded($handle)) {
             $this->challenges->consumeTfa($handle);
 
-            return ApiResult::failure('Too many failed attempts. Please log in again.')->toResponse();
+            return Response::sendError(409,'Too many failed attempts. Please log in again.');
         }
 
         $pending = $this->challenges->peekTfa($handle);
 
         if (! $pending) {
-            return ApiResult::failure('Verification session expired. Please log in again.')->toResponse();
+            return Response::sendError(401,'Verification session expired. Please log in again.');
         }
 
         $user = User::find($pending['user_id']);
@@ -99,7 +99,7 @@ class TfaService
         if (! $user) {
             $this->challenges->consumeTfa($handle);
 
-            return ApiResult::failure('Verification session expired. Please log in again.')->toResponse();
+            return Response::sendError(401,('Verification session expired. Please log in again.');
         }
 
         $result = $this->verifyByMethod($user, $method, $code);
@@ -107,7 +107,7 @@ class TfaService
         if (! $result['valid']) {
             $this->challenges->bumpTfaAttempts($handle);
 
-            return ApiResult::failure($result['message'] ?? 'Invalid code')->toResponse();
+            return Response::sendError(422,$result['message'] ?? 'Invalid code');
         }
 
         $this->challenges->consumeTfa($handle);
@@ -126,7 +126,7 @@ class TfaService
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return ApiResult::success('Logged in successfully', ['next' => 'dashboard'])->toResponse();
+        return Response::sendData(['next' => 'dashboard'],'Logged in successfully');
     }
 
     /** @return array{valid: bool, message: ?string} */

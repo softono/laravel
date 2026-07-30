@@ -39,30 +39,27 @@ Two exceptions: validation failures and CSRF failures are raised by the framewor
 ### Building responses
 
 ```php
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 
-ApiResult::success('Password changed successfully')->toResponse();
-ApiResult::success(null, ['next' => 'tfa'])->toResponse();
-ApiResult::failure('Invalid email or password')->toResponse();
-ApiResult::failure('Please verify your account', [
+Response::sendMessage('Password changed successfully');
+Response::sendData(['next' => 'tfa']);
+Response::sendError(401,'Invalid email or password');
+Response::sendData([
     'next'  => 'verify-account',
     'email' => $user->email,
-])->toResponse();
+],'Please verify your account');
 ```
 
 Mapping a service result:
 
 ```php
-return ($result['ok']
-    ? ApiResult::success($result['message'])
-    : ApiResult::failure($result['message'])
-)->toResponse();
+return Response::sendResult($result);
 ```
 
 Attaching cookies:
 
 ```php
-return ApiResult::success('Logged in')->withCookies([$cookie]);
+return Response::sendMessage('Logged in')->withCookies([$cookie]);
 ```
 
 ---
@@ -120,7 +117,7 @@ class RegisterRequest extends FormRequest
     protected function failedValidation(ValidatorContract $validator)
     {
         throw new HttpResponseException(
-            ApiResult::failure($validator->errors()->first())->toResponse()
+            Response::sendErrro(422,$validator->errors()->first())
         );
     }
 }
@@ -153,8 +150,8 @@ $request->validate([
 Messages must be **safe to display and non-revealing**. Never leak whether an email exists, whether an account is an admin, or which specific credential was wrong.
 
 ```php
-ApiResult::failure('Invalid email or password')   // ✅
-ApiResult::failure('No account with that email')  // ❌ enumeration
+Response::sendError(422,'Invalid email or password')   // ✅
+Response::sendError(422,'No account with that email')  // ❌ enumeration
 ```
 
 ---
@@ -262,7 +259,7 @@ php artisan route:list --path=api
 1. **Route** in `routes/auth.php`, in the matching group, with a throttle tier.
 2. **FormRequest** if it takes more than one or two fields.
 3. **Service method** returning `['ok' => bool, 'message' => …]`.
-4. **Controller** maps that to `ApiResult`.
+4. **Controller** maps that to `Response`.
 5. **Log** via `ActivityService` if security-relevant.
 6. **Test it live** — confirm the status code and the envelope.
 
@@ -276,10 +273,7 @@ public function setPassword(SetPasswordRequest $request)
 {
     $result = $this->auth->setPassword($request, $request->user(), $request->input('password'));
 
-    return ($result['ok']
-        ? ApiResult::success($result['message'])
-        : ApiResult::failure($result['message'])
-    )->toResponse();
+    return Response::sendResult($result);
 }
 ```
 

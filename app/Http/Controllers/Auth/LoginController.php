@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Constants\UserActivity;
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Helpers\SignedCookie;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -38,7 +38,7 @@ class LoginController extends Controller
         );
 
         if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
+            return Response::sendMessage($result['message']);
         }
 
         /** @var User $user */
@@ -47,10 +47,14 @@ class LoginController extends Controller
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
             app(AccountService::class)->sendOtp('verify', $user);
 
-            return ApiResult::failure('Please verify your account', [
-                'next' => 'verify-account',
-                'email' => $user->email,
-            ])->toResponse();
+            return Response::sendResponse(403, [
+                'status'=>0,
+                'message'=>'Please verify your account',
+                'data'=>[
+                    'next' => 'verify-account',
+                    'email' => $user->email,    
+                ]
+            ]);
         }
 
         $remember = $request->boolean('remember');
@@ -75,9 +79,13 @@ class LoginController extends Controller
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return ApiResult::success('Logged in successfully', [
-            'next' => 'dashboard',
-        ])->toResponse();
+        return Response::sendResponse(200,[
+            'status' => 1,
+            'message'=>'Logged in successfully',
+            'data' => [
+                'next' => 'dashboard'
+            ]
+        ]);
     }
 
     protected function deviceIsTrusted(Request $request, User $user): bool
@@ -98,7 +106,7 @@ class LoginController extends Controller
 
         SignedCookie::forget('session_token');
 
-        return ApiResult::success('Logged out successfully')->toResponse();
+        return Response::sendMessage('Logged out successfully');
     }
 
     public function logout(Request $request)

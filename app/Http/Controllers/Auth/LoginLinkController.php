@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Helpers\SignedCookie;
 use App\Http\Controllers\Controller;
 use App\Services\Auth\LoginLinkService;
@@ -31,12 +31,12 @@ class LoginLinkController extends Controller
             $request->boolean('trust_device'),
         );
 
-        return ApiResult::success(null, [
+        return Response:success(null, [
             'request_id' => $result['request_id'],
             'expires_at' => $result['expires_at'],
             'poll_token' => $result['poll_token'] ?? bin2hex(random_bytes(32)),
             'code' => $result['code'],
-        ])->toResponse();
+        ]);
     }
 
     public function poll(Request $request)
@@ -57,7 +57,7 @@ class LoginLinkController extends Controller
             SignedCookie::queueRaw('session_token', $result['session_token'], $ttlSeconds);
         }
 
-        return ApiResult::success(null, ['state' => $result['state']])->toResponse();
+        return Response:success(null, ['state' => $result['state']]);
     }
 
     public function approveInfo(Request $request)
@@ -67,14 +67,14 @@ class LoginLinkController extends Controller
         $result = $this->loginLinks->approvalInfo($request->string('id'), $request->string('token'));
 
         if (! $result['ok']) {
-            return ApiResult::failure('This login request is no longer valid')->toResponse();
+            return Responsefailure('This login request is no longer valid');
         }
 
-        return ApiResult::success(null, [
+        return Response::success(null, [
             'device_name' => $result['device_name'],
             'code' => $result['code'],
             'email' => $result['email'],
-        ])->toResponse();
+        ]);
     }
 
     public function respond(Request $request)
@@ -86,7 +86,6 @@ class LoginLinkController extends Controller
         ]);
 
         $result = $this->loginLinks->respond($request->string('id'), $request->string('token'), $request->string('action'));
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 }

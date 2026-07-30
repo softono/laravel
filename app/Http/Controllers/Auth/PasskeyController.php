@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
 use App\Services\Auth\PasskeyService;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ class PasskeyController extends Controller
 
     public function loginOptions(Request $request)
     {
-        return ApiResult::success(null, $this->passkeys->loginOptions())->toResponse();
+        return Response::success(null, $this->passkeys->loginOptions());
     }
 
     public function loginVerify(Request $request)
@@ -26,20 +26,19 @@ class PasskeyController extends Controller
         $request->validate(['credential' => ['required', 'array']]);
 
         $result = $this->passkeys->loginVerify($request, $request->input('credential'));
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 
     // --- Authenticated (account management) ---
 
     public function index(Request $request)
     {
-        return ApiResult::success(null, ['passkeys' => $this->passkeys->list($request->user())])->toResponse();
+        return Response::sendResult($this->passkeys->list($request->user()));
     }
 
     public function registerOptions(Request $request)
     {
-        return ApiResult::success(null, $this->passkeys->registerOptions($request->user()))->toResponse();
+        return Response::sendResult($this->passkeys->registerOptions($request->user()));
     }
 
     public function registerVerify(Request $request)
@@ -52,8 +51,7 @@ class PasskeyController extends Controller
             $request->input('credential'),
             $request->input('name'),
         );
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 
     public function destroy(Request $request)
@@ -61,7 +59,6 @@ class PasskeyController extends Controller
         $request->validate(['id' => ['required', 'string']]);
 
         $result = $this->passkeys->delete($request, $request->user(), $request->string('id'));
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 }

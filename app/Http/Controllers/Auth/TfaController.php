@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use App\Http\Controllers\Controller;
 use App\Services\Auth\TfaService;
 use Illuminate\Http\Request;
@@ -18,14 +18,14 @@ class TfaController extends Controller
 
     public function methods(Request $request)
     {
-        return ApiResult::success(null, ['methods' => $this->tfa->getChallengeMethods($request)])->toResponse();
+        return Response::success(null, ['methods' => $this->tfa->getChallengeMethods($request)]);
     }
 
     public function sendOtp(Request $request)
     {
         $this->tfa->sendLoginChallengeOtp($request);
 
-        return ApiResult::success('A verification code has been sent to your email')->toResponse();
+        return Response::success('A verification code has been sent to your email');
     }
 
     public function verify(Request $request)
@@ -48,20 +48,14 @@ class TfaController extends Controller
 
     public function status(Request $request)
     {
-        return ApiResult::success(null, $this->tfa->getStatus($request->user()))->toResponse();
+        return Response::success(null, $this->tfa->getStatus($request->user()));
     }
 
     public function enable(Request $request)
     {
         $request->validate(['password' => ['required', 'string']]);
-
         $result = $this->tfa->enable($request, $request->user(), $request->string('password'));
-
-        if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
-        }
-
-        return ApiResult::success(null, $result['data'])->toResponse();
+        return Response::sendResult($result);
     }
 
     public function verifySetup(Request $request)
@@ -72,8 +66,7 @@ class TfaController extends Controller
         ]);
 
         $result = $this->tfa->verifySetup($request, $request->user(), $request->string('method'), $request->string('code'));
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 
     public function disable(Request $request)
@@ -81,25 +74,18 @@ class TfaController extends Controller
         $request->validate(['password' => ['required', 'string']]);
 
         $result = $this->tfa->disable($request, $request->user(), $request->string('password'));
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 
     public function removeAuthenticator(Request $request)
     {
         $result = $this->tfa->removeAuthenticator($request, $request->user());
-
-        return ($result['ok'] ? ApiResult::success($result['message']) : ApiResult::failure($result['message']))->toResponse();
+        return Response::sendResult($result);
     }
 
     public function regenerateBackupCodes(Request $request)
     {
         $result = $this->tfa->regenerateBackupCodes($request, $request->user());
-
-        if (! $result['ok']) {
-            return ApiResult::failure($result['message'])->toResponse();
-        }
-
-        return ApiResult::success($result['message'], ['codes' => $result['codes']])->toResponse();
+        return Response::sendResult($result);
     }
 }

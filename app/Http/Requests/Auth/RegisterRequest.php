@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Helpers\ApiResult;
+use App\Helpers\Response;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -32,7 +32,7 @@ class RegisterRequest extends FormRequest
     protected function failedValidation(ValidatorContract $validator)
     {
         throw new HttpResponseException(
-            ApiResult::failure($validator->errors()->first())->toResponse()
+            Response::sendError(422,$validator->errors()->first())
         );
     }
 }
