@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_activities', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
-            $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
-            $table->string('device_id', 64)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->char('id', 36)->primary();
+            $table->char('user_id', 36);
+            $table->string('device_id', 64)->nullable();
             $table->string('type', 50)->nullable();
             $table->text('data')->nullable();
-            $table->string('ip', 45)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->string('ip', 45)->nullable();
             $table->string('client', 512)->nullable();
             $table->string('location')->nullable();
             $table->dateTime('created_at')->useCurrent();

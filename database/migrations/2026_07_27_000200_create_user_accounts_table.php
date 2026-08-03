@@ -13,17 +13,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_accounts', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
-            $table->string('account_id')->charset('ascii')->collation('ascii_bin');
-            $table->string('provider_id', 50)->charset('ascii')->collation('ascii_bin');
-            $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
+            $table->char('id', 36)->primary();
+            $table->string('account_id');
+            $table->string('provider_id', 50);
+            $table->char('user_id', 36);
             $table->text('access_token')->nullable();
             $table->text('refresh_token')->nullable();
             $table->text('id_token')->nullable();
             $table->dateTime('access_token_expires_at')->nullable();
             $table->dateTime('refresh_token_expires_at')->nullable();
             $table->string('scope')->nullable();
-            $table->string('password')->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->string('password')->nullable();
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at'); // NOT NULL, no default - Next parity
 

@@ -13,10 +13,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_devices', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
-            $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
-            $table->string('device_uid', 64)->charset('ascii')->collation('ascii_bin');
-            $table->string('ip_address', 45)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->char('id', 36)->primary();
+            $table->char('user_id', 36);
+            $table->string('device_uid', 64);
+            $table->string('ip_address', 45)->nullable();
             $table->string('user_agent', 512)->nullable();
             $table->dateTime('trusted_at')->useCurrent();
             $table->dateTime('expires_at');

@@ -23,7 +23,7 @@ return new class extends Migration
         // Any rows written before this fix hold truncated/garbage ids.
         DB::table('sessions')->update(['user_id' => null]);
 
-        DB::statement('ALTER TABLE `sessions` MODIFY `user_id` CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NULL');
+        DB::statement('ALTER TABLE sessions ALTER COLUMN user_id TYPE VARCHAR(36)');
     }
 
     public function down(): void
@@ -34,6 +34,6 @@ return new class extends Migration
 
         DB::table('sessions')->update(['user_id' => null]);
 
-        DB::statement('ALTER TABLE `sessions` MODIFY `user_id` BIGINT UNSIGNED NULL');
+        DB::statement('ALTER TABLE sessions ALTER COLUMN user_id TYPE BIGINT USING (user_id::bigint)');
     }
 };

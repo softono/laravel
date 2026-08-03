@@ -224,11 +224,12 @@ class UserAuth extends Model
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
-            $query->where(function ($query) use ($searchText) {
-                $query->where(DB::raw('CONCAT(users.first_name, " ",users.last_name)'), 'like', $searchText)
-                    ->orWhere('users.email', 'like', $searchText)
-                    ->orWhere('user_devices.user_agent', 'like', $searchText)
-                    ->orWhere('user_devices.ip_address', 'like', $searchText);
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'like';
+            $query->where(function ($query) use ($searchText, $likeOp) {
+                $query->whereRaw("CONCAT(users.first_name, ' ', users.last_name) {$likeOp} ?", [$searchText])
+                    ->orWhere('users.email', $likeOp, $searchText)
+                    ->orWhere('user_devices.user_agent', $likeOp, $searchText)
+                    ->orWhere('user_devices.ip_address', $likeOp, $searchText);
             });
         }
         $result = (new Pagination)->getDataTable($query, $postData);

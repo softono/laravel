@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_two_factors', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
+            $table->char('id', 36)->primary();
             $table->text('secret');
             $table->text('backup_codes');
-            $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
+            $table->char('user_id', 36);
             $table->boolean('verified')->default(false);
 
             $table->index('user_id', 'user_two_factors_userId_idx');

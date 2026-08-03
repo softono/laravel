@@ -6,6 +6,7 @@ use App\Jobs\SendEmail;
 use App\Models\EmailTemplate;
 use App\Models\SeoMeta;
 use App\Models\Setting;
+use App\Repositories\SettingRepository;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Mail\Mailer;
@@ -120,7 +121,7 @@ class General
      */
     public function getAllSettings()
     {
-        return (new Setting)->getAllSettings();
+        return (new SettingRepository)->getAllSettings();
     }
 
     /**

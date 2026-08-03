@@ -84,13 +84,16 @@ class SeoMetaRepository
         $searchText = $postData['search']['value'] ?? '';
 
         if (strlen($searchText) > 2) {
-            $query->where(function ($query) use ($searchText) {
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'like';
+            $castSitemap = DB::getDriverName() === 'pgsql' ? 'CAST(sitemap_enable AS TEXT)' : 'sitemap_enable';
+
+            $query->where(function ($query) use ($searchText, $likeOp, $castSitemap) {
                 $searchPattern = '%'.$searchText.'%';
-                $query->where('title', 'like', $searchPattern)
-                    ->orWhere('keyword', 'like', $searchPattern)
-                    ->orWhere('url', 'like', $searchPattern)
-                    ->orWhere('description', 'like', $searchPattern)
-                    ->orWhere('sitemap_enable', 'like', $searchPattern);
+                $query->where('title', $likeOp, $searchPattern)
+                    ->orWhere('keyword', $likeOp, $searchPattern)
+                    ->orWhere('url', $likeOp, $searchPattern)
+                    ->orWhere('description', $likeOp, $searchPattern)
+                    ->orWhere(DB::raw($castSitemap), $likeOp, $searchPattern);
             });
         }
 

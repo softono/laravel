@@ -148,25 +148,28 @@ class UserActivity extends Model
         $searchText = isset($postData['search']['value']) ? $postData['search']['value'] : '';
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
-            $query->where(function ($query) use ($searchText) {
-                $query->where('client', 'like', $searchText)
-                    ->orwhereRaw("concat(first_name,' ' ,last_name) like ?", $searchText)
-                    ->orWhere('email', 'like', $searchText)
-                    ->orWhere('user_activities.created_at', 'LIKE', '%'.$searchText.'%')
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'like';
+            $castCreated = DB::getDriverName() === 'pgsql' ? 'CAST(user_activities.created_at AS TEXT)' : 'user_activities.created_at';
+
+            $query->where(function ($query) use ($searchText, $likeOp, $castCreated) {
+                $query->where('client', $likeOp, $searchText)
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) {$likeOp} ?", [$searchText])
+                    ->orWhere('email', $likeOp, $searchText)
+                    ->orWhere(DB::raw($castCreated), $likeOp, $searchText)
                     ->orWhere(function ($query) use ($searchText) {
-                        if (stripos($searchText, '%fai%') !== false) {
+                        if (stripos($searchText, 'fai') !== false) {
                             $query->where('user_activities.type', '=', 0);
-                        } elseif (stripos($searchText, '%succ%') !== false) {
+                        } elseif (stripos($searchText, 'succ') !== false) {
                             $query->where('user_activities.type', '=', 1);
-                        } elseif (stripos($searchText, '%reme%') !== false) {
+                        } elseif (stripos($searchText, 'reme') !== false) {
                             $query->where('user_activities.type', '=', 2);
-                        } elseif (stripos($searchText, '%Regi%') !== false) {
+                        } elseif (stripos($searchText, 'Regi') !== false) {
                             $query->where('user_activities.type', '=', 3);
-                        } elseif (stripos($searchText, '%otp%') !== false) {
+                        } elseif (stripos($searchText, 'otp') !== false) {
                             $query->where('user_activities.type', '=', 4);
-                        } elseif (stripos($searchText, '%Login with social media%') !== false) {
+                        } elseif (stripos($searchText, 'Login with social media') !== false) {
                             $query->where('user_activities.type', '=', 5);
-                        } elseif (stripos($searchText, '%Register with social media%') !== false) {
+                        } elseif (stripos($searchText, 'Register with social media') !== false) {
                             $query->where('user_activities.type', '=', 6);
                         }
                     });
@@ -258,10 +261,13 @@ class UserActivity extends Model
     {
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
-            $query->where(function ($query) use ($searchText) {
-                $query->where('client', 'like', $searchText)
-                    ->orWhere('ip', 'like', $searchText)
-                    ->orWhere('created_at', 'LIKE', $searchText);
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'like';
+            $castCreated = DB::getDriverName() === 'pgsql' ? 'CAST(created_at AS TEXT)' : 'created_at';
+
+            $query->where(function ($query) use ($searchText, $likeOp, $castCreated) {
+                $query->where('client', $likeOp, $searchText)
+                    ->orWhere('ip', $likeOp, $searchText)
+                    ->orWhere(DB::raw($castCreated), $likeOp, $searchText);
             });
         }
     }

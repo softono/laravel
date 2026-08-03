@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
+            $table->char('id', 36)->primary();
             $table->string('email')->unique();
             $table->boolean('email_verified')->default(false);
             $table->string('image')->nullable();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('phone', 32)->nullable();
             $table->string('country', 100)->nullable();
             $table->string('timezone', 64)->default('UTC');
-            $table->string('registered_ip', 45)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->string('registered_ip', 45)->nullable();
         });
     }
 

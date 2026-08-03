@@ -14,7 +14,7 @@ return new class extends Migration
         if (! Schema::hasTable('contact_messages')) {
             Schema::create('contact_messages', function (Blueprint $table) {
                 $table->id();
-                $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin')->nullable();
+                $table->char('user_id', 36)->nullable();
                 $table->string('to_user');
                 $table->string('subject');
                 $table->text('message');
@@ -39,7 +39,7 @@ return new class extends Migration
         if (! Schema::hasTable('notes')) {
             Schema::create('notes', function (Blueprint $table) {
                 $table->id();
-                $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
+                $table->char('user_id', 36);
                 $table->string('title');
                 $table->text('note')->nullable();
                 $table->timestamps();

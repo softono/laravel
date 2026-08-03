@@ -50,10 +50,10 @@ class SettingRepository
     public function allSettings(): array
     {
         $data = [];
-        $options = Setting::where('type', 0)->get();
+        $options = DB::table('settings')->get();
 
         foreach ($options as $row) {
-            $data[$row['key']] = $row['value'];
+            $data[$row->key] = $row->value;
         }
 
         return $data;

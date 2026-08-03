@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Helpers\General;
 use App\Repositories\ContactMessageRepository;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
 class GeneralService
@@ -29,11 +30,19 @@ class GeneralService
         }
 
         $data = [];
-        $result = DB::select('SELECT count(*) as total, MONTH(FROM_UNIXTIME(created_at)) as month FROM `user` WHERE role=2 GROUP BY MONTH(FROM_UNIXTIME(created_at));');
+        $driver = DB::getDriverName();
+        $tableName = Schema::hasTable('users') ? 'users' : 'user';
+
+        if ($driver === 'pgsql') {
+            $result = DB::select("SELECT count(*) as total, EXTRACT(MONTH FROM created_at) as month FROM {$tableName} WHERE role IN ('USER', '2') GROUP BY EXTRACT(MONTH FROM created_at);");
+        } else {
+            $result = DB::select("SELECT count(*) as total, MONTH(created_at) as month FROM {$tableName} WHERE role IN ('USER', '2') GROUP BY MONTH(created_at);");
+        }
+
         foreach ($labelIndex as $i) {
             $monthData = 0;
             foreach ($result as $r) {
-                if ($r->month == $i) {
+                if ((int) $r->month == $i) {
                     $monthData = $r->total;
                 }
             }
@@ -57,6 +66,8 @@ class GeneralService
 
         $currentMonth = (int) date('n');
         $currentYear = (int) date('Y');
+        $driver = DB::getDriverName();
+        $tableName = Schema::hasTable('users') ? 'users' : 'user';
 
         for ($i = 5; $i >= 0; $i--) {
             $monthIndex = ($currentMonth - $i - 1 + 12) % 12;
@@ -67,8 +78,13 @@ class GeneralService
 
             $label[] = $monthList[$monthIndex].' '.$year;
             $monthData = 0;
+            $targetMonth = $monthIndex + 1;
 
-            $result = DB::select("SELECT count(*) as total FROM `user` WHERE role = 2 AND YEAR(FROM_UNIXTIME(created_at)) = $year AND MONTH(FROM_UNIXTIME(created_at)) = $monthIndex + 1");
+            if ($driver === 'pgsql') {
+                $result = DB::select("SELECT count(*) as total FROM {$tableName} WHERE role IN ('USER', '2') AND EXTRACT(YEAR FROM created_at) = {$year} AND EXTRACT(MONTH FROM created_at) = {$targetMonth}");
+            } else {
+                $result = DB::select("SELECT count(*) as total FROM {$tableName} WHERE role IN ('USER', '2') AND YEAR(created_at) = {$year} AND MONTH(created_at) = {$targetMonth}");
+            }
 
             if (! empty($result)) {
                 $monthData = $result[0]->total;
@@ -98,13 +114,24 @@ class GeneralService
 
         $startDate = date('Y-m-d', strtotime('-6 days'));
         $endDate = date('Y-m-d');
+        $driver = DB::getDriverName();
+        $tableName = Schema::hasTable('users') ? 'users' : 'user';
 
-        $result = DB::select("
-        SELECT COUNT(*) AS total, DATE(FROM_UNIXTIME(created_at)) AS date
-        FROM `user`
-        WHERE role IN (4) AND DATE(FROM_UNIXTIME(created_at)) BETWEEN '$startDate' AND '$endDate'
-        GROUP BY DATE(FROM_UNIXTIME(created_at))
-    ");
+        if ($driver === 'pgsql') {
+            $result = DB::select("
+                SELECT COUNT(*) AS total, CAST(created_at AS DATE) AS date
+                FROM {$tableName}
+                WHERE CAST(created_at AS DATE) BETWEEN '{$startDate}' AND '{$endDate}'
+                GROUP BY CAST(created_at AS DATE)
+            ");
+        } else {
+            $result = DB::select("
+                SELECT COUNT(*) AS total, DATE(created_at) AS date
+                FROM {$tableName}
+                WHERE DATE(created_at) BETWEEN '{$startDate}' AND '{$endDate}'
+                GROUP BY DATE(created_at)
+            ");
+        }
 
         foreach ($result as $row) {
             $index = 6 - (strtotime($row->date) - strtotime($startDate)) / (60 * 60 * 24);

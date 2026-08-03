@@ -14,9 +14,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_verifications', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
-            $table->string('identifier', 320)->charset('ascii')->collation('ascii_bin');
-            $table->string('value')->charset('ascii')->collation('ascii_bin');
+            $table->char('id', 36)->primary();
+            $table->string('identifier', 320);
+            $table->string('value');
             $table->dateTime('expires_at');
             $table->unsignedInteger('attempts')->default(0);
             $table->dateTime('created_at')->useCurrent();

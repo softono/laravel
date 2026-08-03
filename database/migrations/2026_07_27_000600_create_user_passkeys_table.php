@@ -13,17 +13,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_passkeys', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
+            $table->char('id', 36)->primary();
             $table->string('name', 100)->nullable();
             $table->text('public_key');
-            $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
-            $table->string('credential_id')->charset('ascii')->collation('ascii_bin');
+            $table->char('user_id', 36);
+            $table->string('credential_id');
             $table->integer('counter');
             $table->string('device_type', 32);
             $table->boolean('backed_up');
             $table->string('transports')->nullable();
             $table->dateTime('created_at')->nullable();
-            $table->char('aaguid', 36)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->char('aaguid', 36)->nullable();
 
             $table->index('user_id', 'user_passkey_userId_idx');
             $table->index('credential_id', 'user_passkey_credentialID_idx');

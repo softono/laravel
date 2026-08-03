@@ -13,20 +13,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_login_links', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
-            $table->string('purpose', 20)->charset('ascii')->collation('ascii_bin');
+            $table->char('id', 36)->primary();
+            $table->string('purpose', 20);
             $table->string('email');
-            $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
-            $table->string('poll_token_hash')->charset('ascii')->collation('ascii_bin');
-            $table->string('link_token_hash')->charset('ascii')->collation('ascii_bin');
-            $table->char('code', 6)->charset('ascii')->collation('ascii_bin');
-            $table->string('status', 20)->charset('ascii')->collation('ascii_bin')->default('pending');
+            $table->char('user_id', 36);
+            $table->string('poll_token_hash');
+            $table->string('link_token_hash');
+            $table->char('code', 6);
+            $table->string('status', 20)->default('pending');
             $table->string('device_name')->nullable();
             $table->string('location')->nullable();
-            $table->string('ip', 45)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->string('ip', 45)->nullable();
             $table->boolean('remember')->default(false);
             $table->boolean('trust_device')->default(false);
-            $table->string('tfa_handle', 64)->charset('ascii')->collation('ascii_bin')->nullable();
+            $table->string('tfa_handle', 64)->nullable();
             $table->dateTime('expires_at');
             $table->dateTime('approved_at')->nullable();
             $table->dateTime('created_at')->useCurrent();

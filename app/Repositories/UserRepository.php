@@ -24,9 +24,10 @@ class UserRepository
         $searchText = $postData['search']['value'] ?? '';
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
-            $query->where(function ($query) use ($searchText) {
-                $query->whereRaw("concat(users.first_name,' ' ,users.last_name) like ?", $searchText)
-                    ->orWhere('email', 'like', $searchText);
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'like';
+            $query->where(function ($query) use ($searchText, $likeOp) {
+                $query->whereRaw("CONCAT(users.first_name, ' ', users.last_name) {$likeOp} ?", [$searchText])
+                    ->orWhere('email', $likeOp, $searchText);
             });
         }
 
@@ -81,14 +82,22 @@ class UserRepository
         $searchText = $postData['search']['value'] ?? '';
         if (strlen($searchText) > 2) {
             $searchText = '%'.$searchText.'%';
-            $query->where(function ($query) use ($searchText) {
-                $query->whereRaw("concat(first_name,' ' ,last_name) like ?", $searchText)->orWhere('email', 'like', $searchText)->orWhere(DB::raw("FROM_UNIXTIME(created_at, '%d-%m-%Y')"), 'LIKE', '%'.$searchText.'%')->orWhere(function ($query) use ($searchText) {
-                    if (stripos($searchText, '%Act%') !== false) {
-                        $query->where('status', '=', 1);
-                    } elseif (stripos($searchText, '%Inac%') !== false) {
-                        $query->where('status', '=', 0);
-                    }
-                });
+            $likeOp = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'like';
+            $dateExpr = DB::getDriverName() === 'pgsql'
+                ? "TO_CHAR(created_at, 'DD-MM-YYYY')"
+                : "DATE_FORMAT(created_at, '%d-%m-%Y')";
+
+            $query->where(function ($query) use ($searchText, $likeOp, $dateExpr) {
+                $query->whereRaw("CONCAT(first_name, ' ', last_name) {$likeOp} ?", [$searchText])
+                    ->orWhere('email', $likeOp, $searchText)
+                    ->orWhere(DB::raw($dateExpr), $likeOp, $searchText)
+                    ->orWhere(function ($query) use ($searchText) {
+                        if (stripos($searchText, 'Act') !== false) {
+                            $query->where('status', '=', 'active');
+                        } elseif (stripos($searchText, 'Inac') !== false) {
+                            $query->where('status', '=', 'inactive');
+                        }
+                    });
             });
         }
 
