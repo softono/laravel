@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Setting;
+use App\Repositories\SettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class SettingController extends Controller
      */
     public function save(Request $request)
     {
-        return response()->json((new Setting)->store($request->all()));
+        return response()->json((new SettingRepository)->store($request->all()));
     }
 
     /**
@@ -45,7 +46,7 @@ class SettingController extends Controller
      */
     public function cacheClear(Request $request)
     {
-        (new Setting)->clearCache();
+        (new SettingRepository)->clearCache();
 
         return response()->json(['status' => 1, 'message' => 'Setting cache cleared']);
     }
@@ -66,6 +67,7 @@ class SettingController extends Controller
             return response()->json(['status' => 0, 'message' => $this->general->getError($validator)]);
         }
         $key = $request->input('key');
+        $settingRepo = new SettingRepository;
         $setting = Setting::where('key', $key)->first();
         if ($setting) {
             $result = $this->general->uploadFile($request->file('image'), 'logo', '', 'same');
@@ -75,7 +77,7 @@ class SettingController extends Controller
                 }
                 $setting->value = $result['file_name'];
                 $setting->save();
-                $setting->clearCache();
+                $settingRepo->clearCache();
             }
         }
 
