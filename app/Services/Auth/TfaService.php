@@ -6,8 +6,10 @@ use App\Constants\UserActivity;
 use App\Helpers\Response;
 use App\Helpers\SignedCookie;
 use App\Models\Auth\User;
-use App\Models\Auth\UserAccount;
 use App\Models\Auth\UserTwoFactor;
+use App\Repositories\Auth\UserAccountRepository;
+use App\Repositories\Auth\UserRepository;
+use App\Repositories\Auth\UserTwoFactorRepository;
 use App\Services\Auth\Tfa\BackupCodeMethod;
 use App\Services\Auth\Tfa\EmailOtpMethod;
 use App\Services\Auth\Tfa\TotpMethod;
@@ -30,6 +32,9 @@ class TfaService
         protected SessionService $sessions,
         protected AuthService $auth,
         protected ActivityService $activity,
+        protected UserRepository $users,
+        protected UserAccountRepository $userAccounts,
+        protected UserTwoFactorRepository $userTwoFactors,
     ) {}
 
     /**
@@ -57,7 +62,7 @@ class TfaService
         }
 
         $methods = ['otp'];
-        $tf = UserTwoFactor::where('user_id', $data['user_id'])->first();
+        $tf = $this->userTwoFactors->findByUserId($data['user_id']);
 
         if ($tf && $tf->verified) {
             $methods[] = 'totp';
@@ -94,7 +99,7 @@ class TfaService
             return Response::sendError(401, 'Verification session expired. Please log in again.');
         }
 
-        $user = User::find($pending['user_id']);
+        $user = $this->users->findById($pending['user_id']);
 
         if (! $user) {
             $this->challenges->consumeTfa($handle);
@@ -142,7 +147,7 @@ class TfaService
 
     protected function verifyTotp(User $user, string $code): array
     {
-        $tf = UserTwoFactor::where('user_id', $user->id)->first();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf || ! $tf->verified) {
             return ['valid' => false, 'message' => 'Authenticator app is not set up'];
@@ -153,7 +158,7 @@ class TfaService
 
     protected function verifyBackup(User $user, string $code): array
     {
-        $tf = UserTwoFactor::where('user_id', $user->id)->first();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
             return ['valid' => false, 'message' => 'No backup codes available'];
@@ -180,7 +185,7 @@ class TfaService
             return;
         }
 
-        $user = User::find($data['user_id']);
+        $user = $this->users->findById($data['user_id']);
 
         if ($user) {
             $this->emailOtp->send($user);
@@ -189,7 +194,7 @@ class TfaService
 
     public function getStatus(User $user): array
     {
-        $tf = UserTwoFactor::where('user_id', $user->id)->first();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
 
         return [
             'enabled' => (bool) $user->two_factor_enabled,
@@ -201,7 +206,7 @@ class TfaService
     /** @return array{ok: bool, message: string, data: array} */
     public function enable(Request $request, User $user, string $password): array
     {
-        $account = UserAccount::where('user_id', $user->id)->where('provider_id', 'credential')->first();
+        $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password || ! Hash::check($password, $account->password)) {
             return ['ok' => false, 'message' => 'Current password is incorrect', 'data' => []];
@@ -237,7 +242,7 @@ class TfaService
     /** @return array{ok: bool, message: string} */
     public function verifySetup(Request $request, User $user, string $method, string $code): array
     {
-        $tf = UserTwoFactor::where('user_id', $user->id)->first();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
             return ['ok' => false, 'message' => 'Two-factor setup not started'];
@@ -264,13 +269,16 @@ class TfaService
     /** @return array{ok: bool, message: string} */
     public function disable(Request $request, User $user, string $password): array
     {
-        $account = UserAccount::where('user_id', $user->id)->where('provider_id', 'credential')->first();
+        $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password || ! Hash::check($password, $account->password)) {
             return ['ok' => false, 'message' => 'Current password is incorrect'];
         }
 
-        UserTwoFactor::where('user_id', $user->id)->delete();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
+        if ($tf) {
+            $this->userTwoFactors->delete($tf);
+        }
         $user->update(['two_factor_enabled' => false]);
         $this->sessions->invalidateUserCache($user->id);
         $this->devices->revokeAll($user->id);
@@ -282,7 +290,7 @@ class TfaService
     /** Removes only the authenticator app, keeping email-OTP/backup-code 2FA available. */
     public function removeAuthenticator(Request $request, User $user): array
     {
-        $tf = UserTwoFactor::where('user_id', $user->id)->first();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
             return ['ok' => false, 'message' => 'Authenticator app is not set up'];
@@ -297,7 +305,7 @@ class TfaService
     /** @return array{ok: bool, message: string, codes: string[]} */
     public function regenerateBackupCodes(Request $request, User $user): array
     {
-        $tf = UserTwoFactor::where('user_id', $user->id)->first();
+        $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
             return ['ok' => false, 'message' => 'Two-factor authentication is not enabled', 'codes' => []];

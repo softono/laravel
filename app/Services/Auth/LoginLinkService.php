@@ -5,8 +5,9 @@ namespace App\Services\Auth;
 use App\Constants\UserActivity;
 use App\Helpers\ClientInfo;
 use App\Helpers\General;
-use App\Models\Auth\User;
 use App\Models\Auth\UserLoginLink;
+use App\Repositories\Auth\UserLoginLinkRepository;
+use App\Repositories\Auth\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -22,6 +23,8 @@ class LoginLinkService
         protected SessionService $sessions,
         protected ActivityService $activity,
         protected DeviceService $devices,
+        protected UserRepository $users,
+        protected UserLoginLinkRepository $userLoginLinks,
     ) {}
 
     /**
@@ -30,7 +33,7 @@ class LoginLinkService
     public function start(Request $request, string $email, bool $remember, bool $trustDevice): array
     {
         $email = strtolower(trim($email));
-        $user = User::where('email', $email)->first();
+        $user = $this->users->findByEmail($email);
         $expiresAt = now()->addSeconds((int) config('auth_next.login_link_expire_sec'));
 
         // Unknown email: fabricate a requestId AND a plausible-looking code,
@@ -49,7 +52,7 @@ class LoginLinkService
         $linkToken = bin2hex(random_bytes(32));
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        $link = UserLoginLink::create([
+        $link = $this->userLoginLinks->create([
             'purpose' => 'signin',
             'email' => $email,
             'user_id' => $user->id,
@@ -86,7 +89,7 @@ class LoginLinkService
      */
     public function poll(Request $request, string $requestId, string $pollToken): array
     {
-        $link = UserLoginLink::find($requestId);
+        $link = $this->userLoginLinks->findById($requestId);
 
         if (! $link || ! Hash::check($pollToken, $link->poll_token_hash)) {
             return ['state' => 'pending'];
@@ -111,7 +114,7 @@ class LoginLinkService
         if ($link->status === 'approved') {
             // Conditional update: only the FIRST poll to observe 'approved'
             // successfully claims it (single-use).
-            $claimed = UserLoginLink::where('id', $link->id)->where('status', 'approved')->update(['status' => 'consumed']);
+            $claimed = $this->userLoginLinks->claimApproved($link->id);
 
             if ($claimed === 0) {
                 // Someone else's poll already claimed it in this same instant.
@@ -146,7 +149,7 @@ class LoginLinkService
      */
     public function approvalInfo(string $id, string $token): array
     {
-        $link = UserLoginLink::find($id);
+        $link = $this->userLoginLinks->findById($id);
 
         if (! $link || ! Hash::check($token, $link->link_token_hash)) {
             return ['ok' => false];
@@ -173,7 +176,7 @@ class LoginLinkService
      */
     public function respond(string $id, string $token, string $action): array
     {
-        $link = UserLoginLink::find($id);
+        $link = $this->userLoginLinks->findById($id);
 
         if (! $link || ! Hash::check($token, $link->link_token_hash)) {
             return ['ok' => false, 'message' => 'This login request is no longer valid'];

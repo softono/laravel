@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\Auth\UserVerification;
+use App\Repositories\Auth\UserVerificationRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Hash;
  */
 class OtpService
 {
+    public function __construct(
+        protected UserVerificationRepository $verifications,
+    ) {}
+
     public function issue(string $purpose, string $email): string
     {
         $identifier = $this->identifier($purpose, $email);

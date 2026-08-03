@@ -4,7 +4,8 @@ namespace App\Services\Auth;
 
 use App\Constants\UserActivity;
 use App\Models\Auth\User;
-use App\Models\Auth\UserAccount;
+use App\Repositories\Auth\UserAccountRepository;
+use App\Repositories\Auth\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -27,6 +28,8 @@ class AuthService
     public function __construct(
         protected SessionService $sessions,
         protected ActivityService $activity,
+        protected UserRepository $users,
+        protected UserAccountRepository $userAccounts,
     ) {}
 
     public function dummyPasswordCheck(): void
@@ -40,7 +43,7 @@ class AuthService
     public function authenticate(Request $request, string $email, string $password, bool $requireAdmin = false): array
     {
         $email = strtolower(trim($email));
-        $user = User::where('email', $email)->first();
+        $user = $this->users->findByEmail($email);
 
         if (! $user || ($requireAdmin && ! $user->isAdmin())) {
             $this->dummyPasswordCheck();
@@ -52,7 +55,7 @@ class AuthService
             return ['ok' => false, 'message' => 'Account is disabled', 'user' => null, 'requiresTfa' => false];
         }
 
-        $account = UserAccount::where('user_id', $user->id)->where('provider_id', 'credential')->first();
+        $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password) {
             $this->dummyPasswordCheck();
@@ -95,7 +98,7 @@ class AuthService
      */
     public function changePassword(Request $request, User $user, string $currentPassword, string $newPassword): array
     {
-        $account = UserAccount::where('user_id', $user->id)->where('provider_id', 'credential')->first();
+        $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password || ! Hash::check($currentPassword, $account->password)) {
             return ['ok' => false, 'message' => 'Current password is incorrect'];
@@ -113,12 +116,12 @@ class AuthService
 
     public function setPassword(Request $request, User $user, string $newPassword): array
     {
-        $account = UserAccount::where('user_id', $user->id)->where('provider_id', 'credential')->first();
+        $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if ($account) {
             $account->update(['password' => Hash::make($newPassword)]);
         } else {
-            UserAccount::create([
+            $this->userAccounts->create([
                 'user_id' => $user->id,
                 'account_id' => $user->id,
                 'provider_id' => 'credential',

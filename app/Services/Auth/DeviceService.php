@@ -4,6 +4,7 @@ namespace App\Services\Auth;
 
 use App\Helpers\ClientInfo;
 use App\Models\Auth\UserDevice;
+use App\Repositories\Auth\UserDeviceRepository;
 use Illuminate\Http\Request;
 
 /**
@@ -12,6 +13,10 @@ use Illuminate\Http\Request;
  */
 class DeviceService
 {
+    public function __construct(
+        protected UserDeviceRepository $userDevices,
+    ) {}
+
     public function isTrusted(Request $request, string $userId): bool
     {
         $deviceUid = ClientInfo::deviceUid($request);
@@ -20,10 +25,9 @@ class DeviceService
             return false;
         }
 
-        return UserDevice::where('user_id', $userId)
-            ->where('device_uid', $deviceUid)
-            ->where('expires_at', '>', now())
-            ->exists();
+        $device = $this->userDevices->findByDeviceUid($userId, $deviceUid);
+
+        return $device && $device->expires_at && $device->expires_at->isFuture();
     }
 
     public function trust(Request $request, string $userId): ?UserDevice
@@ -36,7 +40,7 @@ class DeviceService
 
         $expiresAt = now()->addDays((int) config('auth_next.trust_days'));
 
-        $device = UserDevice::where('user_id', $userId)->where('device_uid', $deviceUid)->first();
+        $device = $this->userDevices->findByDeviceUid($userId, $deviceUid);
 
         if ($device) {
             $device->update([
@@ -49,7 +53,7 @@ class DeviceService
             return $device;
         }
 
-        return UserDevice::create([
+        return $this->userDevices->create([
             'user_id' => $userId,
             'device_uid' => $deviceUid,
             'ip_address' => ClientInfo::ip($request),

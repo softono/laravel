@@ -6,7 +6,8 @@ use App\Constants\UserActivity;
 use App\Constants\UserRole;
 use App\Constants\UserStatus;
 use App\Models\Auth\User;
-use App\Models\Auth\UserAccount;
+use App\Repositories\Auth\UserAccountRepository;
+use App\Repositories\Auth\UserRepository;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -24,6 +25,8 @@ class OAuthService
     public function __construct(
         protected SessionService $sessions,
         protected ActivityService $activity,
+        protected UserRepository $users,
+        protected UserAccountRepository $userAccounts,
     ) {}
 
     public function redirectUrl(): string
@@ -48,10 +51,10 @@ class OAuthService
             return ['ok' => false, 'message' => 'Your Google account email is not verified.', 'user' => null];
         }
 
-        $account = UserAccount::where('provider_id', 'google')->where('account_id', $googleUser->getId())->first();
+        $account = $this->userAccounts->findProviderAccount('google', $googleUser->getId());
 
         if ($account) {
-            $user = User::find($account->user_id);
+            $user = $this->users->findById($account->user_id);
 
             if (! $user || ! $user->isActive()) {
                 return ['ok' => false, 'message' => 'Account is disabled', 'user' => null];
@@ -63,14 +66,14 @@ class OAuthService
         }
 
         $email = strtolower(trim($googleUser->getEmail()));
-        $user = User::where('email', $email)->first();
+        $user = $this->users->findByEmail($email);
 
         if ($user) {
             if (! $user->isActive()) {
                 return ['ok' => false, 'message' => 'Account is disabled', 'user' => null];
             }
 
-            UserAccount::create([
+            $this->userAccounts->create([
                 'user_id' => $user->id,
                 'account_id' => $googleUser->getId(),
                 'provider_id' => 'google',
@@ -86,7 +89,7 @@ class OAuthService
 
         [$firstName, $lastName] = $this->splitName($googleUser->getName() ?: $googleUser->getNickname() ?: $email);
 
-        $user = User::create([
+        $user = $this->users->create([
             'email' => $email,
             'email_verified' => true,
             'image' => $googleUser->getAvatar(),
@@ -98,7 +101,7 @@ class OAuthService
             'registered_ip' => $request->ip(),
         ]);
 
-        UserAccount::create([
+        $this->userAccounts->create([
             'user_id' => $user->id,
             'account_id' => $googleUser->getId(),
             'provider_id' => 'google',

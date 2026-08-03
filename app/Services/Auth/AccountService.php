@@ -7,7 +7,8 @@ use App\Constants\UserRole;
 use App\Constants\UserStatus;
 use App\Helpers\General;
 use App\Models\Auth\User;
-use App\Models\Auth\UserAccount;
+use App\Repositories\Auth\UserAccountRepository;
+use App\Repositories\Auth\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,6 +22,8 @@ class AccountService
         protected OtpService $otp,
         protected SessionService $sessions,
         protected ActivityService $activity,
+        protected UserRepository $users,
+        protected UserAccountRepository $userAccounts,
     ) {}
 
     /**
@@ -30,11 +33,11 @@ class AccountService
     {
         $email = strtolower(trim($data['email']));
 
-        if (User::where('email', $email)->exists()) {
+        if ($this->users->findByEmail($email)) {
             return ['ok' => false, 'message' => 'Email already registered', 'next' => null, 'user' => null];
         }
 
-        $user = User::create([
+        $user = $this->users->create([
             'email' => $email,
             'email_verified' => false,
             'role' => UserRole::USER,
@@ -47,7 +50,7 @@ class AccountService
             'registered_ip' => $request->ip(),
         ]);
 
-        UserAccount::create([
+        $this->userAccounts->create([
             'user_id' => $user->id,
             'account_id' => $user->id,
             'provider_id' => 'credential',
@@ -95,13 +98,13 @@ class AccountService
             return ['ok' => false, 'message' => $result['message']];
         }
 
-        $user = User::where('email', strtolower(trim($email)))->first();
+        $user = $this->users->findByEmail($email);
 
         if (! $user) {
             return ['ok' => false, 'message' => 'Invalid or expired OTP'];
         }
 
-        $user->update(['email_verified' => true]);
+        $this->users->update($user, ['email_verified' => true]);
         $this->sessions->invalidateUserCache($user->id);
 
         return ['ok' => true, 'message' => 'Account verified successfully'];
@@ -113,7 +116,7 @@ class AccountService
      */
     public function forgotPassword(string $email): array
     {
-        $user = User::where('email', strtolower(trim($email)))->first();
+        $user = $this->users->findByEmail($email);
 
         if ($user) {
             $this->sendOtp('reset', $user);
@@ -133,18 +136,18 @@ class AccountService
             return ['ok' => false, 'message' => $result['message']];
         }
 
-        $user = User::where('email', strtolower(trim($email)))->first();
+        $user = $this->users->findByEmail($email);
 
         if (! $user) {
             return ['ok' => false, 'message' => 'Invalid or expired OTP'];
         }
 
-        $account = UserAccount::where('user_id', $user->id)->where('provider_id', 'credential')->first();
+        $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if ($account) {
             $account->update(['password' => Hash::make($newPassword)]);
         } else {
-            UserAccount::create([
+            $this->userAccounts->create([
                 'user_id' => $user->id,
                 'account_id' => $user->id,
                 'provider_id' => 'credential',

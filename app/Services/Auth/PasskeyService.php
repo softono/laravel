@@ -6,6 +6,8 @@ use App\Constants\UserActivity;
 use App\Helpers\SignedCookie;
 use App\Models\Auth\User;
 use App\Models\Auth\UserPasskey;
+use App\Repositories\Auth\UserPasskeyRepository;
+use App\Repositories\Auth\UserRepository;
 use Cose\Algorithm\Manager as AlgorithmManager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
 use Cose\Algorithm\Signature\RSA\RS256;
@@ -42,6 +44,8 @@ class PasskeyService
         protected SessionService $sessions,
         protected DeviceService $devices,
         protected ActivityService $activity,
+        protected UserRepository $users,
+        protected UserPasskeyRepository $userPasskeys,
     ) {}
 
     protected function rpId(): string
@@ -75,7 +79,7 @@ class PasskeyService
     {
         $challenge = random_bytes(32);
 
-        $excludeCredentials = UserPasskey::where('user_id', $user->id)->get()->map(
+        $excludeCredentials = $this->userPasskeys->getByUserId($user->id)->map(
             fn (UserPasskey $p) => PublicKeyCredentialDescriptor::create(
                 'public-key',
                 SignedCookie::base64UrlDecode($p->credential_id),
@@ -144,7 +148,7 @@ class PasskeyService
             return ['ok' => false, 'message' => 'Passkey registration failed: '.$e->getMessage()];
         }
 
-        UserPasskey::create([
+        $this->userPasskeys->create([
             'name' => $name ?: 'Passkey',
             'public_key' => SignedCookie::base64UrlEncode($record->credentialPublicKey),
             'user_id' => $user->id,
@@ -164,7 +168,7 @@ class PasskeyService
 
     public function list(User $user)
     {
-        return UserPasskey::where('user_id', $user->id)->get(['id', 'name', 'device_type', 'created_at']);
+        return $this->userPasskeys->getByUserId($user->id);
     }
 
     public function delete(Request $request, User $user, string $id): array
@@ -175,7 +179,7 @@ class PasskeyService
             return ['ok' => false, 'message' => 'Passkey not found'];
         }
 
-        $passkey->delete();
+        $this->userPasskeys->delete($passkey);
         $this->activity->log($request, $user->id, UserActivity::PASSKEY_DELETED);
 
         return ['ok' => true, 'message' => 'Passkey removed'];
@@ -221,13 +225,13 @@ class PasskeyService
         }
 
         $credentialId = SignedCookie::base64UrlEncode($credential->rawId);
-        $passkey = UserPasskey::where('credential_id', $credentialId)->first();
+        $passkey = $this->userPasskeys->findByCredentialId($credentialId);
 
         if (! $passkey) {
             return ['ok' => false, 'message' => 'This passkey is not registered.'];
         }
 
-        $user = User::find($passkey->user_id);
+        $user = $this->users->findById($passkey->user_id);
 
         if (! $user || ! $user->isActive()) {
             return ['ok' => false, 'message' => 'Account is disabled'];

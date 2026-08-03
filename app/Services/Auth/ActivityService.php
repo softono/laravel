@@ -4,6 +4,7 @@ namespace App\Services\Auth;
 
 use App\Helpers\ClientInfo;
 use App\Models\Auth\UserActivity;
+use App\Repositories\Auth\UserActivityRepository;
 use Illuminate\Http\Request;
 
 /**
@@ -13,9 +14,13 @@ use Illuminate\Http\Request;
  */
 class ActivityService
 {
+    public function __construct(
+        protected UserActivityRepository $activities,
+    ) {}
+
     public function log(Request $request, string $userId, string $type, ?array $data = null): UserActivity
     {
-        return UserActivity::create([
+        return $this->activities->create([
             'user_id' => $userId,
             'device_id' => ClientInfo::deviceUid($request),
             'type' => $type,

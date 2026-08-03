@@ -5,6 +5,8 @@ namespace App\Services\Auth;
 use App\Helpers\ClientInfo;
 use App\Models\Auth\User;
 use App\Models\Auth\UserSession;
+use App\Repositories\Auth\UserRepository;
+use App\Repositories\Auth\UserSessionRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -18,6 +20,11 @@ use Illuminate\Support\Facades\Cache;
  */
 class SessionService
 {
+    public function __construct(
+        protected UserSessionRepository $userSessions,
+        protected UserRepository $users,
+    ) {}
+
     protected function cache()
     {
         // Uses the app's normal default cache store (config('cache.default'))
@@ -33,7 +40,7 @@ class SessionService
             ? config('auth_next.session_ttl_days.remember')
             : config('auth_next.session_ttl_days.default');
 
-        $session = UserSession::create([
+        $session = $this->userSessions->create([
             'token' => $token,
             'user_id' => $userId,
             'expires_at' => now()->addDays($days),
@@ -66,7 +73,7 @@ class SessionService
         if ($cached) {
             $session = UserSession::find($cached['session_id']);
         } else {
-            $session = UserSession::where('token', $token)->first();
+            $session = $this->userSessions->findByToken($token);
         }
 
         if (! $session) {
@@ -98,7 +105,7 @@ class SessionService
 
     public function revoke(string $token): void
     {
-        $session = UserSession::where('token', $token)->first();
+        $session = $this->userSessions->findByToken($token);
 
         if ($session) {
             $this->revokeSession($session);
@@ -107,17 +114,13 @@ class SessionService
 
     public function revokeAllForUser(string $userId): void
     {
-        $sessions = UserSession::where('user_id', $userId)->get();
-
-        foreach ($sessions as $session) {
-            $this->revokeSession($session);
-        }
+        $this->userSessions->revokeAllForUser($userId);
     }
 
     public function revokeSession(UserSession $session): void
     {
         $this->cache()->forget("auth:session:{$session->token}");
-        $session->delete();
+        $this->userSessions->revoke($session);
     }
 
     protected function maybeSlideExpiry(UserSession $session): void
@@ -152,7 +155,7 @@ class SessionService
         $key = "auth:user:{$userId}";
 
         return $this->cache()->remember($key, config('auth_next.session_cache_ttl'), function () use ($userId) {
-            return User::find($userId);
+            return $this->users->findById($userId);
         });
     }
 

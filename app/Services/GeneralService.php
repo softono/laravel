@@ -3,12 +3,16 @@
 namespace App\Services;
 
 use App\Helpers\General;
-use App\Models\ContactMessages;
+use App\Repositories\ContactMessageRepository;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class GeneralService
 {
+    public function __construct(
+        protected ContactMessageRepository $contactMessages,
+    ) {}
+
     /**
      * Get user monthly chart data.
      */
@@ -147,7 +151,7 @@ class GeneralService
 
         /* SAVE CONTACT MESSAGE TO DATABASE */
 
-        ContactMessages::create([
+        $this->contactMessages->create([
             'user_id' => auth()->id(),
             'email' => $postData['email'],
             'subject' => $postData['subject'],
