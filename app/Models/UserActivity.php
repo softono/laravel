@@ -198,11 +198,11 @@ class UserActivity extends Model
      * @param  int  $userId  The user ID.
      * @return array The paginated log data.
      */
-    public function list(array $postData, int $userId): array
+    public function list(array $postData, string|int $userId): array
     {
         $query = DB::table($this->table)
             ->select('*')
-            ->where('user_id', $userId);
+            ->where('user_id', (string) $userId);
 
         $this->applySearchFilter($query, $postData['search']['value'] ?? '');
 

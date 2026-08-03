@@ -31,7 +31,7 @@ class LoginLinkController extends Controller
             $request->boolean('trust_device'),
         );
 
-        return Response:success(null, [
+        return Response::success(null, [
             'request_id' => $result['request_id'],
             'expires_at' => $result['expires_at'],
             'poll_token' => $result['poll_token'] ?? bin2hex(random_bytes(32)),
@@ -57,7 +57,7 @@ class LoginLinkController extends Controller
             SignedCookie::queueRaw('session_token', $result['session_token'], $ttlSeconds);
         }
 
-        return Response:success(null, ['state' => $result['state']]);
+        return Response::success(null, ['state' => $result['state']]);
     }
 
     public function approveInfo(Request $request)
@@ -67,7 +67,7 @@ class LoginLinkController extends Controller
         $result = $this->loginLinks->approvalInfo($request->string('id'), $request->string('token'));
 
         if (! $result['ok']) {
-            return Responsefailure('This login request is no longer valid');
+            return Response::sendError(400, 'This login request is no longer valid');
         }
 
         return Response::success(null, [
@@ -86,6 +86,7 @@ class LoginLinkController extends Controller
         ]);
 
         $result = $this->loginLinks->respond($request->string('id'), $request->string('token'), $request->string('action'));
+
         return Response::sendResult($result);
     }
 }

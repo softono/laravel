@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Controller;
 use App\Models\UserActivity;
 use App\Models\UserAuth;
 use App\Services\AccountService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -37,7 +38,7 @@ class AccountController extends Controller
     /**
      * Save updated account details.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function save(Request $request)
     {
@@ -59,7 +60,7 @@ class AccountController extends Controller
     /**
      * Process password change request.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function changePasswordProcess(Request $request)
     {
@@ -81,7 +82,7 @@ class AccountController extends Controller
     /**
      * Save updated profile image.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function imagesave(Request $request)
     {
@@ -91,7 +92,7 @@ class AccountController extends Controller
     /**
      * Delete the current user's profile image.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function deleteImage()
     {
@@ -108,7 +109,7 @@ class AccountController extends Controller
     /**
      * Toggle TFA status.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function tfaStatusChange()
     {
@@ -123,7 +124,7 @@ class AccountController extends Controller
     /**
      * Revoke all trusted devices for the current user.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function revokeAll()
     {
@@ -143,7 +144,7 @@ class AccountController extends Controller
     /**
      * Retrieve the list of user's devices.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function deviceList(Request $request)
     {
@@ -153,7 +154,7 @@ class AccountController extends Controller
     /**
      * Log out the specified device.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function deviceLogout(Request $request)
     {
@@ -175,7 +176,7 @@ class AccountController extends Controller
     /**
      * Retrieve the list of user activity logs.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function userActivityList(Request $request)
     {

@@ -43,14 +43,10 @@
             ])
             app.addJS(['theme/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js']);
             datatableObj = $('#data-table').DataTable({
-                ajax: {
+                ajax: dataTableAjax({
                     url: '{{ route('account/user-activity-list') }}',
                     method: 'post',
-                    dataSrc: 'data',
-                    data: {
-                        '_token': CSRF_TOKEN
-                    },
-                },
+                }),
                 columns: [
 
                     {

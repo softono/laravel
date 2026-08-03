@@ -113,7 +113,7 @@ var accountTfa = (function () {
             });
         });
 
-        loadStatus();
+        // Initial state rendered via Blade template
     }
 
     return { init: init };

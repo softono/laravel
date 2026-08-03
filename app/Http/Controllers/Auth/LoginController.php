@@ -48,12 +48,12 @@ class LoginController extends Controller
             app(AccountService::class)->sendOtp('verify', $user);
 
             return Response::sendResponse(403, [
-                'status'=>0,
-                'message'=>'Please verify your account',
-                'data'=>[
+                'status' => 0,
+                'message' => 'Please verify your account',
+                'data' => [
                     'next' => 'verify-account',
-                    'email' => $user->email,    
-                ]
+                    'email' => $user->email,
+                ],
             ]);
         }
 
@@ -79,12 +79,12 @@ class LoginController extends Controller
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendResponse(200,[
+        return Response::sendResponse(200, [
             'status' => 1,
-            'message'=>'Logged in successfully',
+            'message' => 'Logged in successfully',
             'data' => [
-                'next' => 'dashboard'
-            ]
+                'next' => 'dashboard',
+            ],
         ]);
     }
 

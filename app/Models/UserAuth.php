@@ -217,7 +217,7 @@ class UserAuth extends Model
                 'user_devices.updated_at',
                 'users.first_name',
                 'users.last_name',
-                'users.email'
+                'users.email',
             ])
             ->join('users', 'users.id', '=', 'user_devices.user_id');
 

@@ -79,19 +79,19 @@ class TfaService
         $handle = $cookieValue ? SignedCookie::verify($cookieValue) : null;
 
         if (! $handle) {
-            return Response::sendError(422,'Verification session expired. Please log in again.');
+            return Response::sendError(422, 'Verification session expired. Please log in again.');
         }
 
         if ($this->challenges->tfaAttemptsExceeded($handle)) {
             $this->challenges->consumeTfa($handle);
 
-            return Response::sendError(409,'Too many failed attempts. Please log in again.');
+            return Response::sendError(409, 'Too many failed attempts. Please log in again.');
         }
 
         $pending = $this->challenges->peekTfa($handle);
 
         if (! $pending) {
-            return Response::sendError(401,'Verification session expired. Please log in again.');
+            return Response::sendError(401, 'Verification session expired. Please log in again.');
         }
 
         $user = User::find($pending['user_id']);
@@ -99,7 +99,7 @@ class TfaService
         if (! $user) {
             $this->challenges->consumeTfa($handle);
 
-            return Response::sendError(401,('Verification session expired. Please log in again.');
+            return Response::sendError(401, 'Verification session expired. Please log in again.');
         }
 
         $result = $this->verifyByMethod($user, $method, $code);
@@ -107,7 +107,7 @@ class TfaService
         if (! $result['valid']) {
             $this->challenges->bumpTfaAttempts($handle);
 
-            return Response::sendError(422,$result['message'] ?? 'Invalid code');
+            return Response::sendError(422, $result['message'] ?? 'Invalid code');
         }
 
         $this->challenges->consumeTfa($handle);
@@ -126,7 +126,7 @@ class TfaService
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendData(['next' => 'dashboard'],'Logged in successfully');
+        return Response::sendData(['next' => 'dashboard'], 'Logged in successfully');
     }
 
     /** @return array{valid: bool, message: ?string} */

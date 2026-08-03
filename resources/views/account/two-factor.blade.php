@@ -7,7 +7,17 @@
             <div class="main-card mb-3 card">
                 <div class="card-header">
                     <h5 class="mb-2">Two-Factor Authentication</h5>
-                    <div id="tfa-status-block">Loading...</div>
+                    <div id="tfa-status-block">
+                        @if ($tfaStatus['enabled'] ?? false)
+                            <p class="text-success mb-0">Two-factor authentication is enabled.
+                                @if (!empty($tfaStatus['backup_codes_remaining']))
+                                    ({{ $tfaStatus['backup_codes_remaining'] }} backup codes remaining)
+                                @endif
+                            </p>
+                        @else
+                            <p class="text-muted mb-0">Two-factor authentication is disabled.</p>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -31,7 +41,7 @@
                 </div>
             </div>
 
-            <div class="main-card mb-3 card" id="tfa-manage-card" style="display:none;">
+            <div class="main-card mb-3 card" id="tfa-manage-card" style="{{ ($tfaStatus['enabled'] ?? false) ? '' : 'display:none;' }}">
                 <div class="card-header">
                     <h5 class="mb-4">Manage</h5>
                     <div class="mb-3">
@@ -43,7 +53,7 @@
                 </div>
             </div>
 
-            <div class="main-card mb-3 card" id="tfa-enable-card" style="display:none;">
+            <div class="main-card mb-3 card" id="tfa-enable-card" style="{{ ($tfaStatus['enabled'] ?? false) ? 'display:none;' : '' }}">
                 <div class="card-header">
                     <h5 class="mb-4">Enable Two-Factor Authentication</h5>
                     <div class="mb-3">

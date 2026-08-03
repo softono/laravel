@@ -37,6 +37,7 @@ class VerifyController extends Controller
             $request->string('email'),
             $request->string('otp'),
         );
+
         return Response::sendResult($result);
     }
 

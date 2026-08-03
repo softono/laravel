@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\Response;
 use App\Helpers\ClientInfo;
+use App\Helpers\Response;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -72,7 +72,7 @@ class AuthRateLimit
 
     protected function tooManyAttempts(int $retryAfter, int $max)
     {
-        $response = Response::sendError(429,'Too many requests. Please try again later.');
+        $response = Response::sendError(429, 'Too many requests. Please try again later.');
 
         return $response->withHeaders([
             'Retry-After' => $retryAfter,

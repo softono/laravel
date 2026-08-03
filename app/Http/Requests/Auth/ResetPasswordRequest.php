@@ -27,7 +27,7 @@ class ResetPasswordRequest extends FormRequest
     protected function failedValidation(ValidatorContract $validator)
     {
         throw new HttpResponseException(
-            Response::sendError(422,$validator->errors()->first())
+            Response::sendError(422, $validator->errors()->first())
         );
     }
 }

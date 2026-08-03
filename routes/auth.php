@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Account\AccountSecurityController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\Auth\PageController as AdminAuthPageController;
-use App\Http\Controllers\Account\AccountSecurityController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LoginLinkController;

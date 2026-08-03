@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\Response
+use App\Helpers\Response;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,7 @@ class AuthenticateAdminSession
 
         if (Auth::guest()) {
             if ($isJson) {
-                return Response::sendError(401,'Authentication required');
+                return Response::sendError(401, 'Authentication required');
             }
 
             return redirect('/admin/auth/login?redirect='.urlencode($request->path()));
@@ -31,7 +31,7 @@ class AuthenticateAdminSession
 
         if (! $user->isAdmin()) {
             if ($isJson) {
-                return Response::sendError(401,'You are not authorized');
+                return Response::sendError(401, 'You are not authorized');
             }
 
             return redirect('/admin/auth/login');
@@ -39,7 +39,7 @@ class AuthenticateAdminSession
 
         if (! $user->hasPermission()) {
             if ($isJson) {
-                return Response::sendError(401,'You are not authorized');
+                return Response::sendError(401, 'You are not authorized');
             }
 
             return redirect('/admin/dashboard')->with('error', 'You are not authorized');

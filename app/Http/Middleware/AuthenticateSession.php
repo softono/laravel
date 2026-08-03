@@ -19,7 +19,7 @@ class AuthenticateSession
     {
         if (Auth::guest()) {
             if ($request->expectsJson() || $request->ajax()) {
-                return Response::sendError(401,'Authentication required');
+                return Response::sendError(401, 'Authentication required');
             }
 
             return redirect('/login?redirect='.urlencode($request->path()));

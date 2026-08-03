@@ -26,6 +26,7 @@ class PasskeyController extends Controller
         $request->validate(['credential' => ['required', 'array']]);
 
         $result = $this->passkeys->loginVerify($request, $request->input('credential'));
+
         return Response::sendResult($result);
     }
 
@@ -51,6 +52,7 @@ class PasskeyController extends Controller
             $request->input('credential'),
             $request->input('name'),
         );
+
         return Response::sendResult($result);
     }
 
@@ -59,6 +61,7 @@ class PasskeyController extends Controller
         $request->validate(['id' => ['required', 'string']]);
 
         $result = $this->passkeys->delete($request, $request->user(), $request->string('id'));
+
         return Response::sendResult($result);
     }
 }

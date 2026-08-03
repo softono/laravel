@@ -55,6 +55,7 @@ class TfaController extends Controller
     {
         $request->validate(['password' => ['required', 'string']]);
         $result = $this->tfa->enable($request, $request->user(), $request->string('password'));
+
         return Response::sendResult($result);
     }
 
@@ -66,6 +67,7 @@ class TfaController extends Controller
         ]);
 
         $result = $this->tfa->verifySetup($request, $request->user(), $request->string('method'), $request->string('code'));
+
         return Response::sendResult($result);
     }
 
@@ -74,18 +76,21 @@ class TfaController extends Controller
         $request->validate(['password' => ['required', 'string']]);
 
         $result = $this->tfa->disable($request, $request->user(), $request->string('password'));
+
         return Response::sendResult($result);
     }
 
     public function removeAuthenticator(Request $request)
     {
         $result = $this->tfa->removeAuthenticator($request, $request->user());
+
         return Response::sendResult($result);
     }
 
     public function regenerateBackupCodes(Request $request)
     {
         $result = $this->tfa->regenerateBackupCodes($request, $request->user());
+
         return Response::sendResult($result);
     }
 }

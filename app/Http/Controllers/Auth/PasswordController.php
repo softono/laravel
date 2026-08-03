@@ -30,6 +30,7 @@ class PasswordController extends Controller
     public function forgot(ForgotPasswordRequest $request)
     {
         $result = $this->account->forgotPassword($request->string('email'));
+
         return Response::sendResult($result);
     }
 
@@ -61,6 +62,7 @@ class PasswordController extends Controller
             (string) $request->input('current_password'),
             (string) $request->input('password'),
         );
+
         return Response::sendResult($result);
     }
 }
