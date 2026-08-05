@@ -28,4 +28,16 @@ return [
     'cookie_consent' => 1,
     'dark_mode' => 1,
     'breadcrumb' => 1,
+
+    // -------------------------------------------------------------------
+    // Storage Engine (see docs/local/prd.md - Settings / Super Admin Panel)
+    // -------------------------------------------------------------------
+    'storage_path' => 'buckets',
+    'storage_max_upload_size' => 5 * 1024 * 1024 * 1024, // bytes (5 GB)
+    'storage_allowed_file_types' => '*', // '*' = any type, else comma-separated extensions
+    'storage_default_visibility' => 'private', // 'private' or 'public'
+    'storage_api_endpoint' => env('APP_URL'),
+    'storage_cors_allowed_origins' => '*',
+    'storage_rate_limit_per_minute' => 60,
+    'storage_clock_skew_tolerance' => 300, // seconds - HMAC request-signing replay window
 ];

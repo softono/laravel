@@ -1,0 +1,151 @@
+{
+  "info": {
+    "name": "Storage API (S3-compatible)",
+    "description": "S3-compatible REST API for the self-hosted Storage Server - see docs/storage-api.md. A collection-level pre-request script signs every request with the v1 HMAC scheme from docs/local/prd.md, so individual requests never set Authorization/Date by hand.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000", "type": "string" },
+    { "key": "access_key", "value": "AKxxxxxxxxxxxxxxxxxx", "type": "string" },
+    { "key": "secret_key", "value": "your-secret-key", "type": "string" },
+    { "key": "bucket_name", "value": "my-bucket", "type": "string" },
+    { "key": "object_key", "value": "docs/report.pdf", "type": "string" }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Signs every request in this collection per docs/storage-api.md:",
+          "// signature = base64(HMAC-SHA256(secret, METHOD + \"\\n\" + PATH + \"\\n\" + DATE + \"\\n\" + CONTENT_MD5))",
+          "const secretKey = pm.collectionVariables.get('secret_key');",
+          "const accessKey = pm.collectionVariables.get('access_key');",
+          "",
+          "if (secretKey && accessKey) {",
+          "    const method = pm.request.method.toUpperCase();",
+          "    const path = '/' + pm.request.url.getPath({ unresolved: false }).replace(/^\\//, '');",
+          "    const date = new Date().toUTCString();",
+          "    const contentMd5 = '';",
+          "    const canonical = method + '\\n' + path + '\\n' + date + '\\n' + contentMd5;",
+          "    const signature = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(canonical, secretKey));",
+          "",
+          "    pm.request.headers.upsert({ key: 'Date', value: date });",
+          "    pm.request.headers.upsert({ key: 'Authorization', value: 'HMAC ' + accessKey + ':' + signature });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "List Buckets",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"], "path": [""] }
+      }
+    },
+    {
+      "name": "Create Bucket",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": { "raw": "{{base_url}}/{{bucket_name}}", "host": ["{{base_url}}"], "path": ["{{bucket_name}}"] }
+      }
+    },
+    {
+      "name": "Delete Bucket",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{base_url}}/{{bucket_name}}", "host": ["{{base_url}}"], "path": ["{{bucket_name}}"] }
+      }
+    },
+    {
+      "name": "List Objects",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/{{bucket_name}}?list-type=2&prefix=",
+          "host": ["{{base_url}}"],
+          "path": ["{{bucket_name}}"],
+          "query": [
+            { "key": "list-type", "value": "2" },
+            { "key": "prefix", "value": "" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Upload Object",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/octet-stream" },
+          { "key": "x-amz-meta-uploaded-via", "value": "postman" }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {}
+        },
+        "url": {
+          "raw": "{{base_url}}/{{bucket_name}}/{{object_key}}",
+          "host": ["{{base_url}}"],
+          "path": ["{{bucket_name}}", "{{object_key}}"]
+        }
+      }
+    },
+    {
+      "name": "Download Object",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/{{bucket_name}}/{{object_key}}",
+          "host": ["{{base_url}}"],
+          "path": ["{{bucket_name}}", "{{object_key}}"]
+        }
+      }
+    },
+    {
+      "name": "Head Object",
+      "request": {
+        "method": "HEAD",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/{{bucket_name}}/{{object_key}}",
+          "host": ["{{base_url}}"],
+          "path": ["{{bucket_name}}", "{{object_key}}"]
+        }
+      }
+    },
+    {
+      "name": "Copy Object",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "x-amz-copy-source", "value": "/{{bucket_name}}/{{object_key}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/{{bucket_name}}/copy-of-{{object_key}}",
+          "host": ["{{base_url}}"],
+          "path": ["{{bucket_name}}", "copy-of-{{object_key}}"]
+        }
+      }
+    },
+    {
+      "name": "Delete Object",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/{{bucket_name}}/{{object_key}}",
+          "host": ["{{base_url}}"],
+          "path": ["{{bucket_name}}", "{{object_key}}"]
+        }
+      }
+    }
+  ]
+}

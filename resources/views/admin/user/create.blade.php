@@ -23,7 +23,7 @@
             <h4 class="align-middle d-sm-inline-block d-none">User Create</h4>
         </div>
         <div class="card-body">
-            <?= view('admin/user/_form', compact('countrilist')) ?>
+            <?= view('admin/user/_form') ?>
         </div>
     </div>
 @endsection

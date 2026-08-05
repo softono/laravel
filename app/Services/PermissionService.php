@@ -130,42 +130,16 @@ class PermissionService
                 ],
             ],
             [
-                'title' => 'Page',
-                'key' => 'admin_page',
+                'title' => 'Buckets',
+                'key' => 'admin_bucket',
                 'list' => [
                     [
                         'title' => 'List',
-                        'key' => 'admin/page',
-                    ],
-                    [
-                        'title' => 'Update',
-                        'key' => 'admin/page/update',
+                        'key' => 'admin/bucket',
                     ],
                     [
                         'title' => 'View',
-                        'key' => 'page/',
-                    ],
-                ],
-            ],
-            [
-                'title' => 'Seo meta',
-                'key' => 'admin_seo',
-                'list' => [
-                    [
-                        'title' => 'List',
-                        'key' => 'admin/seo/meta',
-                    ],
-                    [
-                        'title' => 'Create',
-                        'key' => 'admin/seo/create',
-                    ],
-                    [
-                        'title' => 'Update',
-                        'key' => 'admin/seo/update',
-                    ],
-                    [
-                        'title' => 'Delete',
-                        'key' => 'admin/seo/delete',
+                        'key' => 'admin/bucket/view',
                     ],
                 ],
             ],

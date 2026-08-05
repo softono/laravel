@@ -1,7 +1,7 @@
 <nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
     id="layout-navbar">
     <div class="navbar-nav-right d-flex align-items-center justify-content-end ">
-        <a href="{{ route('home') }}" class="app-brand-link gap-1 pjax">
+        <a href="{{ route('dashboard') }}" class="app-brand-link gap-1 pjax">
             <span class="avatar me-2">
                 <img src="{{ $general->getFileUrl(config('setting.app_logo'),'logo')}}"
                     alt="{{ config('setting.app_name') }}" class="rounded" />
@@ -14,13 +14,21 @@
         </button>
         <div class="collapse navbar-collapse ms-8" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-1">
-                <li class="nav-item active-menu" data-active_menu_links="home">
+                <li class="nav-item active-menu" data-active_menu_links="dashboard">
                     <a class="nav-link pjax" aria-current="page"
-                        href="{{ route('home') }}">Home</a>
+                        href="{{ route('dashboard') }}">Dashboard</a>
                 </li>
-                <li class="nav-item active-menu" data-active_menu_links="contact">
-                    <a class="nav-link  pjax" data-pjax-cache="true"
-                        href="{{ route('contact') }} ">Contact</a>
+                <li class="nav-item active-menu" data-active_menu_links="buckets,buckets/create,buckets/update,buckets/view">
+                    <a class="nav-link pjax" data-pjax-cache="true"
+                        href="{{ route('buckets') }}">Buckets</a>
+                </li>
+                <li class="nav-item active-menu" data-active_menu_links="objects">
+                    <a class="nav-link pjax"
+                        href="{{ route('buckets') }}">Objects</a>
+                </li>
+                <li class="nav-item active-menu" data-active_menu_links="api-keys">
+                    <a class="nav-link pjax" data-pjax-cache="true"
+                        href="{{ route('api-keys') }}">API Keys</a>
                 </li>
             </ul>
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">

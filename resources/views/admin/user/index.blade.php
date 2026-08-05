@@ -90,7 +90,7 @@
                         responsivePriority: 4
                     },
                     {
-                        data: "status",
+                        data: "status_label",
                         responsivePriority: 5
                     },
                     {

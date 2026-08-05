@@ -7,8 +7,7 @@
 <form method="post" action="{{ route('admin/user/save') }}" enctype="multipart/form-data" id="ajax-form">
     @csrf
     <input type="hidden" name="id" value="{{ @$model->id }}">
-    <input type="hidden" name="pass" value="{{ @$model->password }}">
-    <input type="hidden" name="role" value="4">
+    <input type="hidden" name="role" value="USER">
     <div class="row">
         <div class="col-md-6">
             <div class="row">
@@ -73,16 +72,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="form-label">Country</label>
-                        <select class="form-control" name="country" onchange="getPhoneCode(this)">
-                            <option value="">-- Select Country --</option>
-                            @foreach ($countrilist as $country)
-                                <option value="{{ $country->sortname }}" "
-                                    {{ @$model->country == $country->sortname ? 'selected' : '' }}>
-                                    {{ $country->name }}
-                                </option>
- @endforeach
-                        </select>
+                        <label class="form-label" for="country">Country</label>
+                        <input type="text" class="form-control" id="country" placeholder="Country" name="country"
+                            value="{{ @$model->country }}" />
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -99,23 +91,6 @@
             </div>
 
         </div>
-        <div class="col-md-6"><br>
-            <?php if (!empty($model->image)) { ?>
-            <img src="{{ $general->getFileUrl($model->image, 'profile') }}" style="width:100px;height:100px"
-                class="img-fluid" id="image"><br>
-            <?php } else { ?>
-            <img src="{{ $general->getNoFile() }}" class="img-fluid" style="width:100px;height:100px"
-                id="image"><br>
-            <?php  } ?>
-            <div class="form-group">
-                <label>Image</label><br><br>
-                <div class="custom-file">
-                    <input type="file" class="form-control custom-file-input" accept="image/*" name="image"
-                        onchange="previewImage(this,'#image')">
-                </div>
-            </div>
-        </div>
-
     </div>
 
 

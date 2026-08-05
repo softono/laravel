@@ -34,7 +34,16 @@
             </a>
         </li>
         @endif
-        @if($sessionUser->hasPermission(['admin_setting', 'admin_seo', 'admin_admin', 'admin_device', 'admin_user_activity', 'admin_page', 'admin_emailtemplate']))
+        @if($sessionUser->hasPermission('admin_bucket'))
+        <li
+            class="menu-item active-menu" data-active_menu_links="admin/bucket,admin/bucket/view">
+            <a href="{{ route('admin/bucket') }}" class="menu-link pjax" data-pjax-cache="true">
+                <i class="menu-icon icon-base bx bx-archive"></i>
+                <div data-i18n="Buckets">Buckets</div>
+            </a>
+        </li>
+        @endif
+        @if($sessionUser->hasPermission(['admin_setting', 'admin_admin', 'admin_device', 'admin_user_activity', 'admin_emailtemplate']))
         <li
             class="menu-item active-menu" data-active_menu_class="open">
             <a href="javascript:void(0);"
@@ -47,15 +56,6 @@
                 <li class="menu-item active-menu" data-active_menu_links="admin/setting/update">
                     <a href="{{ route('admin/setting/update') }}" class="menu-link pjax">
                         <div data-i18n="Setting">Setting</div>
-                    </a>
-                </li>
-                @endif
-
-                @if($sessionUser->hasPermission('admin_seo'))
-                <li
-                    class="menu-item active-menu" data-active_menu_links="admin/seo/create,admin/seo/update,admin/seo/meta">
-                    <a href="{{ route('admin/seo/meta') }}" class="menu-link pjax" data-pjax-cache="true" data-active_menu_links="admin/seo/create">
-                        <div data-i18n="Seo Meta">Seo Meta</div>
                     </a>
                 </li>
                 @endif
@@ -81,14 +81,6 @@
                 <li class="menu-item active-menu" data-active_menu_links="admin/user-activity">
                     <a href="{{ route('admin/user-activity') }}" class="menu-link pjax" data-pjax-cache="true">
                         <div data-i18n="Activity">Activity</div>
-                    </a>
-                </li>
-                @endif
-
-                @if($sessionUser->hasPermission('admin_page'))
-                <li class="menu-item active-menu" data-active_menu_links="admin/pages,admin/page/update">
-                    <a href="{{ route('admin/page') }}" class="menu-link pjax" data-pjax-cache="true">
-                        <div data-i18n="Pages">Pages</div>
                     </a>
                 </li>
                 @endif

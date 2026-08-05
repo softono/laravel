@@ -2,21 +2,30 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\UserActivity;
-use App\Models\UserAuth;
+use App\Models\Auth\User;
+use App\Repositories\Auth\UserRepository;
+use App\Services\Admin\UserManagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+/**
+ * Manages Admin-panel operator accounts (roles ADMIN / SUPER_ADMIN).
+ * SUPER_ADMIN itself is only ever seeded, never created through this UI.
+ */
 class AdminController extends Controller
 {
+    public function __construct(
+        protected UserManagementService $userManagement,
+        protected UserRepository $users,
+    ) {
+        parent::__construct();
+    }
+
     /**
-     * Display the admin dashboard index page.
-     *
      * @return View
      */
     public function index()
@@ -25,89 +34,83 @@ class AdminController extends Controller
     }
 
     /**
-     * List the admins based on the request data.
-     *
      * @return JsonResponse
      */
     public function list(Request $request)
     {
-
-        return response()->json((new User)->listAdmin($request->all()));
+        return response()->json($this->userManagement->list(UserRole::ADMIN_ROLES, $request->all(), 'admin/admin'));
     }
 
     /**
-     * Show the form for creating a new admin.
-     *
      * @return View
      */
     public function create()
     {
-        $countries = DB::table('country')->get();
         $model = new User;
 
-        return view('admin/admin/create', compact('model', 'countries'));
+        return view('admin/admin/create', compact('model'));
     }
 
     /**
-     * Show the form for updating an existing admin.
-     *
-     * @return RedirectResponse|View
+     * @return View|RedirectResponse
      */
     public function update(Request $request)
     {
-        $model = User::find($request->input('id'));
-        if (! $model) {
-            return redirect('admin/admin')->withError('error', 'No data found');
+        $model = $this->users->findById($request->input('id'));
+        if (! $model || ! $model->isAdmin()) {
+            return redirect()->route('admin/admin')->with('error', 'No data found');
         }
-        $countries = DB::table('country')->get();
 
-        return view('admin/admin/update', compact('model', 'countries'));
+        return view('admin/admin/update', compact('model'));
     }
 
     /**
-     * Save a new admin or update an existing admin.
-     *
      * @return JsonResponse
      */
     public function save(Request $request)
     {
-        return response()->json((new User)->storeAdmin($request->all()));
+        return response()->json($this->userManagement->store($request->all(), UserRole::ADMIN));
     }
 
     /**
-     * Delete an existing admin.
-     *
-     * @return JsonResponse|RedirectResponse
+     * @return JsonResponse
      */
     public function delete(Request $request)
     {
-        $model = User::find($request->input('id'));
+        $model = $this->users->findById($request->input('id'));
         if (! $model) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
-        $model->delete();
 
-        return response()->json(['status' => 1, 'message' => 'Data deleted successfully.', 'next' => 'table_refresh']);
+        return response()->json($this->userManagement->delete($model));
     }
 
     /**
-     * View details of a specific admin.
-     *
-     * @return View
+     * @return View|RedirectResponse
      */
     public function view(Request $request)
     {
-        $id = $request->input('id');
-        $logData = UserActivity::where('user_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
-        $deviceData = UserAuth::where('user_id', $id)
-            ->orderBy('updated_at', 'desc')
-            ->limit(10)
-            ->get();
-        $model = User::where('id', $id)->first();
+        $model = $this->users->findById($request->input('id'));
+        if (! $model || ! $model->isAdmin()) {
+            return redirect()->route('admin/admin')->with('error', 'No data found');
+        }
 
-        return view('admin/admin/view', compact('model', 'logData', 'deviceData'));
+        $activities = $model->activities()->orderByDesc('created_at')->limit(10)->get();
+        $devices = $model->devices()->orderByDesc('created_at')->limit(10)->get();
+
+        return view('admin/admin/view', compact('model', 'activities', 'devices'));
+    }
+
+    /**
+     * @return JsonResponse
+     */
+    public function statusSave(Request $request)
+    {
+        $model = $this->users->findById($request->input('id'));
+        if (! $model) {
+            return response()->json(['status' => 0, 'message' => 'No data found']);
+        }
+
+        return response()->json($this->userManagement->toggleStatus($model));
     }
 }

@@ -25,13 +25,25 @@ class SettingRepository
         $setting->save();
     }
 
+    /**
+     * Upserts by key - previously update-only (a no-op for a key with no
+     * existing row), which silently dropped the first save of any newly
+     * introduced setting. type=0 matches allSettings()'s filter, so a
+     * freshly created key is picked up by the config-merge cache too.
+     */
     public function updateOne(string $key, ?string $value): void
     {
-        $setting = Setting::where('key', $key)->first();
+        $setting = Setting::firstOrNew(['key' => $key]);
 
-        if ($setting && $setting->value !== $value) {
-            $setting->update(['value' => $value]);
+        if ($setting->exists && $setting->value === $value) {
+            return;
         }
+
+        $setting->value = $value;
+        if (! $setting->exists) {
+            $setting->type = 0;
+        }
+        $setting->save();
     }
 
     public function updateAll(array $data): void
@@ -140,6 +152,25 @@ class SettingRepository
             $updateData = [
                 'setting.header_content' => $postData['setting_header_content'],
                 'setting.footer_content' => $postData['setting_footer_content'],
+            ];
+        } elseif ($postData['type'] == 'storage') {
+            $validator = Validator::make($postData, [
+                'setting_storage_path' => 'required|string|max:255',
+                'setting_storage_max_upload_size' => 'required|integer|min:1',
+                'setting_storage_allowed_file_types' => 'nullable|string',
+                'setting_storage_default_visibility' => 'required|in:public,private',
+                'setting_storage_api_endpoint' => 'nullable|string',
+                'setting_storage_cors_allowed_origins' => 'nullable|string',
+                'setting_storage_rate_limit_per_minute' => 'required|integer|min:1',
+            ]);
+            $updateData = [
+                'setting.storage_path' => $postData['setting_storage_path'],
+                'setting.storage_max_upload_size' => $postData['setting_storage_max_upload_size'],
+                'setting.storage_allowed_file_types' => $postData['setting_storage_allowed_file_types'] ?? '*',
+                'setting.storage_default_visibility' => $postData['setting_storage_default_visibility'],
+                'setting.storage_api_endpoint' => $postData['setting_storage_api_endpoint'] ?? '',
+                'setting.storage_cors_allowed_origins' => $postData['setting_storage_cors_allowed_origins'] ?? '*',
+                'setting.storage_rate_limit_per_minute' => $postData['setting_storage_rate_limit_per_minute'],
             ];
         }
 

@@ -1,67 +1,83 @@
 @extends('layouts.main')
 @section('title')
-Home
+Dashboard
 @endsection
 @section('content')
 <h4 class="fw-bold py-3 mb-4">Dashboard</h4>
-<div class="row mb-12 g-6">
-    <div class="col-md-6 col-lg-4">
-        <div class="card h-100">
-            <img class="card-img-top" src="theme/assets/img/elements/2.png" alt="Card image cap">
+
+<div class="row g-6 mb-6">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card card-border-shadow-primary h-100">
             <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">
-                    Some quick example text to build on the card title and make up the bulk of the card's content.
-                </p>
-                <a href="javascript:void(0)" class="btn btn-outline-primary">Go somewhere</a>
+                <div class="d-flex align-items-center mb-2">
+                    <div class="avatar me-4">
+                        <span class="avatar-initial rounded bg-label-primary"><i class="icon-base bx bx-hdd icon-lg"></i></span>
+                    </div>
+                    <h4 class="mb-0">{{ $general->formatBytes($personal['storage_used']) }}</h4>
+                </div>
+                <p class="mb-2">My Storage Used</p>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card h-100">
-            <img class="card-img-top" src="theme/assets/img/elements/5.png" alt="Card image cap">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card card-border-shadow-success h-100">
             <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">
-                    Some quick example text to build on the card title and make up the bulk of the card's content.
-                </p>
-                <a href="javascript:void(0)" class="btn btn-outline-primary">Go somewhere</a>
+                <div class="d-flex align-items-center mb-2">
+                    <div class="avatar me-4">
+                        <span class="avatar-initial rounded bg-label-success"><i class="icon-base bx bx-archive icon-lg"></i></span>
+                    </div>
+                    <h4 class="mb-0">{{ $personal['bucket_count'] }}</h4>
+                </div>
+                <p class="mb-2">My Buckets</p>
+                <a href="{{ route('buckets') }}" class="btn btn-sm btn-outline-primary pjax">Manage Buckets</a>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card h-100">
-            <img class="card-img-top" src="theme/assets/img/elements/4.png" alt="Card image cap">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card card-border-shadow-info h-100">
             <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">
-                    Some quick example text to build on the card title and make up the bulk of the card's content.
-                </p>
-                <a href="javascript:void(0)" class="btn btn-outline-primary">Go somewhere</a>
+                <div class="d-flex align-items-center mb-2">
+                    <div class="avatar me-4">
+                        <span class="avatar-initial rounded bg-label-info"><i class="icon-base bx bx-file icon-lg"></i></span>
+                    </div>
+                    <h4 class="mb-0">{{ $personal['object_count'] }}</h4>
+                </div>
+                <p class="mb-2">My Objects</p>
             </div>
         </div>
     </div>
 </div>
 
-<h5 class="fw-bold py-3 mb-2">Account Security</h5>
-<div class="row mb-12 g-6">
-    <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Two-Factor Authentication</h5>
-                <p class="card-text">Manage your 2FA security settings and authenticator app setup.</p>
-                <a href="{{ route('account/two-factor') }}" class="btn btn-primary pjax">Manage 2FA</a>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-lg-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Passkeys</h5>
-                <p class="card-text">Manage your passwordless security keys and biometric sign-ins.</p>
-                <a href="{{ route('account/passkeys') }}" class="btn btn-primary pjax">Manage Passkeys</a>
-            </div>
-        </div>
+<div class="card">
+    <h5 class="card-header">My Recent Uploads</h5>
+    <div class="table-responsive">
+        <table class="table border-top">
+            <thead>
+                <tr>
+                    <th>Object Key</th>
+                    <th>Bucket</th>
+                    <th>Size</th>
+                    <th>Uploaded</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($personal['recent_uploads'] as $object)
+                    <tr>
+                        <td class="text-truncate" style="max-width: 260px;">{{ $object->object_key }}</td>
+                        <td>
+                            <a href="{{ route('objects', ['bucket' => $object->bucket->name ?? '']) }}" class="pjax">{{ $object->bucket->name ?? '-' }}</a>
+                        </td>
+                        <td>{{ $general->formatBytes($object->size) }}</td>
+                        <td>{{ $general->dateFormat($object->created_at) }}</td>
+                    </tr>
+                @endforeach
+                @if ($personal['recent_uploads']->isEmpty())
+                    <tr>
+                        <td colspan="4" class="text-center">No uploads yet. <a href="{{ route('buckets') }}" class="pjax">Create a bucket</a> to get started.</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
     </div>
 </div>
 @endsection

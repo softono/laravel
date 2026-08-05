@@ -12,21 +12,41 @@ Route::get('cron/schedule/run', function () {
     return $artisan::output();
 })->name('cron/schedule/run');
 
-Route::group(['middleware' => ['web']], function () {
-    Route::get('/', '\App\Http\Controllers\FrontController@index')->name('home');
-    Route::get('page/{slug}', '\App\Http\Controllers\FrontController@page')->name('page');
-    Route::get('contact', '\App\Http\Controllers\FrontController@contact')->name('contact');
-    Route::post('contact-process', '\App\Http\Controllers\FrontController@contactProcess')->name('contact-process');
-
-    // register, login, logout, password-forgot, verify-account, login-otp,
-    // verify (2FA), login-link, passkeys and Google OAuth all live in
-    // routes/auth.php. The legacy SiteController/AuthController routes for
-    // these are removed here - they called Auth::guard()->login($user) and
-    // read columns that don't exist on the current `users` model.
-});
+// No public-facing marketing site (removed per docs/local/prd.md - this
+// project is REST API + Admin Panel + Storage Engine only). The host root
+// ('/') is reserved for the S3-compatible API's "List buckets" endpoint
+// (see routes/storage_api.php) - register, login, logout, password-forgot,
+// verify-account, login-otp, verify (2FA), login-link, passkeys and Google
+// OAuth all live in routes/auth.php.
 
 Route::group(['middleware' => ['web', 'auth.user']], function () {
     Route::get('dashboard', '\App\Http\Controllers\SiteController@dashboard')->name('dashboard');
+
+    // Bucket Admin self-service - see "Bucket Admin Panel" in docs/local/prd.md.
+    // These top-level path segments (buckets, objects, api-keys) are reserved -
+    // the S3 API (routes/storage_api.php) never sees them, since Laravel
+    // matches this 'web' group's static routes first. See docs/local/api.md.
+    Route::get('buckets', '\App\Http\Controllers\BucketController@index')->name('buckets');
+    Route::post('buckets/list', '\App\Http\Controllers\BucketController@list')->name('buckets/list');
+    Route::get('buckets/create', '\App\Http\Controllers\BucketController@create')->name('buckets/create');
+    Route::get('buckets/update', '\App\Http\Controllers\BucketController@update')->name('buckets/update');
+    Route::post('buckets/save', '\App\Http\Controllers\BucketController@save')->name('buckets/save');
+    Route::post('buckets/delete', '\App\Http\Controllers\BucketController@delete')->name('buckets/delete');
+    Route::get('buckets/view', '\App\Http\Controllers\BucketController@view')->name('buckets/view');
+
+    Route::get('objects', '\App\Http\Controllers\ObjectBrowserController@index')->name('objects');
+    Route::post('objects/list', '\App\Http\Controllers\ObjectBrowserController@list')->name('objects/list');
+    Route::post('objects/upload', '\App\Http\Controllers\ObjectBrowserController@upload')->name('objects/upload');
+    Route::get('objects/download', '\App\Http\Controllers\ObjectBrowserController@download')->name('objects/download');
+    Route::post('objects/delete', '\App\Http\Controllers\ObjectBrowserController@destroy')->name('objects/delete');
+    Route::post('objects/copy', '\App\Http\Controllers\ObjectBrowserController@copy')->name('objects/copy');
+    Route::get('objects/metadata', '\App\Http\Controllers\ObjectBrowserController@metadata')->name('objects/metadata');
+
+    Route::get('api-keys', '\App\Http\Controllers\ApiKeyController@index')->name('api-keys');
+    Route::post('api-keys/create', '\App\Http\Controllers\ApiKeyController@store')->name('api-keys/create');
+    Route::post('api-keys/regenerate', '\App\Http\Controllers\ApiKeyController@regenerate')->name('api-keys/regenerate');
+    Route::post('api-keys/toggle-status', '\App\Http\Controllers\ApiKeyController@toggleStatus')->name('api-keys/toggle-status');
+    Route::post('api-keys/delete', '\App\Http\Controllers\ApiKeyController@destroy')->name('api-keys/delete');
 
     Route::get('account/update', '\App\Http\Controllers\Account\AccountController@update')->name('account/update');
     Route::post('account/update-process', '\App\Http\Controllers\Account\AccountController@updateProcess')->name('account/update-process');
@@ -54,7 +74,6 @@ Route::group(['middleware' => ['web', 'auth.user']], function () {
 
 Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], function () {
     Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
-    Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 
     Route::get('account/update', '\App\Http\Controllers\Admin\Account\AccountController@update')->name('admin/account/update');
     Route::post('account/save', '\App\Http\Controllers\Admin\Account\AccountController@save')->name('admin/account/save');
@@ -79,12 +98,11 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], funct
     Route::get('user/update', '\App\Http\Controllers\Admin\UserController@update')->name('admin/user/update');
     Route::post('user/save', '\App\Http\Controllers\Admin\UserController@save')->name('admin/user/save');
     Route::get('user/view', '\App\Http\Controllers\Admin\UserController@view')->name('admin/user/view');
-    Route::post('user/mail', '\App\Http\Controllers\Admin\UserController@sendMail')->name('admin/user/mail');
     Route::post('user/delete', '\App\Http\Controllers\Admin\UserController@delete')->name('admin/user/delete');
     Route::post('user/change_status', '\App\Http\Controllers\Admin\UserController@changeStatus')->name('admin/user/change_status');
     // user/autologin removed - impersonation called Auth::guard('web')->login($user),
     // which App\Helpers\SessionTokenGuard doesn't implement (no StatefulGuard support).
-    Route::get('user/send-tfa-mail', '\App\Http\Controllers\Admin\UserController@sendTfaMail')->name('admin/user/send-tfa-mail');
+    // user/mail, user/send-tfa-mail removed with the ContactMessages/legacy-TFA-mail frontend cut.
 
     Route::get('admin', '\App\Http\Controllers\Admin\AdminController@index')->name('admin/admin');
     Route::post('admin/list', '\App\Http\Controllers\Admin\AdminController@list')->name('admin/admin/list');
@@ -95,19 +113,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], funct
     Route::post('admin/delete', '\App\Http\Controllers\Admin\AdminController@delete')->name('admin/admin/delete');
     Route::post('admin/status-save', '\App\Http\Controllers\Admin\AdminController@statusSave')->name('admin/admin/status-save');
 
-    Route::get('seo/meta', '\App\Http\Controllers\Admin\SeoController@index')->name('admin/seo/meta');
-    Route::post('seo/list', '\App\Http\Controllers\Admin\SeoController@list')->name('admin/seo/list');
-    Route::get('seo/create', '\App\Http\Controllers\Admin\SeoController@create')->name('admin/seo/create');
-    Route::get('seo/update', '\App\Http\Controllers\Admin\SeoController@update')->name('admin/seo/update');
-    Route::post('seo/save', '\App\Http\Controllers\Admin\SeoController@save')->name('admin/seo/save');
-    Route::post('seo/delete', '\App\Http\Controllers\Admin\SeoController@delete')->name('admin/seo/delete');
-    Route::get('seo/sitemap-update', '\App\Http\Controllers\Admin\SeoController@sitemapUpdate')->name('admin/seo/sitemap-update');
-
-    Route::get('pages', '\App\Http\Controllers\Admin\PageController@index')->name('admin/page');
-    Route::post('page/list', '\App\Http\Controllers\Admin\PageController@list')->name('admin/page/list');
-    Route::get('page/update', '\App\Http\Controllers\Admin\PageController@update')->name('admin/page/update');
-    Route::post('page/save', '\App\Http\Controllers\Admin\PageController@save')->name('admin/page/save');
-    Route::post('page/save-image', '\App\Http\Controllers\Admin\PageController@saveImage')->name('admin/page/save-image');
+    Route::get('bucket', '\App\Http\Controllers\Admin\BucketController@index')->name('admin/bucket');
+    Route::post('bucket/list', '\App\Http\Controllers\Admin\BucketController@list')->name('admin/bucket/list');
+    Route::get('bucket/view', '\App\Http\Controllers\Admin\BucketController@view')->name('admin/bucket/view');
 
     Route::get('setting/update', '\App\Http\Controllers\Admin\SettingController@update')->name('admin/setting/update');
     Route::post('setting/save', '\App\Http\Controllers\Admin\SettingController@save')->name('admin/setting/save');

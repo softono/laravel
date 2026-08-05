@@ -22,7 +22,7 @@
             <h4 class="align-middle d-sm-inline-block d-none">Admin Create</h4>
         </div>
         <div class="card-body">
-            <?= view('admin/admin/_form', compact('model','countries')) ?>
+            <?= view('admin/admin/_form', compact('model')) ?>
         </div>
     </div>
 @endsection

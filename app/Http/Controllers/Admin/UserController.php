@@ -2,28 +2,30 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Helpers\General;
+use App\Constants\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\ContactMessages;
-use App\Models\User;
-use App\Models\UserActivity;
-use App\Models\UserAuth;
-use App\Services\TfaService;
+use App\Repositories\Auth\UserRepository;
+use App\Services\Admin\UserManagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 /**
- * Class UserController
+ * Manages Bucket Admin (role USER, see App\Constants\UserRole) accounts -
+ * the "existing User Management" feature from docs/local/prd.md, scoped
+ * to the tenancy model's bucket-owning role.
  */
 class UserController extends Controller
 {
+    public function __construct(
+        protected UserManagementService $userManagement,
+        protected UserRepository $users,
+    ) {
+        parent::__construct();
+    }
+
     /**
-     * Display the user index view.
-     *
      * @return View
      */
     public function index()
@@ -31,184 +33,84 @@ class UserController extends Controller
         return view('admin/user/index');
     }
 
-    public function sendMail(Request $request)
-    {
-        $to = $request->to;
-        $subject = $request->subject;
-        $message = $request->message;
-
-        $data = [
-            'subject' => $subject,
-            'message' => $message,
-        ];
-
-        $status = (new General)->sendEmail($to, 'send_mail', $data);
-
-        return redirect()->route('admin/dashboard')->with('success', 'Email send successfully');
-
-    }
-
     /**
-     * Get a list of users.
-     *
      * @return JsonResponse
      */
     public function list(Request $request)
     {
-
-        return response()->json((new User)->list($request->all()));
+        return response()->json($this->userManagement->list([UserRole::USER], $request->all(), 'admin/user'));
     }
 
     /**
-     * Show the form for creating a new user.
-     *
      * @return View
      */
     public function create()
     {
-        $countrilist = User::getCountryList();
-
-        return view('admin/user/create', compact('countrilist'));
+        return view('admin/user/create');
     }
 
     /**
-     * Show the form for updating a specific user.
-     *
      * @return View|RedirectResponse
      */
     public function update(Request $request)
     {
-        $model = User::find($request->id);
-        $user = auth()->user();
-        $permission = explode(',', $user->permission);
-        // dd($model);
-        if ($user->type == 1 && ! in_array('admin/user/update', $permission)) {
-            return redirect('admin/users')->with('error', 'No permission To Update User');
-        }
-        $countrilist = User::getCountryList();
+        $model = $this->users->findById($request->input('id'));
 
-        return view('admin/user/update', compact('permission', 'model', 'countrilist'));
+        if (! $model || $model->role !== UserRole::USER) {
+            return redirect()->route('admin/user')->with('error', 'No data found');
+        }
+
+        return view('admin/user/update', compact('model'));
     }
 
     /**
-     * Save or update user data.
-     *
      * @return JsonResponse
      */
     public function save(Request $request)
     {
-        return response()->json((new User)->store($request->all()));
+        return response()->json($this->userManagement->store($request->all(), UserRole::USER));
     }
 
     /**
-     * View a specific user's details along with logs and devices.
-     *
      * @return View|RedirectResponse
      */
     public function view(Request $request)
     {
-        $id = $request->input('id');
+        $model = $this->users->findById($request->input('id'));
 
-        $contactMessages = ContactMessages::where('user_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        if (! $model || $model->role !== UserRole::USER) {
+            return redirect()->route('admin/user')->with('error', 'No data found');
+        }
 
-        $logData = UserActivity::where('user_id', $id)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
-        $userAuthList = UserAuth::where('user_id', $id)
-            ->orderBy('updated_at', 'desc')
-            ->limit(10)
-            ->get();
-        $model = User::where('id', $id)->first();
+        $activities = $model->activities()->orderByDesc('created_at')->limit(10)->get();
+        $devices = $model->devices()->orderByDesc('created_at')->limit(10)->get();
 
-        return view('admin/user/view', compact('model', 'logData', 'userAuthList', 'ContactMessages'));
+        return view('admin/user/view', compact('model', 'activities', 'devices'));
     }
 
     /**
-     * Delete a specific user.
-     *
-     * @return JsonResponse|RedirectResponse
+     * @return JsonResponse
      */
     public function delete(Request $request)
     {
-        $model = User::find($request->input('id'));
+        $model = $this->users->findById($request->input('id'));
         if (! $model) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
-        $model->delete();
 
-        return response()->json(['status' => 1, 'message' => 'User deleted successfully.', 'next' => 'table_refresh']);
+        return response()->json($this->userManagement->delete($model));
     }
 
     /**
-     * Change the status of a user.
-     *
      * @return JsonResponse
      */
     public function changeStatus(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|numeric',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['status' => 0, 'message' => $validator->errors()->first()]);
-        }
-
-        $id = $request->input('id');
-        $model = User::find($id);
-
+        $model = $this->users->findById($request->input('id'));
         if (! $model) {
-            return response()->json(['status' => 0, 'message' => 'User not found']);
+            return response()->json(['status' => 0, 'message' => 'No data found']);
         }
 
-        $model->update(['status' => ! $model->status]);  // Toggle the status
-
-        return response()->json(['status' => 1, 'message' => 'User status updated successfully.', 'next' => 'refresh']);
-    }
-
-    /**
-     * Revoke all devices for the currently authenticated user.
-     *
-     * @return JsonResponse
-     */
-    public function revokeAll()
-    {
-        $model = Auth::user();
-        $model->ignore_tfa_device = '';
-        $model->save();
-
-        return response()->json(['status' => 1, 'message' => 'Your devices revoked successfully.']);
-    }
-
-    public function autoLogin(Request $request)
-    {
-        $id = $request->id;
-        $user = User::find($id);
-        if (! $user) {
-            return redirect()->route('admin/dashboard')->with('error', 'User Not Found.');
-        }
-        $adminId = Auth::id();
-        session([
-            'admin_id' => $adminId,
-        ]);
-        Auth::guard('web')->login($user);
-
-        return redirect()->route('dashboard');
-    }
-
-    public function sendTfaMail(Request $request)
-    {
-        $id = $request->id;
-        $user = User::find($id);
-        if (! $user) {
-            return redirect()->route('admin/dashboard')->with('error', 'User Not Found');
-        }
-        $tfaService = new TfaService;
-        $tfaService->resendOTP(['type' => 'otp', 'code' => $tfaService->encryptCode($user->email)]);
-
-        return redirect()->route('admin/dashboard')->with('success', 'Email send successfully');
+        return response()->json($this->userManagement->toggleStatus($model));
     }
 }

@@ -111,11 +111,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
                             <div class="container-xxl">
                                 <div class="footer-container d-flex align-items-center justify-content-between py-2 flex-md-row flex-column">
                                     <div class="mb-2 mb-md-0">
-                                        ©{{date('Y')}} , made by <a href="{{route('home')}}" target="_blank" class="fw-semibold footer-link">{{ config('setting.app_name') }}</a>
-                                    </div>
-                                    <div class="d-none d-lg-inline-block">
-                                        <a target="_blank" href="page/terms-condition" class="footer-link me-4 pjax">Terms & Condition</a>
-                                        <a target="_blank" href="page/privacy-policy" class="footer-link pjax">Privacy Policy</a>
+                                        &copy;{{date('Y')}} {{ config('setting.app_name') }}
                                     </div>
                                 </div>
                             </div>

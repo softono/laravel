@@ -70,6 +70,13 @@
                                     Content
                                 </button>
                             </li>
+                            <li class="nav-item">
+                                <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
+                                    data-bs-target="#navs-top-storage" aria-controls="navs-top-storage"
+                                    aria-selected="false">
+                                    Storage
+                                </button>
+                            </li>
                         </ul>
                         <div class="tab-content" id="custom-tabs-one-tabContent">
                             <div class="tab-pane fade show active" id="navs-top-general" role="tabpanel"
@@ -526,6 +533,79 @@
                                     </div>
                                 </form>
                             </div>
+                            <div class="tab-pane fade" id="navs-top-storage" role="tabpanel">
+                                <form action="{{ route('admin/setting/save') }}" class="ajax-form-storage" method="post">
+                                    {{ csrf_field() }}
+                                    <input type="hidden" name="type" value="storage">
+                                    <div class="form-row row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Storage Path <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" placeholder="buckets"
+                                                    name="setting_storage_path"
+                                                    value="{{ $setting['setting.storage_path'] ?? 'buckets' }}" required />
+                                                <small class="text-muted">Relative to storage/app/</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Maximum Upload Size (bytes) <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" min="1"
+                                                    name="setting_storage_max_upload_size"
+                                                    value="{{ $setting['setting.storage_max_upload_size'] ?? 5368709120 }}" required />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Allowed File Types</label>
+                                                <input type="text" class="form-control" placeholder="* or pdf,jpg,png"
+                                                    name="setting_storage_allowed_file_types"
+                                                    value="{{ $setting['setting.storage_allowed_file_types'] ?? '*' }}" />
+                                                <small class="text-muted">Comma-separated extensions, or * for any type</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Default Bucket Visibility</label>
+                                                <select class="form-select" name="setting_storage_default_visibility">
+                                                    <option value="private" {{ ($setting['setting.storage_default_visibility'] ?? 'private') == 'private' ? 'selected' : '' }}>Private</option>
+                                                    <option value="public" {{ ($setting['setting.storage_default_visibility'] ?? 'private') == 'public' ? 'selected' : '' }}>Public</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">API Endpoint</label>
+                                                <input type="text" class="form-control" placeholder="https://storage.example.com"
+                                                    name="setting_storage_api_endpoint"
+                                                    value="{{ $setting['setting.storage_api_endpoint'] ?? '' }}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">CORS Allowed Origins</label>
+                                                <input type="text" class="form-control" placeholder="* or https://app.example.com"
+                                                    name="setting_storage_cors_allowed_origins"
+                                                    value="{{ $setting['setting.storage_cors_allowed_origins'] ?? '*' }}" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Rate Limit (requests/minute per access key) <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" min="1"
+                                                    name="setting_storage_rate_limit_per_minute"
+                                                    value="{{ $setting['setting.storage_rate_limit_per_minute'] ?? 60 }}" required />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -746,7 +826,37 @@
         $('.ajax-form-mail-test').validate({
             submitHandler: function(form) {
                 app.ajaxForm(form);
-            }   
+            }
+        });
+
+        $('.ajax-form-storage').validate({
+            submitHandler: function(form) {
+                app.ajaxForm(form);
+            },
+            rules: {
+                setting_storage_path: {
+                    required: true
+                },
+                setting_storage_max_upload_size: {
+                    required: true,
+                    min: 1
+                },
+                setting_storage_rate_limit_per_minute: {
+                    required: true,
+                    min: 1
+                }
+            },
+            messages: {
+                setting_storage_path: {
+                    required: "Please enter the storage path"
+                },
+                setting_storage_max_upload_size: {
+                    required: "Please enter the maximum upload size"
+                },
+                setting_storage_rate_limit_per_minute: {
+                    required: "Please enter the rate limit"
+                }
+            }
         });
     });
 </script>

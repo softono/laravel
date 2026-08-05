@@ -4,7 +4,6 @@ namespace App\Helpers;
 
 use App\Jobs\SendEmail;
 use App\Models\EmailTemplate;
-use App\Models\SeoMeta;
 use App\Models\Setting;
 use App\Repositories\SettingRepository;
 use Carbon\Carbon;
@@ -105,13 +104,14 @@ class General
     }
 
     /**
-     * Retrieves SEO meta tags from the cache or database.
+     * No public-facing pages remain (SEO/marketing front-end removed) - admin
+     * and API-only project, so page <title>/meta tags are never overridden.
      *
      * @return array|null
      */
     public function getMetaData()
     {
-        return (new SeoMeta)->getMetaData();
+        return ['title' => '', 'keyword' => '', 'description' => ''];
     }
 
     /**
@@ -731,5 +731,20 @@ class General
                 ->timezone($clientTimezone)
                 ->format($format);
         }
+    }
+
+    /**
+     * Human-readable byte size (e.g. 1536 -> "1.5 KB") for storage stats
+     * across both admin panels - avoids a Number::format() dependency on
+     * the "intl" PHP extension, which isn't guaranteed to be installed.
+     */
+    public function formatBytes(int $bytes, int $precision = 2): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        $bytes = max($bytes, 0);
+        $power = $bytes > 0 ? (int) floor(log($bytes, 1024)) : 0;
+        $power = min($power, count($units) - 1);
+
+        return round($bytes / (1024 ** $power), $precision).' '.$units[$power];
     }
 }

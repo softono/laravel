@@ -22,7 +22,7 @@
             <h4 class="align-middle d-sm-inline-block d-none">Users Update</h4>
         </div>
         <div class="card-body">
-            <?= view('admin/user/_form', compact('model', 'countrilist')) ?>
+            <?= view('admin/user/_form', compact('model')) ?>
         </div>
     </div>
 @endsection

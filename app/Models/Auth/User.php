@@ -100,6 +100,14 @@ class User extends Authenticatable
         return (new PermissionService)->hasPermission($permission, $this->permission);
     }
 
+    /**
+     * Backs the checkbox tree on the admin/admin create-update form.
+     */
+    public function getPermissionListData(): array
+    {
+        return (new PermissionService)->getPermissionListData();
+    }
+
     public function accounts(): HasMany
     {
         return $this->hasMany(UserAccount::class, 'user_id');
