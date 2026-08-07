@@ -30,6 +30,6 @@ class Response
 
     public static function sendData(array $data, string $message = '')
     {
-        return Response::sendResponse(200, ['status' => 0, 'message' => $message, 'data' => $data]);
+        return Response::sendResponse(200, ['status' => 1, 'message' => $message, 'data' => $data]);
     }
 }
