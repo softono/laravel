@@ -15,21 +15,21 @@ class Response
 
     public static function sendResult(array $result = [])
     {
-        Response::sendResponse($result['http_status'] ?? 200, $result);
+        return Response::sendResponse($result['http_status'] ?? 200, $result);
     }
 
     public static function sendMessage(string $message = '', int $status = 1)
     {
-        Response::sendResponse(200, ['status' => $status, 'message' => $message, 'data' => []]);
+        return Response::sendResponse(200, ['status' => $status, 'message' => $message, 'data' => []]);
     }
 
     public static function sendError(int $http_status = 500, string $message = 'Internal Server Error')
     {
-        Response::sendResponse($http_status, ['status' => 0, 'message' => $message, 'data' => []]);
+        return Response::sendResponse($http_status, ['status' => 0, 'message' => $message, 'data' => []]);
     }
 
     public static function sendData(array $data, string $message = '')
     {
-        Response::sendResponse(200, ['status' => 0, 'message' => $message, 'data' => $data]);
+        return Response::sendResponse(200, ['status' => 1, 'message' => $message, 'data' => $data]);
     }
 }

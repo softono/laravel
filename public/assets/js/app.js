@@ -276,7 +276,7 @@ const app = {
      */
     ajaxError: function (e) {
         app.hideLoading();
-        app.showMessage(e.message ?? "Something went wrong. Please try again later.", "error");
+        app.showMessage(e.responseJSON?.message ?? "Something went wrong. Please try again later.", "error");
     },
 
     /**

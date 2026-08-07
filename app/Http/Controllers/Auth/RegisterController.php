@@ -25,8 +25,8 @@ class RegisterController extends Controller
     {
         $result = $this->account->register($request, $request->validated());
 
-        if (! $result['status']) {
-            return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
         }
 
         if ($result['next'] === 'verify-account') {
