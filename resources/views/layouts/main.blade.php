@@ -51,6 +51,11 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <!-- Vendors CSS -->
         <link rel="stylesheet" href="theme/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
+        <link rel="stylesheet" href="theme/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+        <link rel="stylesheet" href="theme/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+        <link rel="stylesheet" href="theme/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
+        <link rel="stylesheet" href="theme/assets/vendor/libs/datatables-rowgroup-bs5/rowgroup.bootstrap5.css" />
+
         <!-- Page CSS -->
         @vite(['resources/css/app.css'])
         <!-- Helpers -->
@@ -146,6 +151,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <script src="theme/assets/vendor/libs/popper/popper.js"></script>
         <script src="theme/assets/vendor/js/bootstrap.js"></script>
         <script src="theme/assets/js/front-main.js"></script>
+        <script src="theme/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
         <!-- Main JS -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js" integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="assets/js/common.js"></script>

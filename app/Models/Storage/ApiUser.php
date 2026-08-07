@@ -17,6 +17,8 @@ class ApiUser extends Model
 
     protected $fillable = [
         'user_id',
+        'title',
+        'bucket_id',
         'access_key',
         'secret_key',
         'status',
@@ -44,5 +46,10 @@ class ApiUser extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function bucket(): BelongsTo
+    {
+        return $this->belongsTo(Bucket::class, 'bucket_id');
     }
 }

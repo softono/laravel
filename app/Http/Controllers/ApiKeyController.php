@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\Storage\ApiUserRepository;
+use App\Repositories\Storage\BucketRepository;
 use App\Services\Storage\ApiCredentialService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class ApiKeyController extends Controller
     public function __construct(
         protected ApiCredentialService $credentials,
         protected ApiUserRepository $apiUsers,
+        protected BucketRepository $buckets,
     ) {
         parent::__construct();
     }
@@ -27,16 +29,22 @@ class ApiKeyController extends Controller
     public function index()
     {
         $apiUsers = $this->apiUsers->listForUser(auth()->id());
+        $buckets = $this->buckets->listForUser(auth()->id());
 
-        return view('api-key.index', compact('apiUsers'));
+        return view('api-key.index', compact('apiUsers', 'buckets'));
     }
 
     /**
      * @return JsonResponse
      */
-    public function store()
+    public function store(Request $request)
     {
-        $result = $this->credentials->create(auth()->user());
+        $bucketId = $request->input('bucket_id');
+        if ($bucketId && ! $this->buckets->listForUser(auth()->id())->contains('id', $bucketId)) {
+            return response()->json(['status' => 0, 'message' => 'Invalid bucket selected.']);
+        }
+
+        $result = $this->credentials->create(auth()->user(), $request->input('title'), $bucketId ?: null);
 
         return response()->json([
             'status' => $result['status'],

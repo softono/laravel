@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Storage;
 
-use App\Helpers\Response;
+use App\Helpers\Storage\S3Error;
 use App\Models\Auth\User;
 use App\Models\Storage\Bucket;
 use App\Repositories\Storage\BucketRepository;
@@ -43,14 +43,14 @@ abstract class StorageApiController extends BaseController
         $bucket = $this->buckets->findByNameGlobal($bucketName);
 
         if (! $bucket) {
-            return [null, Response::sendError(404, 'The specified bucket does not exist.')];
+            return [null, S3Error::send(404, 'NoSuchBucket', 'The specified bucket does not exist.')];
         }
 
         $user = $this->currentUser($request);
 
         if ($user) {
             if ($bucket->user_id !== $user->id) {
-                return [null, Response::sendError(403, 'Access denied to this bucket.')];
+                return [null, S3Error::send(403, 'AccessDenied', 'Access denied to this bucket.')];
             }
 
             return [$bucket, null];
@@ -59,7 +59,7 @@ abstract class StorageApiController extends BaseController
         // No authenticated user on this request - only reachable at all
         // for GET/HEAD on a Public bucket (StorageApiAuth gate).
         if ($requireOwnership || ! $bucket->isPublic()) {
-            return [null, Response::sendError(401, 'Authentication required.')];
+            return [null, S3Error::send(401, 'AccessDenied', 'Authentication required.')];
         }
 
         return [$bucket, null];

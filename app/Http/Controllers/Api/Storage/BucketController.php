@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Storage;
 
-use App\Helpers\Response as ApiResponse;
+use App\Helpers\Storage\S3Error;
 use App\Http\Resources\Storage\BucketResource;
 use App\Repositories\Storage\BucketRepository;
 use App\Services\Storage\BucketService;
@@ -28,7 +28,7 @@ class BucketController extends StorageApiController
     {
         $user = $this->currentUser($request);
         if (! $user) {
-            return ApiResponse::sendError(401, 'Authentication required.');
+            return S3Error::send(401, 'AccessDenied', 'Authentication required.');
         }
 
         $buckets = $this->buckets->listForUser($user->id);
@@ -40,7 +40,7 @@ class BucketController extends StorageApiController
     {
         $user = $this->currentUser($request);
         if (! $user) {
-            return ApiResponse::sendError(401, 'Authentication required.');
+            return S3Error::send(401, 'AccessDenied', 'Authentication required.');
         }
 
         $result = $this->bucketService->create($user, [
@@ -49,10 +49,10 @@ class BucketController extends StorageApiController
         ]);
 
         if (! $result['status']) {
-            return ApiResponse::sendError(400, $result['message']);
+            return S3Error::send(400, 'InvalidRequest', $result['message']);
         }
 
-        return response()->json(['message' => $result['message']], 200, [
+        return response('', 200, [
             'Location' => '/'.$bucket,
         ]);
     }
@@ -67,7 +67,7 @@ class BucketController extends StorageApiController
         $result = $this->bucketService->delete($bucketModel);
 
         if (! $result['status']) {
-            return ApiResponse::sendError(409, $result['message']);
+            return S3Error::send(409, 'BucketNotEmpty', $result['message']);
         }
 
         return response()->noContent();

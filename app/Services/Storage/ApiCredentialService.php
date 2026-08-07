@@ -25,13 +25,15 @@ class ApiCredentialService
     /**
      * @return array{status: int, message: string, api_user?: ApiUser, secret_key?: string}
      */
-    public function create(User $user): array
+    public function create(User $user, ?string $title = null, ?int $bucketId = null): array
     {
         $accessKey = 'AK'.strtoupper(Str::random(18));
         $secretKey = Str::random(40);
 
         $apiUser = $this->apiUsers->create([
             'user_id' => $user->id,
+            'title' => $title,
+            'bucket_id' => $bucketId,
             'access_key' => $accessKey,
             'secret_key' => Crypt::encryptString($secretKey),
             'status' => 'active',

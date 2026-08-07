@@ -2,11 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use App\Helpers\Response;
+use App\Helpers\Storage\S3Error;
 use App\Repositories\Storage\ApiUserRepository;
 use App\Repositories\Storage\BucketRepository;
 use App\Services\Storage\Signing\HmacSigningStrategy;
 use App\Services\Storage\Signing\PresignedUrlStrategy;
+use App\Services\Storage\Signing\SigV4Strategy;
 use Closure;
 use Illuminate\Support\Facades\Crypt;
 
@@ -26,11 +27,19 @@ class StorageApiAuth
         protected BucketRepository $buckets,
         protected HmacSigningStrategy $hmacStrategy,
         protected PresignedUrlStrategy $presignedStrategy,
+        protected SigV4Strategy $sigV4Strategy,
     ) {}
 
     public function handle($request, Closure $next)
     {
-        $strategies = [$this->hmacStrategy, $this->presignedStrategy];
+        // Debugbar injects an HTML/JS panel into every response body, which
+        // corrupts the XML/binary/empty bodies real S3 clients (including
+        // the AWS SDK) require on this route surface.
+        if (app()->bound('debugbar')) {
+            app('debugbar')->disable();
+        }
+
+        $strategies = [$this->hmacStrategy, $this->sigV4Strategy, $this->presignedStrategy];
         $strategy = null;
 
         foreach ($strategies as $candidate) {
@@ -48,14 +57,14 @@ class StorageApiAuth
         $apiUser = $accessKey ? $this->apiUsers->findByAccessKey($accessKey) : null;
 
         if (! $apiUser || ! $apiUser->isActive()) {
-            return Response::sendError(401, 'Invalid or inactive access key.');
+            return S3Error::send(401, 'InvalidAccessKeyId', 'Invalid or inactive access key.');
         }
 
         $secretKey = Crypt::decryptString($apiUser->secret_key);
         $result = $strategy->verify($request, $secretKey);
 
         if (! $result['ok']) {
-            return Response::sendError(401, $result['message'] ?? 'Authentication failed.');
+            return S3Error::send(403, 'SignatureDoesNotMatch', $result['message'] ?? 'Authentication failed.');
         }
 
         $this->apiUsers->touchLastUsed($apiUser);
@@ -69,14 +78,14 @@ class StorageApiAuth
     protected function tryAnonymousPublicAccess($request, Closure $next)
     {
         if (! in_array($request->method(), ['GET', 'HEAD'], true)) {
-            return Response::sendError(401, 'Authentication required.');
+            return S3Error::send(401, 'AccessDenied', 'Authentication required.');
         }
 
         $bucketName = $request->route('bucket');
         $bucket = $bucketName ? $this->buckets->findByNameGlobal($bucketName) : null;
 
         if (! $bucket || ! $bucket->isPublic()) {
-            return Response::sendError(401, 'Authentication required.');
+            return S3Error::send(401, 'AccessDenied', 'Authentication required.');
         }
 
         $request->attributes->set('storage_api_user', null);

@@ -52,3 +52,4 @@ composer.lock
 /public/theme_old
 package-lock.json
 docs/local
+/public/aws_s3/*

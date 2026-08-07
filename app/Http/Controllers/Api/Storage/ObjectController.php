@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Storage;
 
-use App\Helpers\Response as ApiResponse;
+use App\Helpers\Storage\S3Error;
 use App\Http\Resources\Storage\StorageObjectResource;
 use App\Repositories\Storage\BucketRepository;
 use App\Repositories\Storage\StorageObjectRepository;
@@ -76,7 +76,7 @@ class ObjectController extends StorageApiController
         $maxUploadSize = (int) config('setting.storage_max_upload_size');
         $contentLength = (int) $request->header('Content-Length', 0);
         if ($maxUploadSize > 0 && $contentLength > $maxUploadSize) {
-            return ApiResponse::sendError(413, 'Upload exceeds the maximum allowed size.');
+            return S3Error::send(413, 'EntityTooLarge', 'Upload exceeds the maximum allowed size.');
         }
 
         $allowedTypes = trim((string) config('setting.storage_allowed_file_types', '*'));
@@ -84,13 +84,13 @@ class ObjectController extends StorageApiController
             $extension = strtolower(pathinfo($object, PATHINFO_EXTENSION));
             $allowed = array_map('trim', explode(',', strtolower($allowedTypes)));
             if ($extension === '' || ! in_array($extension, $allowed, true)) {
-                return ApiResponse::sendError(415, 'File type not allowed.');
+                return S3Error::send(415, 'InvalidRequest', 'File type not allowed.');
             }
         }
 
         $input = fopen('php://input', 'rb');
         if ($input === false) {
-            return ApiResponse::sendError(500, 'Unable to read request body.');
+            return S3Error::send(500, 'InternalError', 'Unable to read request body.');
         }
 
         try {
@@ -110,7 +110,9 @@ class ObjectController extends StorageApiController
 
         Log::info('storage.object.uploaded', ['bucket' => $bucket, 'key' => $object, 'size' => $storageObject->size]);
 
-        return response()->json(['message' => 'Object uploaded successfully.'], 200, [
+        // Real S3 PutObject responses are 200 with an empty body - the AWS
+        // SDK's response parser chokes on a JSON body here.
+        return response('', 200, [
             'ETag' => $storageObject->etag(),
         ]);
     }
@@ -122,7 +124,7 @@ class ObjectController extends StorageApiController
         [$sourceBucketName, $sourceObjectKey] = array_pad(explode('/', $decoded, 2), 2, null);
 
         if (! $sourceBucketName || ! $sourceObjectKey) {
-            return ApiResponse::sendError(400, 'Malformed x-amz-copy-source header.');
+            return S3Error::send(400, 'InvalidRequest', 'Malformed x-amz-copy-source header.');
         }
 
         [$sourceBucketModel, $error] = $this->resolveBucket($request, $sourceBucketName, requireOwnership: true);
@@ -132,12 +134,19 @@ class ObjectController extends StorageApiController
 
         $sourceObject = $this->objectService->find($sourceBucketModel, $sourceObjectKey);
         if (! $sourceObject) {
-            return ApiResponse::sendError(404, 'Source object does not exist.');
+            return S3Error::send(404, 'NoSuchKey', 'Source object does not exist.');
         }
 
         $copied = $this->objectService->copy($sourceBucketModel, $sourceObject, $destBucketModel, $destObjectKey);
 
-        return response()->json(['message' => 'Object copied successfully.'], 200, [
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'
+            .'<CopyObjectResult>'
+            .'<ETag>"'.$copied->etag().'"</ETag>'
+            .'<LastModified>'.$copied->updated_at?->toIso8601String().'</LastModified>'
+            .'</CopyObjectResult>';
+
+        return response($xml, 200, [
+            'Content-Type' => 'application/xml',
             'ETag' => $copied->etag(),
         ]);
     }
@@ -154,7 +163,7 @@ class ObjectController extends StorageApiController
 
         $storageObject = $this->objectService->find($bucketModel, $object);
         if (! $storageObject) {
-            return ApiResponse::sendError(404, 'The specified key does not exist.');
+            return S3Error::send(404, 'NoSuchKey', 'The specified key does not exist.');
         }
 
         return $this->objectService->download($bucketModel, $storageObject, $this->metadataHeaders($storageObject));
