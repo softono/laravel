@@ -56,7 +56,11 @@ class TfaController extends Controller
         $request->validate(['password' => ['required', 'string']]);
         $result = $this->tfa->enable($request, $request->user(), $request->string('password'));
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
     }
 
     public function verifySetup(Request $request)
@@ -68,7 +72,11 @@ class TfaController extends Controller
 
         $result = $this->tfa->verifySetup($request, $request->user(), $request->string('method'), $request->string('code'));
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
     }
 
     public function disable(Request $request)
@@ -77,20 +85,32 @@ class TfaController extends Controller
 
         $result = $this->tfa->disable($request, $request->user(), $request->string('password'));
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
     }
 
     public function removeAuthenticator(Request $request)
     {
         $result = $this->tfa->removeAuthenticator($request, $request->user());
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
     }
 
     public function regenerateBackupCodes(Request $request)
     {
         $result = $this->tfa->regenerateBackupCodes($request, $request->user());
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
     }
 }

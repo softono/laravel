@@ -27,7 +27,11 @@ class PasskeyController extends Controller
 
         $result = $this->passkeys->loginVerify($request, $request->input('credential'));
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendMessage($result['message']);
     }
 
     // --- Authenticated (account management) ---

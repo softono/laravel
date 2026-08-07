@@ -31,7 +31,11 @@ class PasswordController extends Controller
     {
         $result = $this->account->forgotPassword($request->string('email'));
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendMessage($result['message']);
     }
 
     public function reset(ResetPasswordRequest $request)
@@ -43,7 +47,11 @@ class PasswordController extends Controller
             (string) $request->input('password'),
         );
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendMessage($result['message']);
     }
 
     public function changePassword(Request $request)
@@ -63,6 +71,10 @@ class PasswordController extends Controller
             (string) $request->input('password'),
         );
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendMessage($result['message']);
     }
 }

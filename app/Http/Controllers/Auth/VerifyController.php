@@ -38,7 +38,11 @@ class VerifyController extends Controller
             $request->string('otp'),
         );
 
-        return Response::sendResult($result);
+        if (! $result['ok']) {
+            return Response::sendError(422, $result['message']);
+        }
+
+        return Response::sendMessage($result['message']);
     }
 
     /**
@@ -60,6 +64,6 @@ class VerifyController extends Controller
             $this->account->sendOtp('verify', $user);
         }
 
-        return Responsesuccess('If the email exists, a new OTP has been sent');
+        return Response::sendMessage('If the email exists, a new OTP has been sent');
     }
 }
