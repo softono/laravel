@@ -35,10 +35,10 @@ class AppServiceProvider extends ServiceProvider
         // Storage S3 API rate limiting - keyed on the authenticated access
         // key, falling back to IP for unauthenticated public-bucket GET/HEAD
         // requests. See Rate Limiting in docs/local/prd.md. Must run behind
-        // StorageApiAuth (see routes/api.php) so storage_api_user is set.
+        // StorageApiAuth (see routes/api.php) so storage_api_key is set.
         RateLimiter::for('storage-api', function (Request $request) {
-            $apiUser = $request->attributes->get('storage_api_user');
-            $key = $apiUser ? 'access-key:'.$apiUser->access_key : 'ip:'.$request->ip();
+            $apiKey = $request->attributes->get('storage_api_key');
+            $key = $apiKey ? 'access-key:'.$apiKey->access_key : 'ip:'.$request->ip();
             $limit = (int) config('setting.storage_rate_limit_per_minute', 60);
 
             return Limit::perMinute($limit)->by($key);

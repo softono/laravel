@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Helpers\Storage\S3Error;
-use App\Repositories\Storage\ApiUserRepository;
+use App\Repositories\Storage\ApiKeyRepository;
 use App\Repositories\Storage\BucketRepository;
 use App\Services\Storage\Signing\HmacSigningStrategy;
 use App\Services\Storage\Signing\PresignedUrlStrategy;
@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Crypt;
 class StorageApiAuth
 {
     public function __construct(
-        protected ApiUserRepository $apiUsers,
+        protected ApiKeyRepository $apiKeys,
         protected BucketRepository $buckets,
         protected HmacSigningStrategy $hmacStrategy,
         protected PresignedUrlStrategy $presignedStrategy,
@@ -54,23 +54,23 @@ class StorageApiAuth
         }
 
         $accessKey = $strategy->accessKey($request);
-        $apiUser = $accessKey ? $this->apiUsers->findByAccessKey($accessKey) : null;
+        $apiKey = $accessKey ? $this->apiKeys->findByAccessKey($accessKey) : null;
 
-        if (! $apiUser || ! $apiUser->isActive()) {
+        if (! $apiKey || ! $apiKey->isActive()) {
             return S3Error::send(401, 'InvalidAccessKeyId', 'Invalid or inactive access key.');
         }
 
-        $secretKey = Crypt::decryptString($apiUser->secret_key);
+        $secretKey = Crypt::decryptString($apiKey->secret_key);
         $result = $strategy->verify($request, $secretKey);
 
         if (! $result['ok']) {
             return S3Error::send(403, 'SignatureDoesNotMatch', $result['message'] ?? 'Authentication failed.');
         }
 
-        $this->apiUsers->touchLastUsed($apiUser);
+        $this->apiKeys->touchLastUsed($apiKey);
 
-        $request->attributes->set('storage_api_user', $apiUser);
-        $request->attributes->set('storage_user', $apiUser->user);
+        $request->attributes->set('storage_api_key', $apiKey);
+        $request->attributes->set('storage_user', $apiKey->user);
 
         return $next($request);
     }
@@ -88,7 +88,7 @@ class StorageApiAuth
             return S3Error::send(401, 'AccessDenied', 'Authentication required.');
         }
 
-        $request->attributes->set('storage_api_user', null);
+        $request->attributes->set('storage_api_key', null);
         $request->attributes->set('storage_user', null);
         $request->attributes->set('storage_public_bucket', $bucket);
 

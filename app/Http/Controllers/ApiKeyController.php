@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\Storage\ApiUserRepository;
+use App\Repositories\Storage\ApiKeyRepository;
 use App\Repositories\Storage\BucketRepository;
 use App\Services\Storage\ApiCredentialService;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +17,7 @@ class ApiKeyController extends Controller
 {
     public function __construct(
         protected ApiCredentialService $credentials,
-        protected ApiUserRepository $apiUsers,
+        protected ApiKeyRepository $apiKeys,
         protected BucketRepository $buckets,
     ) {
         parent::__construct();
@@ -28,10 +28,10 @@ class ApiKeyController extends Controller
      */
     public function index()
     {
-        $apiUsers = $this->apiUsers->listForUser(auth()->id());
+        $apiKeys = $this->apiKeys->listForUser(auth()->id());
         $buckets = $this->buckets->listForUser(auth()->id());
 
-        return view('api-key.index', compact('apiUsers', 'buckets'));
+        return view('api-key.index', compact('apiKeys', 'buckets'));
     }
 
     /**
@@ -60,12 +60,12 @@ class ApiKeyController extends Controller
      */
     public function regenerate(Request $request)
     {
-        $apiUser = $this->apiUsers->findById($request->input('id'));
-        if (! $apiUser || $apiUser->user_id !== auth()->id()) {
+        $apiKey = $this->apiKeys->findById($request->input('id'));
+        if (! $apiKey || $apiKey->user_id !== auth()->id()) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
 
-        $result = $this->credentials->regenerateSecret($apiUser);
+        $result = $this->credentials->regenerateSecret($apiKey);
 
         return response()->json([
             'status' => $result['status'],
@@ -79,12 +79,12 @@ class ApiKeyController extends Controller
      */
     public function toggleStatus(Request $request)
     {
-        $apiUser = $this->apiUsers->findById($request->input('id'));
-        if (! $apiUser || $apiUser->user_id !== auth()->id()) {
+        $apiKey = $this->apiKeys->findById($request->input('id'));
+        if (! $apiKey || $apiKey->user_id !== auth()->id()) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
 
-        $result = $this->credentials->toggleStatus($apiUser);
+        $result = $this->credentials->toggleStatus($apiKey);
         $result['next'] = 'refresh';
 
         return response()->json($result);
@@ -95,12 +95,12 @@ class ApiKeyController extends Controller
      */
     public function destroy(Request $request)
     {
-        $apiUser = $this->apiUsers->findById($request->input('id'));
-        if (! $apiUser || $apiUser->user_id !== auth()->id()) {
+        $apiKey = $this->apiKeys->findById($request->input('id'));
+        if (! $apiKey || $apiKey->user_id !== auth()->id()) {
             return response()->json(['status' => 0, 'message' => 'No data found']);
         }
 
-        $result = $this->credentials->delete($apiUser);
+        $result = $this->credentials->delete($apiKey);
         $result['next'] = 'table_refresh';
 
         return response()->json($result);

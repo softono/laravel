@@ -54,31 +54,31 @@ AWS_ENDPOINT={{ rtrim(url('/'), '/') }}</code></pre>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($apiUsers as $apiUser)
-                <tr id="key-row-{{ $apiUser->id }}">
-                    <td>{{ $apiUser->title ?: '—' }}</td>
-                    <td><code>{{ $apiUser->access_key }}</code></td>
-                    <td>{{ $apiUser->bucket->name ?? 'All Buckets' }}</td>
+                @foreach ($apiKeys as $apiKey)
+                <tr id="key-row-{{ $apiKey->id }}">
+                    <td>{{ $apiKey->title ?: '—' }}</td>
+                    <td><code>{{ $apiKey->access_key }}</code></td>
+                    <td>{{ $apiKey->bucket->name ?? 'All Buckets' }}</td>
                     <td>
-                        @if ($apiUser->isActive())
+                        @if ($apiKey->isActive())
                         <span class="badge rounded-pill bg-label-success">Active</span>
                         @else
                         <span class="badge rounded-pill bg-label-danger">Inactive</span>
                         @endif
                     </td>
-                    <td>{{ $apiUser->last_used_at ? $general->dateFormat($apiUser->last_used_at) : 'Never' }}</td>
-                    <td>{{ $general->dateFormat($apiUser->created_at) }}</td>
+                    <td>{{ $apiKey->last_used_at ? $general->dateFormat($apiKey->last_used_at) : 'Never' }}</td>
+                    <td>{{ $general->dateFormat($apiKey->created_at) }}</td>
                     <td>
-                        <button class="btn btn-icon btn-regenerate" data-id="{{ $apiUser->id }}"
+                        <button class="btn btn-icon btn-regenerate" data-id="{{ $apiKey->id }}"
                             title="Regenerate Secret"><i class="bx bx-refresh icon-base"></i></button>
-                        <button class="btn btn-icon btn-toggle" data-id="{{ $apiUser->id }}" title="Enable/Disable"><i
+                        <button class="btn btn-icon btn-toggle" data-id="{{ $apiKey->id }}" title="Enable/Disable"><i
                                 class="bx bx-power-off icon-base"></i></button>
-                        <button class="btn btn-icon btn-delete-key" data-id="{{ $apiUser->id }}" title="Delete"><i
+                        <button class="btn btn-icon btn-delete-key" data-id="{{ $apiKey->id }}" title="Delete"><i
                                 class="bx bxs-trash icon-base"></i></button>
                     </td>
                 </tr>
                 @endforeach
-                @if ($apiUsers->isEmpty())
+                @if ($apiKeys->isEmpty())
                 <tr>
                     <td colspan="7" class="text-center">No API credentials yet.</td>
                 </tr>

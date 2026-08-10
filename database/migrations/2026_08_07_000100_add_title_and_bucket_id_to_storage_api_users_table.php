@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('storage_api_users', function (Blueprint $table) {
+        Schema::table('storage_api_keys', function (Blueprint $table) {
             $table->string('title')->nullable()->after('user_id');
             $table->foreignId('bucket_id')->nullable()->after('title')
                 ->constrained('storage_buckets')->nullOnDelete();
@@ -17,7 +17,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('storage_api_users', function (Blueprint $table) {
+        Schema::table('storage_api_keys', function (Blueprint $table) {
             $table->dropConstrainedForeignId('bucket_id');
             $table->dropColumn('title');
         });

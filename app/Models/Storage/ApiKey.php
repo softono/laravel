@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * a User has full access to all of that User's buckets - there is no
  * per-key, per-bucket permission scoping (IAM Policies are out of scope).
  */
-class ApiUser extends Model
+class ApiKey extends Model
 {
-    protected $table = 'storage_api_users';
+    protected $table = 'storage_api_keys';
 
     protected $fillable = [
         'user_id',

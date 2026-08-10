@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('storage_api_users', function (Blueprint $table) {
+        Schema::create('storage_api_keys', function (Blueprint $table) {
             $table->id();
             $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
             // Looked up on every API request (HMAC auth resolves the
@@ -30,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('storage_api_users');
+        Schema::dropIfExists('storage_api_keys');
     }
 };

@@ -3,8 +3,8 @@
 namespace App\Services\Storage;
 
 use App\Models\Auth\User;
-use App\Models\Storage\ApiUser;
-use App\Repositories\Storage\ApiUserRepository;
+use App\Models\Storage\ApiKey;
+use App\Repositories\Storage\ApiKeyRepository;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
@@ -19,18 +19,18 @@ use Illuminate\Support\Str;
 class ApiCredentialService
 {
     public function __construct(
-        protected ApiUserRepository $apiUsers,
+        protected ApiKeyRepository $apiKeys,
     ) {}
 
     /**
-     * @return array{status: int, message: string, api_user?: ApiUser, secret_key?: string}
+     * @return array{status: int, message: string, api_user?: ApiKey, secret_key?: string}
      */
     public function create(User $user, ?string $title = null, ?int $bucketId = null): array
     {
         $accessKey = 'AK'.strtoupper(Str::random(18));
         $secretKey = Str::random(40);
 
-        $apiUser = $this->apiUsers->create([
+        $apiKey = $this->apiKeys->create([
             'user_id' => $user->id,
             'title' => $title,
             'bucket_id' => $bucketId,
@@ -42,7 +42,7 @@ class ApiCredentialService
         return [
             'status' => 1,
             'message' => 'API credential created successfully. Copy the secret key now - it will not be shown again.',
-            'api_user' => $apiUser,
+            'api_user' => $apiKey,
             'secret_key' => $secretKey,
         ];
     }
@@ -50,10 +50,10 @@ class ApiCredentialService
     /**
      * @return array{status: int, message: string, secret_key?: string}
      */
-    public function regenerateSecret(ApiUser $apiUser): array
+    public function regenerateSecret(ApiKey $apiKey): array
     {
         $secretKey = Str::random(40);
-        $this->apiUsers->update($apiUser, ['secret_key' => Crypt::encryptString($secretKey)]);
+        $this->apiKeys->update($apiKey, ['secret_key' => Crypt::encryptString($secretKey)]);
 
         return [
             'status' => 1,
@@ -62,16 +62,16 @@ class ApiCredentialService
         ];
     }
 
-    public function toggleStatus(ApiUser $apiUser): array
+    public function toggleStatus(ApiKey $apiKey): array
     {
-        $apiUser->update(['status' => $apiUser->isActive() ? 'inactive' : 'active']);
+        $apiKey->update(['status' => $apiKey->isActive() ? 'inactive' : 'active']);
 
         return ['status' => 1, 'message' => 'API credential status updated.'];
     }
 
-    public function delete(ApiUser $apiUser): array
+    public function delete(ApiKey $apiKey): array
     {
-        $this->apiUsers->delete($apiUser);
+        $this->apiKeys->delete($apiKey);
 
         return ['status' => 1, 'message' => 'API credential deleted.'];
     }

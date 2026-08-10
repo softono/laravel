@@ -5,7 +5,7 @@ namespace App\Services\Storage;
 use App\Constants\UserRole;
 use App\Models\Auth\User;
 use App\Repositories\Auth\UserRepository;
-use App\Repositories\Storage\ApiUserRepository;
+use App\Repositories\Storage\ApiKeyRepository;
 use App\Repositories\Storage\BucketRepository;
 use App\Repositories\Storage\StorageObjectRepository;
 
@@ -18,7 +18,7 @@ class StorageStatsService
     public function __construct(
         protected BucketRepository $buckets,
         protected StorageObjectRepository $objects,
-        protected ApiUserRepository $apiUsers,
+        protected ApiKeyRepository $apiKeys,
         protected UserRepository $users,
     ) {}
 
@@ -29,7 +29,7 @@ class StorageStatsService
             'total_buckets' => $this->buckets->countAll(),
             'total_objects' => $this->objects->countAll(),
             'total_users' => $this->users->countByRoles([UserRole::USER]),
-            'total_api_keys' => $this->apiUsers->countAll(),
+            'total_api_keys' => $this->apiKeys->countAll(),
             'recent_uploads' => $this->objects->recentUploads(10),
         ];
     }
