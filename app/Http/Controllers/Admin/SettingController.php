@@ -25,7 +25,8 @@ class SettingController extends Controller
     public function update(Request $request)
     {
         $setting = $this->general->getAllSettings();
-
+        // dd($setting);
+        $setting['app_name'] = env('APP_NAME');
         return view('admin/setting/update', ['setting' => $setting]);
     }
 

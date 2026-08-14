@@ -45,9 +45,9 @@ class LoginController extends Controller
             requireAdmin: true,
         );
 
-        if (! $result['status']) {
-            return Response::sendResult($result);
-        }
+        // if (! $result['status']) {
+        //     return Response::sendResult($result);
+        // }
 
         /** @var User $user */
         $user = $result['user'];

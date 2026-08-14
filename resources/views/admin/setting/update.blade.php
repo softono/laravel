@@ -84,7 +84,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="">
                                                     <input type="text" class="form-control" placeholder="App Name" id="setting_app_name"
-                                                        name="setting_app_name" value="{{ $setting['setting.app_name'] }}"
+                                                        name="setting_app_name" value="{{ $setting['app_name'] }}"
                                                         required />
                                                 </div>
                                             </div>
@@ -99,7 +99,7 @@
                                                             class="icon-base bx bx-envelope"></i></span>
                                                     <input type="email" id="setting_admin_email" class="form-control"
                                                         placeholder="Admin Contact Email" name="setting_admin_email"
-                                                        value="{{ $setting['setting.admin_email'] }}" required />
+                                                        value="{{ $setting['admin_email'] }}" required />
                                                         </div>
                                                 </div>
                                                     <label id="setting_admin_email-error" class="error text-danger" for="setting_admin_email" style="display: none;"></label>
@@ -108,8 +108,9 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Date Format</label>
+                                                @dd($setting)
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.date_format'] }}" name="setting_date_format">
+                                                    value="{{ $setting['date_format'] }}" name="setting_date_format">
                                                     <option value="Y-m-d"
                                                         {{ $setting['setting.date_format'] == 'Y-m-d' ? 'selected' : '' }}>
                                                         {{ date('Y-m-d') }}
