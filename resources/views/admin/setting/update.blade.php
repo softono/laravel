@@ -104,11 +104,10 @@
                                                 </div>
                                                     <label id="setting_admin_email-error" class="error text-danger" for="setting_admin_email" style="display: none;"></label>
                                             </div>
-                                        </div>
+                                        </div>  
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label class="form-label">Date Format</label>
-                                                @dd($setting)
+                                                <label class="form-label">Date Format</label> 
                                                 <select class="form-select" data-style="btn-default"
                                                     value="{{ $setting['date_format'] }}" name="setting_date_format">
                                                     <option value="Y-m-d"
@@ -530,7 +529,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> 
         </div>
     </div>
     <!-- Mail Process start -->
