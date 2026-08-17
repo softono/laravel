@@ -208,6 +208,7 @@ class AccountService
      */
     public function updateProcess(Request $request, User $user): array
     {
+        dd($user);
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|alpha',
             'last_name' => 'required|alpha',

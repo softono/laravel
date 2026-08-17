@@ -13,6 +13,14 @@ class Response
         return response()->json($data, $http_status);
     }
 
+    /**
+     * Maps a service result array to the {status, message, data} envelope.
+     * Services return `['ok' => bool, 'message' => ?string, ...extra]`
+     * (see AGENTS.md's "Service returns a result array" pattern) - `ok`
+     * becomes `status` (1/0), and any extra keys (including an existing
+     * `data` key, e.g. TfaService::enable()) are merged into `data` so
+     * callers don't need their own per-field mapping.
+     */
     public static function sendResult(array $result = [])
     {
         return Response::sendResponse($result['http_status'] ?? 200, $result);

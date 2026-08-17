@@ -51,16 +51,16 @@ class SettingRepository
     {
         $data = [];
         $options = Setting::where('type', 0)->get();
-
+        
         foreach ($options as $row) {
             $data[$row['key']] = $row['value'];
         }
-
         return $data;
     }
 
     public function getAllSettings(): array
     {
+       
         return Cache::remember('setting', now()->addDay(), function () {
             return $this->allSettings();
         });
