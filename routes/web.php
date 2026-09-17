@@ -82,6 +82,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], funct
     Route::post('user/mail', '\App\Http\Controllers\Admin\UserController@sendMail')->name('admin/user/mail');
     Route::post('user/delete', '\App\Http\Controllers\Admin\UserController@delete')->name('admin/user/delete');
     Route::post('user/change_status', '\App\Http\Controllers\Admin\UserController@changeStatus')->name('admin/user/change_status');
+    Route::get('user/autologin', '\App\Http\Controllers\Admin\UserController@autoLogin')->name('admin/user/autologin');
     // user/autologin removed - impersonation called Auth::guard('web')->login($user),
     // which App\Helpers\SessionTokenGuard doesn't implement (no StatefulGuard support).
     Route::get('user/send-tfa-mail', '\App\Http\Controllers\Admin\UserController@sendTfaMail')->name('admin/user/send-tfa-mail');

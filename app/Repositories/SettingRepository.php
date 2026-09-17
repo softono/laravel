@@ -49,6 +49,7 @@ class SettingRepository
 
     public function allSettings(): array
     {
+        // dd(8888);
         $data = [];
         $options = Setting::where('type', 0)->get();
         
@@ -61,9 +62,9 @@ class SettingRepository
     public function getAllSettings(): array
     {
        
-        return Cache::remember('setting', now()->addDay(), function () {
+        // return Cache::remember('setting', now()->addDay(), function () {
             return $this->allSettings();
-        });
+        // });
     }
 
     public function store(array $postData): array

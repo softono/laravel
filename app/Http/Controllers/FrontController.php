@@ -16,7 +16,7 @@ class FrontController extends Controller
      *
      * @return View
      */
-    public function index()
+    public function index() 
     {
         return view('front.index');
     }
@@ -30,8 +30,8 @@ class FrontController extends Controller
      */
     public function page(Request $request)
     {
+        // dd($request->all());
         $page = Page::where('slug', $request->slug)->firstOrFail();
-
         return view('front.page', compact('page'));
     }
 

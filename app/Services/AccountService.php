@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\General;
-use App\Models\User;
+use App\Models\Auth\User;
 use App\Models\UserActivity;
 use App\Models\UserAuth;
 use Illuminate\Http\Request;

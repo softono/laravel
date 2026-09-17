@@ -44,7 +44,7 @@ class AuthService
     {
         $email = strtolower(trim($email));
         $user = $this->users->findByEmail($email);
-
+        // dd($user);
         if (! $user || ($requireAdmin && ! $user->isAdmin())) {
             $this->dummyPasswordCheck();
 

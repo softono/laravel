@@ -38,6 +38,7 @@ class LoginController extends Controller
 
     public function login(LoginRequest $request)
     {
+      
         $result = $this->auth->authenticate(
             $request,
             $request->string('email'),
@@ -45,7 +46,7 @@ class LoginController extends Controller
             requireAdmin: true,
         );
 
-        if (! $result['status']) {
+        if (! $result['ok']) {
             return Response::sendResult($result);
         }
 

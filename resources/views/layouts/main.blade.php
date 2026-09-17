@@ -114,7 +114,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
                                         ©{{date('Y')}} , made by <a href="{{route('home')}}" target="_blank" class="fw-semibold footer-link">{{ config('setting.app_name') }}</a>
                                     </div>
                                     <div class="d-none d-lg-inline-block">
-                                        <a target="_blank" href="page/terms-condition" class="footer-link me-4 pjax">Terms & Condition</a>
+                                        <a target="_blank" href="page/terms" class="footer-link me-4 pjax">Terms & Condition</a>
                                         <a target="_blank" href="page/privacy-policy" class="footer-link pjax">Privacy Policy</a>
                                     </div>
                                 </div>

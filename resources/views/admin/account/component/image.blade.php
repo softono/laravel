@@ -20,7 +20,7 @@
 </div>
 <div class="modal-footer justify-content-between">
     @if(!empty($model->image))
-    <button type="button" class="btn btn-danger" onclick="app.confirmAction(this);" data-action="{{route('admin/account/image-delete')}}" data-id="{{$model->image}}">Delete Image</button>
+    <button type="button" class="btn btn-danger" onclick="app.confirmAction(this);" data-action="{{route('admin/account/delete-image')}}" data-id="{{$model->image}}">Delete Image</button>
     @endif
     <br>
     <button type="button" class="btn btn-success" class="submit" onclick="imageCrop.uploadImage();">Save</button>

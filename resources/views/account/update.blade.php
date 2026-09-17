@@ -3,11 +3,13 @@
     Profile
 @endsection
 @section('content')
+
     <div class="row">
         <div class="col-md-12">
             {{ view('account/component/account_block', compact('model')) }}
             <div class="card mb-6">
                 <div class="card-body">
+                    
                     <div class="d-flex align-items-start align-items-sm-center gap-6 pb-4 border-bottom">
                         <img src="{{ $general->getFileUrl($model->image, 'profile') }}" alt="user-avatar"
                             class="d-block w-px-100 h-px-100 rounded" alt="image" height="100px" width="100px"

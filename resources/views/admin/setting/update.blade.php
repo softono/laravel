@@ -111,15 +111,15 @@
                                                 <select class="form-select" data-style="btn-default"
                                                     value="{{ $setting['date_format'] }}" name="setting_date_format">
                                                     <option value="Y-m-d"
-                                                        {{ $setting['setting.date_format'] == 'Y-m-d' ? 'selected' : '' }}>
+                                                        {{ $setting['date_format'] == 'Y-m-d' ? 'selected' : '' }}> 
                                                         {{ date('Y-m-d') }}
                                                     </option>
                                                     <option value="d-m-Y"
-                                                        {{ $setting['setting.date_format'] == 'd-m-Y' ? 'selected' : '' }}>
+                                                        {{ $setting['date_format'] == 'd-m-Y' ? 'selected' : '' }}>
                                                         {{ date('d-m-Y') }}
                                                     </option>
                                                     <option value="m-d-Y"
-                                                        {{ $setting['setting.date_format'] == 'm-d-Y' ? 'selected' : '' }}>
+                                                        {{ $setting['date_format'] == 'm-d-Y' ? 'selected' : '' }}>
                                                         {{ date('m-d-Y') }}
                                                     </option>
                                                 </select>
@@ -128,19 +128,20 @@
                                         <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label class="form-label">Date Time Format</label>
+                                        
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.date_time_format'] }}"
+                                                    value="{{ $setting['date_time_format'] }}"
                                                     name="setting_date_time_format">
                                                     <option value="Y-m-d h:i A"
-                                                        {{ $setting['setting.date_time_format'] == 'Y-m-d h:i A' ? 'selected' : '' }}>
+                                                        {{ $setting['date_time_format'] == 'Y-m-d h:i A' ? 'selected' : '' }}>
                                                         {{ date('Y-m-d h:i A') }}
                                                     </option>
                                                     <option value="d-m-Y h:i A"
-                                                        {{ $setting['setting.date_time_format'] == 'd-m-Y h:i A' ? 'selected' : '' }}>
+                                                        {{ $setting['date_time_format'] == 'd-m-Y h:i A' ? 'selected' : '' }}>
                                                         {{ date('d-m-Y h:i A') }}
                                                     </option>
                                                     <option value="m-d-Y h:i A"
-                                                        {{ $setting['setting.date_time_format'] == 'm-d-Y h:i A' ? 'selected' : '' }}>
+                                                        {{ $setting['date_time_format'] == 'm-d-Y h:i A' ? 'selected' : '' }}>
                                                         {{ date('m-d-Y h:i A') }}
                                                     </option>
                                                 </select>
@@ -150,13 +151,13 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Login With OTP</label>
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.user_login_with_otp'] }}"
+                                                    value="{{ $setting['user_login_with_otp'] }}"
                                                     name="setting_user_login_with_otp">
                                                     <option value="1"
-                                                        {{ $setting['setting.user_login_with_otp'] == '1' ? 'selected' : '' }}>
+                                                        {{ $setting['user_login_with_otp'] == '1' ? 'selected' : '' }}>
                                                         Enable</option>
                                                     <option value="0"
-                                                        {{ $setting['setting.user_login_with_otp'] == '0' ? 'selected' : '' }}>
+                                                        {{ $setting['user_login_with_otp'] == '0' ? 'selected' : '' }}>
                                                         Disable</option>
                                                 </select>
                                             </div>
@@ -165,13 +166,13 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Cookie Consent</label>
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.cookie_consent'] }}"
+                                                    value="{{ $setting['cookie_consent'] }}"
                                                     name="setting_cookie_consent">
                                                     <option value="1"
-                                                        {{ $setting['setting.cookie_consent'] == '1' ? 'selected' : '' }}>
+                                                        {{ $setting['cookie_consent'] == '1' ? 'selected' : '' }}>
                                                         Enable</option>
                                                     <option value="0"
-                                                        {{ $setting['setting.cookie_consent'] == '0' ? 'selected' : '' }}>
+                                                        {{ $setting['cookie_consent'] == '0' ? 'selected' : '' }}>
                                                         Disable</option>
                                                 </select>
                                             </div>
@@ -180,13 +181,13 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Email Verify</label>
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.user_email_verify'] }}"
+                                                    value="{{ $setting['user_email_verify'] }}"
                                                     name="setting_user_email_verify">
                                                     <option value="1"
-                                                        {{ $setting['setting.user_email_verify'] == '1' ? 'selected' : '' }}>
+                                                        {{ $setting['user_email_verify'] == '1' ? 'selected' : '' }}>
                                                         Enable</option>
                                                     <option value="0"
-                                                        {{ $setting['setting.user_email_verify'] == '0' ? 'selected' : '' }}>
+                                                        {{ $setting['user_email_verify'] == '0' ? 'selected' : '' }}>
                                                         Disable</option>
                                                 </select>
                                             </div>
@@ -214,7 +215,7 @@
                                                             <div class="col-sm-6 col-lg-4 mb-4">
                                                                 <div class="card">
                                                                     <img class="card-img-top preview-app-logo"
-                                                                        src="{{ $general->getFileUrl($setting['setting.app_logo'], 'logo') }}"
+                                                                        src="{{ $general->getFileUrl($setting['app_logo'], 'logo') }}"
                                                                         alt="Card image cap" />
                                                                 </div>
                                                             </div>
@@ -254,7 +255,7 @@
                                                                 <div class="col-sm-6 col-lg-4 mb-4">
                                                                     <div class="card">
                                                                         <img class="card-img-top preview-app-fevicon"
-                                                                            src="{{ $general->getFileUrl($setting['setting.app_favicon'], 'logo') }}"
+                                                                            src="{{ $general->getFileUrl($setting['app_favicon'], 'logo') }}"
                                                                             alt="Card image cap" />
                                                                     </div>
                                                                 </div>
@@ -294,7 +295,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="">
                                                     <input type="text" class="form-control" id="mail_mailers_smtp_host" placeholder="Host"
-                                                        name="mail_mailers_smtp_host" value="{{ $setting['mail.mailers.smtp.host'] }}"
+                                                        name="mail_mailers_smtp_host" value="{{ $setting['smtp_host'] }}"
                                                         required />
                                                 </div>
                                             </div>
@@ -303,12 +304,12 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Encryption</label>
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['mail.mailers.smtp.encryption'] }}" name="mail_mailers_smtp_encryption">
+                                                    value="{{ $setting['smtp_encryption'] }}" name="mail_mailers_smtp_encryption">
                                                     <option value="ssl"
-                                                        {{ $setting['mail.mailers.smtp.encryption'] == 'ssl' ? 'selected' : '' }}>
+                                                        {{ $setting['smtp_encryption'] == 'ssl' ? 'selected' : '' }}>
                                                         SSL</option>
                                                     <option value="tls"
-                                                        {{ $setting['mail.mailers.smtp.encryption'] == 'tls' ? 'selected' : '' }}>
+                                                        {{ $setting['smtp_encryption'] == 'tls' ? 'selected' : '' }}>
                                                         TLS</option>
                                                 </select>
                                             </div>
@@ -319,7 +320,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="input-group input-group-merge">
                                                     <input type="text" class="form-control" placeholder="Port"
-                                                        name="mail_mailers_smtp_port" value="{{ $setting['mail.mailers.smtp.port'] }}"
+                                                        name="mail_mailers_smtp_port" value="{{ $setting['smtp_port'] }}"
                                                         required />
                                                 </div>
                                             </div>
@@ -331,7 +332,7 @@
                                                 <div class="">
                                                     <input type="text" class="form-control" placeholder="Username"
                                                         id="mail_mailers_smtp_username" name="mail_mailers_smtp_username"
-                                                        value="{{ $setting['mail.mailers.smtp.username'] }}" required />
+                                                        value="{{ $setting['smtp_username'] }}" required />
                                                 </div>
                                             </div>
                                         </div>
@@ -342,7 +343,7 @@
                                                 <div class="from-group">
                                                     <input type="text" class="form-control" id="mail_mailers_smtp_password" placeholder="Password"
                                                         name="mail_mailers_smtp_password"
-                                                        value="{{ $setting['mail.mailers.smtp.password'] }}" required />
+                                                        value="{{ $setting['smtp_password'] }}" required />
                                                 </div>
                                             </div>
                                         </div>
@@ -353,7 +354,7 @@
                                                 <div class="">
                                                     <input type="text" class="form-control" id="mail_from_name" placeholder="Mail From Name"
                                                         name="mail_from_name"
-                                                        value="{{ $setting['mail.from.name'] }}" required />
+                                                        value="{{ $setting['mail_from_name'] }}" required />
                                                 </div>
 
                                             </div>
@@ -368,7 +369,7 @@
                                                     <input type="text" class="form-control" id="mail_from_address"
                                                         placeholder="Mail From Address"
                                                         name="mail_from_address"
-                                                        value="{{ $setting['mail.from.address'] }}" required />
+                                                        value="{{ $setting['mail_from_address'] }}" required />
                                                 </div>
                                                  <label id="mail_from_address-error" class="error" for="mail_from_address" style="display:none;"></label>
                                             </div>
@@ -386,6 +387,7 @@
                                 </form>
                             </div>
                             <div class="tab-pane fade" id="navs-top-recaptcha" role="tabpanel">
+                              
                                 <form action="{{ route('admin/setting/save') }}" class="ajax-form-captcha"
                                     method="post">
                                     {{ csrf_field() }}
@@ -395,13 +397,13 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Enable</label>
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.google_recaptcha'] }}"
+                                                    value="{{ $setting['google_recaptcha'] }}"
                                                     name="setting_google_recaptcha">
                                                     <option value="1"
-                                                        {{ $setting['setting.google_recaptcha'] == '1' ? 'selected' : '' }}>
+                                                        {{ $setting['google_recaptcha'] == '1' ? 'selected' : '' }}>
                                                         Yes</option>
                                                     <option value="0"
-                                                        {{ $setting['setting.google_recaptcha'] == '0' ? 'selected' : '' }}>
+                                                        {{ $setting['google_recaptcha'] == '0' ? 'selected' : '' }}>
                                                         No</option>
                                                 </select>
                                             </div>
@@ -412,7 +414,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="from-group input-group-merge">
                                                     <input type="text" class="form-control" required
-                                                        value="{{ $setting['setting.google_recaptcha_secret_key'] }}"
+                                                        value="{{ $setting['google_recaptcha_secret_key'] }}"
                                                         name="setting_google_recaptcha_secret_key" id="secret_key"
                                                         placeholder="google_recaptcha_secret_key">
                                                 </div>
@@ -424,7 +426,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="from-group input-group-merge">
                                                     <input type="text" class="form-control" required
-                                                        value="{{ $setting['setting.google_recaptcha_public_key'] }}"
+                                                        value="{{ $setting['google_recaptcha_public_key'] }}"
                                                         name="setting_google_recaptcha_public_key" id="public_key"
                                                         placeholder="google recaptcha public key">
                                                 </div>
@@ -449,13 +451,13 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Google Login</label>
                                                 <select class="form-select" data-style="btn-default"
-                                                    value="{{ $setting['setting.google_login'] }}"
+                                                    value="{{ $setting['google_login'] }}"
                                                     name="setting_google_login">
                                                     <option value="1"
-                                                        {{ $setting['setting.google_login'] == '1' ? 'selected' : '' }}>
+                                                        {{ $setting['google_login'] == '1' ? 'selected' : '' }}>
                                                         Enable</option>
                                                     <option value="0"
-                                                        {{ $setting['setting.google_login'] == '0' ? 'selected' : '' }}>
+                                                        {{ $setting['google_login'] == '0' ? 'selected' : '' }}>
                                                         Disable</option>
                                                 </select>
                                             </div>
@@ -466,7 +468,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="from-group input-group-merge">
                                                     <input type="text" class="form-control"
-                                                        value="{{ $setting['services.google_client_id'] }}" required
+                                                        value="{{ $setting['google_client_id'] }}" required
                                                         name="services_google_client_id"
                                                         placeholder="Google client id">
                                                 </div>
@@ -480,7 +482,7 @@
                                                         class="text-danger">*</span></label>
                                                 <div class="form-group input-group-merge">
                                                     <input type="text" class="form-control" required
-                                                        value="{{ $setting['services.google_client_secret'] }}"
+                                                        value="{{ $setting['google_client_secret'] }}"
                                                         name="services_google_client_secret" placeholder="Google client secret">
                                                 </div>
                                                 <label id="client_secret-error" class="error" for="client_secret"
@@ -506,7 +508,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Header</label>
                                                 <textarea class="form-control" rows="8" name="setting_header_content"
-                                                    placeholder="Header content">{{ $setting['setting.header_content'] }}</textarea>
+                                                    placeholder="Header content">{{ $setting['header_content'] }}</textarea>
 
                                             </div>
                                         </div>
@@ -514,7 +516,7 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Footer</label>
                                                 <textarea class="form-control" rows="8" name="setting_footer_content"
-                                                    placeholder="Footer content">{{ $setting['setting.footer_content'] }}</textarea>
+                                                    placeholder="Footer content">{{ $setting['footer_content'] }}</textarea>
                                             </div>
                                         </div>
 
@@ -752,4 +754,4 @@
 </script>
 
 
-@endpush
+@endpush 
