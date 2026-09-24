@@ -2,22 +2,7 @@
 
 namespace App\Modules\Admin\Controllers;
 
-use App\Helpers\General;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Routing\Controller as BaseController;
+use App\Http\Controllers\Controller as BaseController;
 
-class Controller extends BaseController
-{
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    public $general;
-
-    public function __construct()
-    {
-        $this->general = new General;
-        $this->general->configSettings();
-        \View::share('general', $this->general);
-    }
-}
+/** Base class for every admin controller; shares $general and the app settings with the views. */
+abstract class Controller extends BaseController {}

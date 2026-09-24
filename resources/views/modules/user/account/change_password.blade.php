@@ -1,10 +1,10 @@
-@extends('layouts.main')
+@extends($layout)
 @section('title')
     Change password
 @endsection
 @section('content')
     <div>
-        {{ view('modules.user.account.component.account_block', compact('model')) }}
+        @include('modules.user.account.component.account_block')
         <div class="card">
             <h5 class="card-header">Change Password</h5>
             <div class="card-body">

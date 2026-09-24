@@ -1,11 +1,11 @@
-@extends('layouts.main')
+@extends($layout)
 @section('title')
     Profile
 @endsection
 @section('content')
 
     <div>
-        {{ view('modules.user.account.component.account_block', compact('model')) }}
+        @include('modules.user.account.component.account_block')
         <div class="space-y-4">
             <div class="card">
                 <div class="card-body">
@@ -15,7 +15,7 @@
                             class="block h-[100px] w-[100px] rounded" height="100px" width="100px"
                             id="uploadedAvatar">
                         <div>
-                            <a onclick="app.showModalView('account/image')" for="upload"
+                            <a onclick="app.showModalView('{{ route($prefix.'account/image') }}')" for="upload"
                                 class="btn-primary pjax mb-4 mr-3 text-white" tabindex="0">
                                 <span class="hidden sm:block">Upload new photo</span>
                                 <i class="bx bx-upload block sm:hidden"></i>
@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div class="card-body pt-4">
-                    <form action="{{ route('account/update-process') }}" method="post" id="ajax-form">
+                    <form action="{{ route($prefix.'account/update-process') }}" method="post" id="ajax-form">
                         {{ csrf_field() }}
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
@@ -92,7 +92,7 @@
                             <p>Your account will be deactivated and you will be signed out on every device.</p>
                         </div>
                     </div>
-                    <form action="{{ route('account/deactivate') }}" id="formAccountDeactivation" method="POST">
+                    <form action="{{ route($prefix.'account/deactivate') }}" id="formAccountDeactivation" method="POST">
                         @csrf
                         <div class="my-8 ml-2 flex items-center gap-2">
                             <input type="checkbox" class="form-check-input" name="accountActivation" id="accountActivation" required>

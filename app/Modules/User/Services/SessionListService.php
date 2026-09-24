@@ -26,15 +26,15 @@ class SessionListService
     ) {}
 
     /** DataTables payload for the signed-in user's own sessions. */
-    public function forUser(Request $request, User $user, array $post): array
+    public function forUser(Request $request, User $user, array $post, string $logoutRoute = 'account/session-logout'): array
     {
-        return $this->present($request, $this->userSessions->datatableForUser($user->id, $post), 'account/session-logout');
+        return $this->present($this->userSessions->datatableForUser($user->id, $post), $logoutRoute);
     }
 
     /** DataTables payload for every user's sessions (admin). */
-    public function all(Request $request, array $post): array
+    public function all(array $post): array
     {
-        return $this->present($request, $this->userSessions->datatableAll($post), 'admin/device/logout');
+        return $this->present($this->userSessions->datatableAll($post), 'admin/device/logout');
     }
 
     /**
@@ -63,7 +63,7 @@ class SessionListService
         return ['ok' => true, 'message' => 'Device logged out successfully'];
     }
 
-    protected function present(Request $request, array $result, string $logoutRoute): array
+    protected function present(array $result, string $logoutRoute): array
     {
         $currentId = $this->currentSession()?->id;
 

@@ -1,8 +1,8 @@
-@extends('layouts.main')
+@extends($layout)
 @section('title', 'Two-Factor Authentication')
 @section('content')
     <div>
-        {{ view('modules.user.account.component.account_block', compact('model')) }}
+        @include('modules.user.account.component.account_block')
         <div class="space-y-4">
             <div class="card">
                 <div class="card-header">

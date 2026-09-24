@@ -33,23 +33,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], funct
     Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
     Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 
-    Route::get('account/update', '\App\Http\Controllers\Admin\Account\AccountController@update')->name('admin/account/update');
-    Route::post('account/save', '\App\Http\Controllers\Admin\Account\AccountController@save')->name('admin/account/save');
-    Route::get('account/password-change', '\App\Http\Controllers\Admin\Account\AccountController@passwordChange')->name('admin/account/password-change');
-    Route::post('account/change-password-process', '\App\Http\Controllers\Admin\Account\AccountController@changePasswordProcess')->name('admin/account/change-password-process');
-    Route::get('account/image', '\App\Http\Controllers\Admin\Account\AccountController@image')->name('admin/account/image');
-    Route::post('account/image-save', '\App\Http\Controllers\Admin\Account\AccountController@imagesave')->name('admin/account/image-save');
-    Route::post('account/delete-image', '\App\Http\Controllers\Admin\Account\AccountController@deleteImage')->name('admin/account/delete-image');
-    Route::get('account/tfa', '\App\Http\Controllers\Admin\Account\AccountController@tfa')->name('admin/account/tfa');
-    Route::post('account/tfa-status-change', '\App\Http\Controllers\Admin\Account\AccountController@tfaStatusChange')->name('admin/account/tfa-status-change');
-    Route::post('account/revoke-all', '\App\Http\Controllers\Admin\Account\AccountController@revokeAll')->name('admin/account/revoke-all');
-    Route::get('account/device', '\App\Http\Controllers\Admin\Account\AccountController@device')->name('admin/account/device');
-    Route::post('account/device-list', '\App\Http\Controllers\Admin\Account\AccountController@deviceList')->name('admin/account/device-list');
-    Route::post('account/device-logout', '\App\Http\Controllers\Admin\Account\AccountController@deviceLogout')->name('admin/account/device-logout');
-    Route::get('account/user-activity', '\App\Http\Controllers\Admin\Account\AccountController@userActivity')->name('admin/account/user-activity');
-    Route::post('account/user-activity-list', '\App\Http\Controllers\Admin\Account\AccountController@userActivityList')->name('admin/account/user-activity-list');
-    Route::post('account/deactivate', '\App\Http\Controllers\Admin\Account\AccountController@accountDeactivate')->name('admin/account/deactivate');
-
     Route::get('user', '\App\Http\Controllers\Admin\UserController@index')->name('admin/user');
     Route::any('user/list', '\App\Http\Controllers\Admin\UserController@list')->name('admin/user/list');
     Route::get('user/create', '\App\Http\Controllers\Admin\UserController@create')->name('admin/user/create');

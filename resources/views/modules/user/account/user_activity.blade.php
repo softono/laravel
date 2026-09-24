@@ -1,11 +1,11 @@
-@extends('layouts.main')
+@extends($layout)
 @section('title')
     Log
 @endsection
 @section('content')
     <!-- Content -->
     <div>
-        {{ view('modules.user.account.component.account_block', compact('model')) }}
+        @include('modules.user.account.component.account_block')
         <!-- Ajax Sourced Server-side -->
         <div class="card">
             <div class="card-header">
@@ -42,7 +42,7 @@
             ]);
             datatableObj = $('#data-table').DataTable({
                 ajax: dataTableAjax({
-                    url: '{{ route('account/user-activity-list') }}',
+                    url: '{{ route($prefix.'account/user-activity-list') }}',
                     method: 'post',
                 }),
                 columns: [

@@ -19,6 +19,13 @@ use Illuminate\Http\Request;
  */
 class AccountController extends Controller
 {
+    /** Layout, route-name prefix and post-deactivation route; the admin subclass overrides them. */
+    protected string $layout = 'layouts.main';
+
+    protected string $prefix = '';
+
+    protected string $loginRoute = 'login';
+
     public function __construct(
         protected ProfileService $profile,
         protected SessionListService $sessionList,
@@ -29,8 +36,7 @@ class AccountController extends Controller
 
     public function update()
     {
-        return view('modules.user.account.update', [
-            'model' => auth()->user(),
+        return $this->page('update', [
             'countries' => config('countries'),
             'timezones' => \DateTimeZone::listIdentifiers(\DateTimeZone::ALL_WITH_BC),
         ]);
@@ -43,12 +49,12 @@ class AccountController extends Controller
 
     public function passwordChange()
     {
-        return view('modules.user.account.change_password', ['model' => auth()->user()]);
+        return $this->page('change_password');
     }
 
     public function image()
     {
-        return view('modules.user.account.component.image', ['model' => auth()->user()]);
+        return $this->page('component.image');
     }
 
     public function imageSave(ImageRequest $request)
@@ -63,22 +69,22 @@ class AccountController extends Controller
 
     public function twoFactor()
     {
-        return view('modules.user.account.two-factor', ['model' => auth()->user()]);
+        return $this->page('two-factor');
     }
 
     public function passkeys()
     {
-        return view('modules.user.account.passkeys', ['model' => auth()->user()]);
+        return $this->page('passkeys');
     }
 
     public function session()
     {
-        return view('modules.user.account.session', ['model' => auth()->user()]);
+        return $this->page('session');
     }
 
     public function sessionList(Request $request)
     {
-        return response()->json($this->sessionList->forUser($request, auth()->user(), $request->all()));
+        return response()->json($this->sessionList->forUser($request, auth()->user(), $request->all(), $this->prefix.'account/session-logout'));
     }
 
     public function sessionLogout(Request $request)
@@ -96,7 +102,7 @@ class AccountController extends Controller
 
     public function userActivity()
     {
-        return view('modules.user.account.user_activity', ['model' => auth()->user()]);
+        return $this->page('user_activity');
     }
 
     public function userActivityList(Request $request)
@@ -110,6 +116,15 @@ class AccountController extends Controller
 
         SignedCookie::forget('session_token');
 
-        return redirect()->route('login');
+        return redirect()->route($this->loginRoute);
+    }
+
+    protected function page(string $view, array $data = [])
+    {
+        return view('modules.user.account.'.$view, [
+            'model' => auth()->user(),
+            'layout' => $this->layout,
+            'prefix' => $this->prefix,
+        ] + $data);
     }
 }

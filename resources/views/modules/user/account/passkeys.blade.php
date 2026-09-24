@@ -1,8 +1,8 @@
-@extends('layouts.main')
+@extends($layout)
 @section('title', 'Passkeys')
 @section('content')
     <div>
-        {{ view('modules.user.account.component.account_block', compact('model')) }}
+        @include('modules.user.account.component.account_block')
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-2">Passkeys</h5>

@@ -1,10 +1,10 @@
-@extends('layouts.main')
+@extends($layout)
 @section('title')
     Sessions
 @endsection
 @section('content')
     <div>
-        {{ view('modules.user.account.component.account_block', compact('model')) }}
+        @include('modules.user.account.component.account_block')
         <!-- Invoice List Table -->
         <div class="card">
             <div class="card-header">
@@ -40,7 +40,7 @@
             ]);
             datatableObj = $('#data-table').DataTable({
                 ajax: dataTableAjax({
-                    url: '{{ route('account/session-list') }}',
+                    url: '{{ route($prefix.'account/session-list') }}',
                     method: 'post',
                 }),
                 columns: [{
