@@ -39,8 +39,9 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
         @include('common.datatables-css')
-        @include('common.theme-init')
         @vite('resources/css/app.css')
+        {{-- After the stylesheet: its :root overrides must win. --}}
+        @include('common.theme-init')
         @stack('styles')
         <script>
             /*Global variables*/

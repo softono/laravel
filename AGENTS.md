@@ -6,7 +6,7 @@ Working guide for AI coding agents on this repository. Read this before making c
 
 ## Project Overview
 
-A Laravel 12 application with a **public site** (home, blog, pages, contact), a **user area** (dashboard, notes, account) and a **Tailwind admin panel**. The whole UI is Bootstrap-free (`NoBootstrapTest` enforces it) and themeable (light / dark / system). Its defining feature is a hand-rolled authentication system: password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys and Google OAuth.
+A Laravel 12 application with a **public site** (home, blog, pages, contact), a **user area** (dashboard, notes, account) and a **Tailwind admin panel**. The whole UI is Bootstrap-free (`NoBootstrapTest` enforces it) and themeable (43 colour themes plus light / dark / system). Its defining feature is a hand-rolled authentication system: password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys and Google OAuth.
 
 It is a port of a Next.js app (`/www/wwwroot/demo/next/next`). **The database is identical to Next's** (same tables, columns, defaults, enums, indexes, foreign keys — see [Database](#database)), and new pages reuse Next's Tailwind/shadcn class vocabulary.
 
@@ -180,7 +180,7 @@ Server-rendered Blade + Tailwind.
 
 - **Layouts:** `layouts/blank` (auth pages), `layouts/main` (site shell, PJAX-aware); admin mirrors them in `modules/admin/layouts/`.
 - **Every screen uses Next's class vocabulary** through the `x-ui.*` components (`button`, `input`, `textarea`, `select`, `label`, `checkbox`, `password-input`, `card*`, `badge`, `alert*`, `table`/`tr`/`th`/`td`, `pagination`, `modal`, `dialog-*`, `page-header`, `theme-switch`). The design tokens (`bg-card`, `text-muted-foreground`, `border-border`, …) come from `resources/css/next-theme.css`; use them instead of palette colours so dark mode works. No Bootstrap class names (`btn-*`, `form-*`, `modal-*`, `d-*`, `col-*`, `data-bs-*`) anywhere. Run `npm run build` after using a new utility class.
-- **Theme:** `<x-ui.theme-switch>` (light / dark / system, stored in `localStorage["app-color-mode"]`, applied as `dark` class + `data-theme` on `<html>`, early script `common/theme-init`) sits in every layout.
+- **Theme:** `<x-ui.theme-switch>` is Next's switchcn picker (43 colour themes from `resources/themes/`, light/dark/system, search, shuffle). `app-theme` / `app-color-mode` are kept in localStorage and plain cookies; `common/theme-init` renders the chosen theme server-side (after the stylesheet) and `default_theme` is the admin's default. Endpoints `GET /theme`, `GET /theme/{name}`. Details in `docs/frontend.md`.
 - **JS lives in `public/assets/js/`** and is included with plain `<script>`: jQuery + `app.js` (helpers and the `app.ui` data-attribute behaviours) + `pjax.js`. Vite builds CSS only; there is no JS bundle and no Alpine. Toggle/dropdown/tab behaviour is declared with `data-*` attributes (see `docs/frontend.md`).
 - Pass URLs in from Blade (`route()`, `data-*`), never hardcode paths in JS.
 

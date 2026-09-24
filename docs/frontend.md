@@ -116,7 +116,7 @@ Dropdowns, collapsible menus, the admin sidebar, tabs, modals, alerts and the th
 | `data-modal-open="#id"`, `data-modal-dismiss` | Open / close a `[data-modal]` |
 | `data-alert-dismiss` inside an `x-ui.alert` | Removes the alert |
 | `data-password-toggle="#input"` | Show/hide a password field |
-| `data-theme-option="light\|dark\|system"`, `data-theme-icon` | Theme switch (below) |
+| `data-theme-switch` | Colour theme + light/dark/system picker (below) |
 
 Tailwind also scans `public/assets/js`, so utility classes written in JS strings (toasts, DataTables classes) are generated; run `npm run build` after adding one.
 
@@ -126,13 +126,28 @@ Tailwind also scans `public/assets/js`, so utility classes written in JS strings
 
 ### Theme switch
 
-`<x-ui.theme-switch />` is a dropdown (trigger button with the current mode's icon; Light, Dark, System with a check on the active one). It is placed in the public/user navbar (`layouts/component/main_navbar`, desktop and mobile), the admin navbar, and floats top-right on both `blank` (auth) layouts (`<x-ui.theme-switch float />`).
+`<x-ui.theme-switch />` is Next's "switchcn" `ThemeSwitcher`: a palette button that opens a popover with a search box, a theme count, a light/system/dark cycle button, a random-theme button and the list of 43 colour themes (four swatches each, a check on the active one). It is placed in the public/user navbar (desktop and mobile), the admin navbar, and floats top-right on both `blank` (auth) layouts (`<x-ui.theme-switch float />`).
 
-- **State:** `localStorage["app-color-mode"]` = `light` \| `dark` \| `system` (Next's key; default `system`). All storage access is wrapped in try/catch.
-- **Effect:** `app.ui.theme` toggles the `dark` class and `data-theme="dark|light"` on `<html>` (what `@custom-variant dark` and the `.dark { … }` tokens in `next-theme.css` key off), sets `aria-checked` on the options and swaps the trigger icon. `system` follows `prefers-color-scheme` live; changes in another tab sync through the `storage` event.
-- **No flash:** every layout `@include('common.theme-init')`, a tiny inline script in `<head>` that applies the stored/system theme before first paint. Keep it in sync with `app.ui.theme`.
-- **PJAX:** handlers are delegated from `document`, so nothing needs re-binding after a page swap.
-- **Dark-aware markup:** use the tokens (`bg-background`, `bg-card`, `text-foreground`, `border-border`, `bg-sidebar`, …); DataTables' classes are replaced with token-based ones in `app.styleDataTables()`.
+**Themes.** `resources/themes/catalog.json` (name, label, swatches; the order of Next's registry) and `resources/themes/<name>.json` (the same shadcn theme files Next ships) are read by `App\Helpers\ThemeCatalog`. It only ever accepts names from the catalog. `default` is the token set in `next-theme.css` and needs no override. Add a theme by dropping its JSON in `resources/themes/` and adding a catalog row.
+
+**Endpoints** (public, envelope, `throttle:60,1`): `GET /theme` → `data.themes`; `GET /theme/{name}` → `data.{name, css, font_href}` (404 for an unknown name). The picker loads the list on first open and a theme's CSS when picked, then caches it in memory.
+
+**State.**
+
+| Key (localStorage **and** plain cookie, one year) | Values |
+|---|---|
+| `app-theme` | a catalog name (default: the admin's `default_theme` setting, else `default`) |
+| `app-color-mode` | `light` \| `dark` \| `system` (default `system`) |
+
+The cookies are exempt from Laravel's cookie encryption (`bootstrap/app.php`) so the server can read them; a value that is not in the catalog is ignored. Storage access is wrapped in try/catch.
+
+**No flash.** `common/theme-init` (included **after** the Vite stylesheet, so its `:root` overrides win) renders `<style id="app-theme-vars" data-theme-name="…">` with the theme's CSS variables and a Google Fonts link when the theme uses web fonts, then a tiny inline script applies the `dark` class before first paint. If the remembered theme differs from the rendered one (cookie cleared, or picked in another tab), `app.ui.theme.init()` applies it.
+
+**Behaviour** (`app.ui.theme` in `app.js`): a pick calls `setTheme(name)` (store, cookie, inject CSS/fonts, mark the active row, update the trigger title); the cycle button steps light → system → dark; `system` follows `prefers-color-scheme` live; other tabs sync through the `storage` event; PJAX needs no re-binding (delegated handlers). The cycle and shuffle buttons carry `data-keep-open` so the dropdown stays open; picking a theme closes it.
+
+**Admin default.** Settings → General → *Default Theme* stores `default_theme`; it applies to visitors without their own pick.
+
+**Tokens.** Themes override the tokens in `next-theme.css` (colours, `--radius`, fonts, shadows, `--tracking-normal`), so use the tokens (`bg-background`, `bg-card`, `text-foreground`, `border-border`, `bg-sidebar`, …) and never palette colours, or the page will not follow the theme. DataTables' classes are token-based in `app.styleDataTables()`.
 
 ### Follow-up actions
 

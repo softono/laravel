@@ -995,7 +995,7 @@ function dataTableAjax(params) {
  *   [data-sidebar-toggle="open|close"]   admin sidebar (#layout-menu + #sidebar-backdrop)
  *   [data-tabs] > [data-tab="x"] + [data-tab-panel="x"]   data-tabs-active / data-tabs-inactive hold the classes
  *   [data-password-toggle="#input"]   show/hide a password field
- *   [data-theme-option="light|dark|system"] + [data-theme-icon]   theme switch (x-ui.theme-switch)
+ *   [data-theme-switch]   colour theme + light/dark/system picker (x-ui.theme-switch, see app.ui.theme)
  */
 app.ui = {
     init: function () {
@@ -1012,7 +1012,7 @@ app.ui = {
         // A click outside, or on a link/button inside a menu, closes the open dropdowns.
         $doc.on("click", function (event) {
             const $target = $(event.target);
-            if ($target.closest("[data-dropdown-menu]").length && !$target.closest("a, button").length) {
+            if ($target.closest("[data-dropdown-menu]").length && (!$target.closest("a, button").length || $target.closest("[data-keep-open]").length)) {
                 return;
             }
             $("[data-dropdown-menu]").addClass("hidden");
@@ -1026,6 +1026,11 @@ app.ui = {
 
         $doc.on("click", "[data-sidebar-toggle]", function () {
             app.ui.sidebar($(this).data("sidebarToggle") === "open");
+        });
+        $doc.on("keydown", function (event) {
+            if (event.key === "Escape") {
+                $("[data-dropdown-menu]").addClass("hidden");
+            }
         });
         // Following a link inside the sidebar (pjax) should reveal the page on small screens.
         $doc.on("click", "#layout-menu a.pjax", function () {
@@ -1059,9 +1064,6 @@ app.ui = {
             $(this).find("i").toggleClass("bx-hide", !reveal).toggleClass("bx-show", reveal);
         });
 
-        $doc.on("click", "[data-theme-option]", function () {
-            app.ui.theme.set($(this).data("themeOption"));
-        });
         app.ui.theme.init();
     },
 
@@ -1071,22 +1073,48 @@ app.ui = {
     },
 
     /**
-     * Light / dark / system. The choice lives in localStorage under Next's key; the resolved
-     * theme is the `dark` class plus data-theme on <html> (what next-theme.css and DataTables
-     * key off). `system` follows prefers-color-scheme live. The inline script in
-     * common/theme-init.blade.php applies the same rule before first paint.
+     * Colour theme + light/dark/system mode (Next's "switchcn").
+     *
+     * Mode: `app-color-mode` (localStorage and cookie) is light | dark | system; the resolved value is the `dark`
+     * class plus data-theme on <html>, which next-theme.css and DataTables key off. `system` follows
+     * prefers-color-scheme live.
+     *
+     * Theme: `app-theme` (localStorage and cookie, so the server can render it without a flash) names one of
+     * the themes listed by GET /theme. Its CSS variables come from GET /theme/{name} and live in
+     * <style id="app-theme-vars"> (the `default` theme is the empty override). common/theme-init.blade.php renders the
+     * same style tag and the mode before first paint.
      */
     theme: {
-        key: "app-color-mode",
-        icons: { light: "bx-sun", dark: "bx-moon", system: "bx-desktop" },
+        modeKey: "app-color-mode",
+        themeKey: "app-theme",
+        modes: ["light", "system", "dark"],
+        themes: null,
+        cache: {},
 
-        stored: function () {
+        read: function (key) {
             try {
-                const mode = localStorage.getItem(this.key);
-                return this.icons[mode] ? mode : "system";
+                return localStorage.getItem(key);
             } catch (e) {
-                return "system";
+                return null;
             }
+        },
+
+        write: function (key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {}
+            // The server reads these to render the theme; one year, plain cookies.
+            document.cookie = key + "=" + encodeURIComponent(value) + "; path=/; max-age=31536000; SameSite=Lax";
+        },
+
+        mode: function () {
+            const mode = this.read(this.modeKey);
+            return this.modes.indexOf(mode) >= 0 ? mode : "system";
+        },
+
+        /** The theme the page was rendered with, or the last one this browser picked. */
+        rendered: function () {
+            return String($("#app-theme-vars").attr("data-theme-name") || "default");
         },
 
         prefersDark: function () {
@@ -1094,39 +1122,194 @@ app.ui = {
         },
 
         /** Applies a mode to the document and to every switch on the page. */
-        apply: function (mode) {
+        applyMode: function (mode) {
             const dark = mode === "dark" || (mode === "system" && this.prefersDark());
             const root = document.documentElement;
             root.classList.toggle("dark", dark);
             root.classList.toggle("cc--darkmode", dark);
             root.setAttribute("data-theme", dark ? "dark" : "light");
 
-            $("[data-theme-option]").each(function () {
-                $(this).attr("aria-checked", $(this).data("themeOption") === mode);
+            $("[data-theme-mode-icon]").each(function () {
+                $(this).toggleClass("hidden", $(this).data("themeModeIcon") !== mode);
             });
-            $("[data-theme-icon]")
-                .removeClass(Object.values(this.icons).join(" "))
-                .addClass(this.icons[mode]);
+            $("[data-theme-cycle]").attr("title", "Mode: " + mode + " — click to cycle");
         },
 
-        set: function (mode) {
-            if (!this.icons[mode]) {
+        setMode: function (mode) {
+            if (this.modes.indexOf(mode) < 0) {
                 return;
             }
-            try {
-                localStorage.setItem(this.key, mode);
-            } catch (e) {}
-            this.apply(mode);
+            this.write(this.modeKey, mode);
+            this.applyMode(mode);
+        },
+
+        cycleMode: function () {
+            this.setMode(this.modes[(this.modes.indexOf(this.mode()) + 1) % this.modes.length]);
+        },
+
+        /** Injects a loaded theme (`{name, css, font_href}`) into the page. */
+        inject: function (theme) {
+            let $style = $("#app-theme-vars");
+            if (!$style.length) {
+                $style = $("<style>", { id: "app-theme-vars" }).appendTo("head");
+            }
+            $style.text(theme.css || "").attr("data-theme-name", theme.name);
+
+            let $fonts = $("#app-theme-fonts");
+            if (theme.font_href) {
+                if (!$fonts.length) {
+                    $fonts = $("<link>", { id: "app-theme-fonts", rel: "stylesheet" }).appendTo("head");
+                }
+                $fonts.attr("href", theme.font_href);
+            } else {
+                $fonts.remove();
+            }
+            this.markActive(theme.name);
+        },
+
+        /** Marks the active row in every open list and puts its name on each trigger. */
+        markActive: function (name) {
+            const entry = (this.themes || []).find((item) => item.name === name);
+            $("[data-theme-list] [data-theme-name]").each(function () {
+                $(this).attr("aria-checked", $(this).data("themeName") === name);
+            });
+            if (entry) {
+                $("[data-theme-trigger]").attr("title", "Active Theme: " + entry.label);
+            }
+        },
+
+        /** Picks a theme: remembered, sent to the server as a cookie, and applied without a reload. */
+        setTheme: function (name) {
+            const theme = this;
+            const switchUrl = $("[data-theme-switch]").first().data("themeUrl");
+            if (!switchUrl || !/^[a-z0-9-]+$/.test(name)) {
+                return;
+            }
+
+            theme.write(theme.themeKey, name);
+
+            if (name === "default") {
+                theme.inject({ name: name, css: "", font_href: null });
+                return;
+            }
+            if (theme.cache[name]) {
+                theme.inject(theme.cache[name]);
+                return;
+            }
+            $.ajax({
+                url: switchUrl.replace("__name__", name),
+                method: "GET",
+                dataType: "json",
+                success: function (response) {
+                    if (response.status == 1) {
+                        theme.cache[name] = response.data;
+                        // A quicker second click may have chosen another theme meanwhile.
+                        if (theme.read(theme.themeKey) === name) {
+                            theme.inject(response.data);
+                        }
+                    }
+                },
+            });
+        },
+
+        /** Lists the themes once; each open switch clones the row template per theme. */
+        withThemes: function (cb) {
+            const theme = this;
+            if (theme.themes) {
+                cb(theme.themes);
+                return;
+            }
+            $.ajax({
+                url: $("[data-theme-switch]").first().data("themesUrl"),
+                method: "GET",
+                dataType: "json",
+                success: function (response) {
+                    if (response.status == 1) {
+                        theme.themes = response.data.themes;
+                        cb(theme.themes);
+                    }
+                },
+            });
+        },
+
+        /** Fills one switch's list (first open) and applies the search filter. */
+        render: function ($switch) {
+            const theme = this;
+            const $list = $switch.find("[data-theme-list]");
+            if (!$list.data("rendered")) {
+                const template = $switch.find("[data-theme-row-template]")[0];
+                theme.themes.forEach(function (entry) {
+                    const $row = $(template.content.cloneNode(true)).children().first();
+                    $row.attr("data-theme-name", entry.name).data("themeName", entry.name);
+                    $row.find("[data-theme-label]").text(entry.label);
+                    entry.swatches.forEach(function (color) {
+                        $("<span>", { class: "border-border inline-block size-[13px] shrink-0 rounded-full border" })
+                            .css("background", color)
+                            .appendTo($row.find("[data-theme-swatches]"));
+                    });
+                    $row.attr("data-theme-key", entry.label.toLowerCase());
+                    $list.append($row);
+                });
+                $list.data("rendered", true);
+            }
+            theme.filter($switch);
+            theme.markActive(String(theme.read(theme.themeKey) || theme.rendered()));
+        },
+
+        filter: function ($switch) {
+            const term = String($switch.find("[data-theme-search]").val() || "").toLowerCase();
+            let shown = 0;
+            $switch.find("[data-theme-list] > [data-theme-name]").each(function () {
+                const match = String($(this).attr("data-theme-key")).indexOf(term) >= 0;
+                $(this).toggleClass("hidden", !match);
+                shown += match ? 1 : 0;
+            });
+            $switch.find("[data-theme-empty]").toggleClass("hidden", shown > 0);
+            $switch.find("[data-theme-count]").text(shown + " theme" + (shown === 1 ? "" : "s"));
         },
 
         init: function () {
             const theme = this;
-            theme.apply(theme.stored());
+            const $doc = $(document);
+
+            theme.applyMode(theme.mode());
+
+            // The visitor picked a theme that the server did not render (cookie cleared, or picked in another
+            // tab): apply the remembered one.
+            const remembered = theme.read(theme.themeKey);
+            if (remembered && remembered !== theme.rendered() && /^[a-z0-9-]+$/.test(remembered)) {
+                theme.setTheme(remembered);
+            }
+
+            $doc.on("click", "[data-theme-trigger]", function () {
+                const $switch = $(this).closest("[data-theme-switch]");
+                theme.withThemes(function () {
+                    theme.render($switch);
+                    setTimeout(function () {
+                        $switch.find("[data-theme-search]").trigger("focus");
+                    }, 50);
+                });
+            });
+            $doc.on("input", "[data-theme-search]", function () {
+                theme.filter($(this).closest("[data-theme-switch]"));
+            });
+            $doc.on("click", "[data-theme-list] [data-theme-name]", function () {
+                theme.setTheme(String($(this).data("themeName")));
+                $(this).closest("[data-theme-switch]").find("[data-theme-search]").val("");
+            });
+            $doc.on("click", "[data-theme-cycle]", function () {
+                theme.cycleMode();
+            });
+            $doc.on("click", "[data-theme-shuffle]", function () {
+                theme.withThemes(function (themes) {
+                    theme.setTheme(themes[Math.floor(Math.random() * themes.length)].name);
+                });
+            });
 
             const query = window.matchMedia("(prefers-color-scheme: dark)");
             const onSystemChange = function () {
-                if (theme.stored() === "system") {
-                    theme.apply("system");
+                if (theme.mode() === "system") {
+                    theme.applyMode("system");
                 }
             };
             if (query.addEventListener) {
@@ -1136,8 +1319,10 @@ app.ui = {
             }
             // Another tab changed the choice.
             window.addEventListener("storage", function (event) {
-                if (event.key === theme.key) {
-                    theme.apply(theme.stored());
+                if (event.key === theme.modeKey) {
+                    theme.applyMode(theme.mode());
+                } else if (event.key === theme.themeKey && event.newValue) {
+                    theme.setTheme(event.newValue);
                 }
             });
         },

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Setting\Requests;
 
+use App\Helpers\ThemeCatalog;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,7 @@ class SaveSettingRequest extends FormRequest
                 'user_login_with_otp' => ['required', 'boolean'],
                 'admin_email' => ['required', 'email'],
                 'cookie_consent' => ['required', 'boolean'],
+                'default_theme' => ['required', Rule::in(array_column(ThemeCatalog::all(), 'name'))],
             ],
             'mail' => [
                 'smtp_host' => ['required', 'string'],

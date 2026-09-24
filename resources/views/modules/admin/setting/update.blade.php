@@ -94,6 +94,20 @@
                                 </div>
                                 <div>
                                     <div class="mb-3">
+                                        <x-ui.label class="mb-2" for="default_theme">Default Theme</x-ui.label>
+                                        <x-ui.select id="default_theme" name="default_theme">
+                                            @foreach (\App\Helpers\ThemeCatalog::all() as $theme)
+                                                <option value="{{ $theme['name'] }}"
+                                                    {{ ($setting['default_theme'] ?? 'default') == $theme['name'] ? 'selected' : '' }}>
+                                                    {{ $theme['label'] }}
+                                                </option>
+                                            @endforeach
+                                        </x-ui.select>
+                                        <p class="text-muted-foreground mt-1 text-xs">Used for visitors who have not picked their own theme.</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="mb-3">
                                         <x-ui.label class="mb-2">Date Format</x-ui.label>
                                         <x-ui.select
                                             value="{{ $setting['date_format'] }}" name="date_format">
