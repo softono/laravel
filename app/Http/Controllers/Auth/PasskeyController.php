@@ -18,7 +18,7 @@ class PasskeyController extends Controller
 
     public function loginOptions(Request $request)
     {
-        return Response::success(null, $this->passkeys->loginOptions());
+        return Response::sendData($this->passkeys->loginOptions());
     }
 
     public function loginVerify(Request $request)
@@ -38,7 +38,11 @@ class PasskeyController extends Controller
 
     public function index(Request $request)
     {
-        return Response::sendResult($this->passkeys->list($request->user()));
+        $passkeys = $this->passkeys->list($request->user())
+            ->map(fn ($passkey) => $passkey->only(['id', 'name', 'device_type', 'backed_up', 'created_at']))
+            ->values();
+
+        return Response::sendData(['passkeys' => $passkeys]);
     }
 
     public function registerOptions(Request $request)

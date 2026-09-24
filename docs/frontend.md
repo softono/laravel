@@ -309,6 +309,6 @@ Notes:
 | JS edit has no effect | You edited `resources/js/app.js` (never loaded) instead of `public/assets/js/…` |
 | Tailwind class does nothing | Tailwind is inactive — use Bootstrap |
 | Button silently does nothing | Missing script tag, or the module bailed on a missing element — check the console |
-| Callback never fires | Endpoint returned a non-2xx status; the envelope must be HTTP 200 (see [`api.md`](api.md#http-status-is-always-200--deliberately)) |
+| Callback never fires | Endpoint returned a non-2xx status; failures the page handles itself must be HTTP 200 (see [`api.md`](api.md#http-status)) |
 | `$general` undefined in a view | Controller did not call `parent::__construct()` |
 | Settings change not reflected | Settings cached → `php artisan cache:clear` |

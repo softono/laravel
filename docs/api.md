@@ -28,43 +28,53 @@ Every JSON endpoint returns the same three-key object:
 | `message` | `string` \| `null` | Human-readable, safe to display |
 | `data` | `object` | Payload; always an object, never `null` |
 
-### HTTP status is always 200 — deliberately
+### HTTP status
 
-Failures return **HTTP 200** with `status: 0`.
+`Response` mirrors the Next app's `src/server/utils/response.ts`: same function names, same body. The body is frozen to `status` / `message` / `data`; anything extra goes inside `data`, never on the top level. `data` defaults to `[]`.
 
-The reason is in `public/assets/js/app.js`: `ajaxRequest()` uses `$.ajax`, whose `success` callback — and therefore the caller's callback from `app.ajaxForm` / `app.ajaxPost` — only fires on a 2xx response. Anything else is routed to a generic bodyless `error` handler that discards `response.data`.
+Which HTTP code to use depends on what the caller needs, because of `public/assets/js/app.js`: `ajaxRequest()` uses `$.ajax`, whose `success` callback (and therefore the callback passed to `app.ajaxForm` / `app.ajaxPost`) only fires on a 2xx response. Any other status goes to `ajaxError`, which shows `responseJSON.message` and discards `data`.
 
-Page scripts need `data` on the **failure** path (`data.next === 'verify-account'`, `data.next === 'tfa'`), so the envelope must reach `success`. The `status` field carries the outcome instead.
+| Situation | HTTP | Body |
+|---|---|---|
+| Success | 200 | `status: 1` |
+| Failure the page handles itself (needs `data`, e.g. `data.next === 'verify-account'`, or a wrong password shown inline) | **200** | `status: 0` |
+| Failure that only needs a message shown | 4xx/5xx (`sendError`) | `status: 0`, `data: []` |
+| Validation failure (FormRequest or inline `$request->validate()`) | 422 | `status: 0`, first error in `message` |
+| Not signed in / not allowed | 401 | `status: 0` |
+| CSRF token expired | 419 | `status: 0` |
+| Rate limited | 429 | `status: 0` |
 
-Two exceptions: validation failures and CSRF failures are raised by the framework and return **422** and **419**.
-
-> This trade-off is understood and revisitable — moving to honest status codes requires a global `error` handler in `app.js` that parses the envelope out of non-2xx responses. Tracked in `docs/local/plan_improvemtns.md`.
+Validation, CSRF and rate-limit failures are rendered as the envelope for AJAX requests (`bootstrap/app.php` exception handlers and `AuthRateLimit`); non-AJAX browser requests still get Laravel's normal pages.
 
 ### Building responses
 
 ```php
 use App\Helpers\Response;
 
-Response::sendMessage('Password changed successfully');
-Response::sendData(['next' => 'tfa']);
-Response::sendError(401,'Invalid email or password');
-Response::sendData([
-    'next'  => 'verify-account',
-    'email' => $user->email,
-],'Please verify your account');
+Response::sendMessage('Password changed successfully');          // status 1, data []
+Response::sendMessage('Invalid email or password', 0);           // status 0, HTTP 200
+Response::sendError(401, 'Authentication required');             // status 0, HTTP 401
+Response::sendData(['next' => 'tfa']);                           // status 1 with a payload
+Response::sendResponse(200, [                                    // full control
+    'status'  => 0,
+    'message' => 'Please verify your account',
+    'data'    => ['next' => 'verify-account', 'email' => $user->email],
+]);
 ```
 
-Mapping a service result:
+Mapping a service result with `sendResult()`. It accepts either shape:
 
 ```php
+// Next style: ['status' => 1|0, 'message' => ..., 'data' => [...], 'http_status' => 200]
+// This app's service style: ['ok' => bool, 'message' => ..., ...extra]
+//   ok    -> status (1/0)
+//   extra -> merged into data
 return Response::sendResult($result);
 ```
 
-Attaching cookies:
+Extra headers: `Response::sendResultWithHeaders($result, ['X-Foo' => 'bar'])`. Cookies are queued instead (`SignedCookie::queueRaw()`) and attached by the framework.
 
-```php
-return Response::sendMessage('Logged in')->withCookies([$cookie]);
-```
+---
 
 ---
 
@@ -121,7 +131,7 @@ class RegisterRequest extends FormRequest
     protected function failedValidation(ValidatorContract $validator)
     {
         throw new HttpResponseException(
-            Response::sendErrro(422,$validator->errors()->first())
+            Response::sendError(422,$validator->errors()->first())
         );
     }
 }

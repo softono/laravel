@@ -38,7 +38,7 @@ class LoginController extends Controller
         );
 
         if (! $result['ok']) {
-            return Response::sendMessage($result['message']);
+            return Response::sendMessage($result['message'], 0);
         }
 
         /** @var User $user */
@@ -47,7 +47,9 @@ class LoginController extends Controller
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
             app(AccountService::class)->sendOtp('verify', $user);
 
-            return Response::sendResponse(403, [
+            // 200, not 403: the login page reads data.next on this failure path and jQuery
+            // only runs the caller's callback for 2xx responses.
+            return Response::sendResponse(200, [
                 'status' => 0,
                 'message' => 'Please verify your account',
                 'data' => [

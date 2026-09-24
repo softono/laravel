@@ -200,8 +200,8 @@ All JSON endpoints return the same envelope:
 
 Key conventions:
 
-- Build responses with `Response::sendMessage()` / `Response::sendError()`, then ``.
-- **HTTP status is always 200**, deliberately. The jQuery helper in `public/assets/js/app.js` only routes 2xx to the caller's callback, and pages need `data.next` on the failure path too.
+- Build responses with `Response::sendMessage()` / `sendError()` / `sendData()` / `sendResult()` (same names and body as the Next app's `response.ts`; extras go inside `data`).
+- **Use HTTP 200 for any failure the page must handle** (it reads `data.next`, or shows the message inline). The jQuery helper in `public/assets/js/app.js` only routes 2xx to the caller's callback; non-2xx goes to a generic handler that shows `message` and drops `data`. Validation (422), auth (401), CSRF (419) and rate limit (429) use their real codes. See `docs/api.md`.
 - Validation via FormRequests in `App\Http\Requests\Auth\` — they render errors into the same envelope.
 - Rate limiting via `auth.throttle:{name}` (see `AuthRateLimit::LIMITS`).
 - CSRF applies to every POST (all auth endpoints live in the `web` group).
@@ -376,7 +376,7 @@ if ($claimed === 0) { /* someone else won the race */ }
 |---|---|---|
 | Importing `App\Models\User` instead of `App\Models\Auth\User` | Broken role checks, empty query results | Check the [Legacy vs. Current](#legacy-vs-current-critical) table |
 | Moving/renaming a class without re-dumping the autoloader | Fatal "class not found" on a *deleted* path — the optimized classmap is authoritative | `php composer.phar dump-autoload` |
-| Returning a non-200 HTTP status from an auth endpoint | Frontend callback never fires; user sees nothing | Use `Response`, keep 200 |
+| Returning a non-200 status on a failure the page handles itself | Frontend callback never fires; `data.next` is lost | Use `Response::sendMessage($msg, 0)` / `sendResponse(200, …)` |
 | Adding a column to `users` for auth state | Wrong table — auth state is normalised across `user_*` tables | Use the existing table for that concern |
 | Assuming `php artisan test` is isolated | Runs against the **real** database | Configure a test DB in `phpunit.xml` first |
 | Writing Tailwind classes | Silently unstyled — Tailwind is installed but inactive | Use Bootstrap 5 utilities |

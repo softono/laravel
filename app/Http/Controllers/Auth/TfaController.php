@@ -18,14 +18,14 @@ class TfaController extends Controller
 
     public function methods(Request $request)
     {
-        return Response::success(null, ['methods' => $this->tfa->getChallengeMethods($request)]);
+        return Response::sendData(['methods' => $this->tfa->getChallengeMethods($request)]);
     }
 
     public function sendOtp(Request $request)
     {
         $this->tfa->sendLoginChallengeOtp($request);
 
-        return Response::success('A verification code has been sent to your email');
+        return Response::sendMessage('A verification code has been sent to your email');
     }
 
     public function verify(Request $request)
@@ -48,7 +48,7 @@ class TfaController extends Controller
 
     public function status(Request $request)
     {
-        return Response::success(null, $this->tfa->getStatus($request->user()));
+        return Response::sendData($this->tfa->getStatus($request->user()));
     }
 
     public function enable(Request $request)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\Response;
 use App\Http\Middleware\AuthenticateAdminSession;
 use App\Http\Middleware\AuthenticateSession;
 use App\Http\Middleware\AuthRateLimit;
@@ -9,7 +10,10 @@ use App\Http\Middleware\RedirectIfAuthenticated;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -59,5 +63,17 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // AJAX callers always get the {status, message, data} envelope, including for
+        // inline $request->validate() failures, which otherwise use Laravel's own 422 body.
+        $exceptions->render(function (ValidationException $e, Request $request) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return Response::sendError(422, $e->validator->errors()->first());
+            }
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if ($e->getStatusCode() === 419 && ($request->expectsJson() || $request->ajax())) {
+                return Response::sendError(419, 'Your session has expired. Please refresh the page and try again.');
+            }
+        });
     })->create();
