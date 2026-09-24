@@ -5,6 +5,29 @@
 @section('content')
     <div>
         @include('modules.user.account.component.account_block')
+        @unless ($hasPassword)
+            <x-ui.card>
+                <x-ui.card-header>
+                    <x-ui.card-title>Set a Password</x-ui.card-title>
+                    <p class="text-sm text-muted-foreground">You signed up with Google and have no password yet. Set one to also sign in with your email.</p>
+                </x-ui.card-header>
+                <x-ui.card-content>
+                    <form action="{{ url('auth/set-password') }}" method="post" id="set-password-form" class="grid max-w-md gap-4"
+                        data-next="reload">
+                        @csrf
+                        <div class="grid gap-2">
+                            <x-ui.label for="set-password">New password</x-ui.label>
+                            <x-ui.input type="password" id="set-password" name="password" minlength="6" maxlength="100" autocomplete="new-password" required />
+                        </div>
+                        <div class="grid gap-2">
+                            <x-ui.label for="set-password-confirm">Confirm new password</x-ui.label>
+                            <x-ui.input type="password" id="set-password-confirm" name="confirm_password" minlength="6" maxlength="100" autocomplete="new-password" required />
+                        </div>
+                        <div><x-ui.button type="submit">Set password</x-ui.button></div>
+                    </form>
+                </x-ui.card-content>
+            </x-ui.card>
+        @else
         <div class="card">
             <h5 class="card-header">Change Password</h5>
             <div class="card-body">
@@ -64,10 +87,16 @@
                 </form>
             </div>
         </div>
+        @endunless
     </div>
 
     <script type="text/javascript">
         documentReady(function() {
+            $('#set-password-form').validate({
+                submitHandler: function(form) {
+                    app.ajaxForm(form);
+                }
+            });
             $('#ajax-form').validate({
                 submitHandler: function(form) {
                     app.ajaxForm(form);

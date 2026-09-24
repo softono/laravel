@@ -49,7 +49,7 @@ class AccountController extends Controller
 
     public function passwordChange()
     {
-        return $this->page('change_password');
+        return $this->page('change_password', ['hasPassword' => $this->profile->hasPassword(auth()->user())]);
     }
 
     public function image()

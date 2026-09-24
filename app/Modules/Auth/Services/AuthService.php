@@ -138,21 +138,23 @@ class AuthService
         return ['ok' => true, 'message' => 'Password changed successfully'];
     }
 
+    /**
+     * For accounts that have no password yet (Google-only sign-ups). Replacing an
+     * existing one has to go through changePassword(), which checks the current
+     * password - otherwise a hijacked session could take the account over.
+     *
+     * @return array{ok: bool, message: string}
+     */
     public function setPassword(Request $request, User $user, string $newPassword): array
     {
         $account = $this->userAccounts->findCredentialAccount($user->id);
 
-        if ($account) {
-            $account->update(['password' => Hash::make($newPassword)]);
-        } else {
-            $this->userAccounts->create([
-                'user_id' => $user->id,
-                'account_id' => $user->id,
-                'provider_id' => 'credential',
-                'password' => Hash::make($newPassword),
-            ]);
+        if ($account?->password) {
+            return ['ok' => false, 'message' => 'A password is already set. Use change password instead.'];
         }
 
+        $this->userAccounts->saveCredentialPassword($user->id, Hash::make($newPassword));
+        $this->sessions->invalidateUserCache($user->id);
         $this->activity->log($request, $user->id, UserActivity::PASSWORD_SET);
 
         return ['ok' => true, 'message' => 'Password set successfully'];

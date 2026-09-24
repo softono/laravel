@@ -104,7 +104,7 @@ class AccountManagementService
         $this->users->update($user, $changes);
 
         if (! empty($data['password'])) {
-            $this->userAccounts->updateCredentialPassword($user->id, Hash::make($data['password']));
+            $this->userAccounts->saveCredentialPassword($user->id, Hash::make($data['password']));
             $this->sessions->revokeAllForUser($user->id);
         }
 

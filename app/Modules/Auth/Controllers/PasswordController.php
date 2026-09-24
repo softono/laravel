@@ -54,6 +54,18 @@ class PasswordController extends Controller
         return Response::sendMessage($result['message']);
     }
 
+    public function setPassword(Request $request)
+    {
+        $request->validate([
+            'password' => ['required', 'string', 'min:6', 'max:100'],
+            'confirm_password' => ['required', 'same:password'],
+        ]);
+
+        $result = app(AuthService::class)->setPassword($request, $request->user(), (string) $request->input('password'));
+
+        return Response::sendResult($result);
+    }
+
     public function changePassword(Request $request)
     {
         $request->validate([

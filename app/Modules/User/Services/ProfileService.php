@@ -7,6 +7,7 @@ use App\Constants\UserStatus;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Modules\Auth\Services\SessionService;
+use App\Repositories\Auth\UserAccountRepository;
 use App\Repositories\Auth\UserRepository;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
@@ -24,8 +25,15 @@ class ProfileService
         protected UserRepository $users,
         protected ActivityService $activity,
         protected SessionService $sessions,
+        protected UserAccountRepository $userAccounts,
         protected General $general,
     ) {}
+
+    /** False for accounts created through Google that never chose a password. */
+    public function hasPassword(User $user): bool
+    {
+        return (bool) $this->userAccounts->findCredentialAccount($user->id)?->password;
+    }
 
     /**
      * @param  array<string, mixed>  $data

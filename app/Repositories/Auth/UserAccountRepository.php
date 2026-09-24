@@ -13,11 +13,18 @@ class UserAccountRepository
             ->first();
     }
 
-    public function findProviderAccount(string $providerId, string $providerSubject): ?UserAccount
+    /** An OAuth link: the provider's own id for the person is stored in `account_id`. */
+    public function findProviderAccount(string $providerId, string $providerAccountId): ?UserAccount
     {
         return UserAccount::where('provider_id', $providerId)
-            ->where('provider_subject', $providerSubject)
+            ->where('account_id', $providerAccountId)
             ->first();
+    }
+
+    /** @return string[] provider ids linked to the user (`credential` = a password is set) */
+    public function providersFor(string $userId): array
+    {
+        return UserAccount::where('user_id', $userId)->pluck('provider_id')->all();
     }
 
     public function create(array $data): UserAccount
@@ -25,13 +32,12 @@ class UserAccountRepository
         return UserAccount::create($data);
     }
 
-    public function updateCredentialPassword(string $userId, string $hashedPassword): bool
+    /** Creates the `credential` account on first use, otherwise replaces its password hash. */
+    public function saveCredentialPassword(string $userId, string $hashedPassword): UserAccount
     {
-        $account = $this->findCredentialAccount($userId);
-        if (! $account) {
-            return false;
-        }
-
-        return $account->update(['credential' => $hashedPassword]);
+        return UserAccount::updateOrCreate(
+            ['user_id' => $userId, 'provider_id' => 'credential'],
+            ['account_id' => $userId, 'password' => $hashedPassword],
+        );
     }
 }

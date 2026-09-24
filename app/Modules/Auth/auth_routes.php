@@ -65,6 +65,8 @@ Route::middleware('device.uid')->prefix('auth')->group(function () {
 // --- Signed-in endpoints ---
 Route::middleware(['device.uid', 'auth.user'])->prefix('auth')->group(function () {
     Route::post('/change-password', [PasswordController::class, 'changePassword']);
+    Route::post('/set-password', [PasswordController::class, 'setPassword']);
+    Route::get('/list-accounts', [SessionController::class, 'accounts']);
 
     Route::get('/2fa/status', [TfaController::class, 'status']);
     Route::post('/2fa/enable', [TfaController::class, 'enable']);
