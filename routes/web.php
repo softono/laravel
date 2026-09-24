@@ -30,8 +30,6 @@ Route::group(['middleware' => ['web']], function () {
 // auth lives in routes/auth.php (Admin\Auth\{LoginController,PageController}).
 
 Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], function () {
-    Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
-    Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 
     // user/autologin removed - impersonation called Auth::guard('web')->login($user),
     // which App\Helpers\SessionTokenGuard doesn't implement (no StatefulGuard support).
@@ -63,7 +61,5 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], funct
     Route::post('email-template/save', '\App\Http\Controllers\Admin\EmailTemplateController@save')->name('admin/email-template/save');
     Route::post('email-template/save-file', '\App\Http\Controllers\Admin\EmailTemplateController@saveFile')->name('admin/email-template/save-file');
     Route::get('email-template/create', '\App\Http\Controllers\Admin\EmailTemplateController@create')->name('admin/email-template/create');
-
-    // Route::get('/get-qr-modal',' \App\Http\Controllers\QrcodeControlle@getModel')->name('get/qr/modal');
 
 });
