@@ -26,6 +26,7 @@ class SettingController extends Controller
     {
         $setting = $this->general->getAllSettings();
         $setting['app_name'] = env('APP_NAME');
+
         return view('admin/setting/update', ['setting' => $setting]);
     }
 
@@ -59,7 +60,7 @@ class SettingController extends Controller
     public function saveLogo(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'key' => 'required|string',
+            'key' => 'required|in:app_logo,app_favicon',
             'image' => $this->general->fileRules('image'),
         ]);
 
@@ -68,17 +69,16 @@ class SettingController extends Controller
         }
         $key = $request->input('key');
         $settingRepo = new SettingRepository;
-        $setting = Setting::where('key', $key)->first();
-        if ($setting) {
-            $result = $this->general->uploadFile($request->file('image'), 'logo', '', 'same');
-            if ($result['status']) {
-                if ($setting->value != $result['file_name']) {
-                    $this->general->deleteFile($setting->value, 'logo');
-                }
-                $setting->value = $result['file_name'];
-                $setting->save();
-                $settingRepo->clearCache();
+        // Logos are optional in the Next-shaped settings seed, so create the row on first upload.
+        $setting = Setting::firstOrNew(['key' => $key], ['value' => '', 'type' => 'public']);
+        $result = $this->general->uploadFile($request->file('image'), 'logo', '', 'same');
+        if ($result['status']) {
+            if ($setting->value !== '' && $setting->value != $result['file_name']) {
+                $this->general->deleteFile($setting->value, 'logo');
             }
+            $setting->value = $result['file_name'];
+            $setting->save();
+            $settingRepo->clearCache();
         }
 
         return response()->json($result);

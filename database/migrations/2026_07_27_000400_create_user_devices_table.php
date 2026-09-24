@@ -1,31 +1,32 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Trusted devices for 2FA. `updated_at` is NOT NULL with no default -
- * Eloquent always supplies it; raw inserts must too.
+ * Mirrors the Next.js Drizzle table `user_devices` (same columns, order, nullability, defaults).
+ * Postgres `text` is TEXT, except columns that are unique/indexed (VARCHAR, index-safe on MySQL).
+ * Ids are `ascii_bin` so UUID/token comparisons stay case-sensitive.
  */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::create('user_devices', function (Blueprint $table) {
-            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->primary();
+            $table->char('id', 36)->charset('ascii')->collation('ascii_bin')->default(new Expression('(UUID())'))->primary();
             $table->char('user_id', 36)->charset('ascii')->collation('ascii_bin');
-            $table->string('device_uid', 64)->charset('ascii')->collation('ascii_bin');
-            $table->string('ip_address', 45)->charset('ascii')->collation('ascii_bin')->nullable();
-            $table->string('user_agent', 512)->nullable();
+            $table->string('device_uid')->charset('ascii')->collation('ascii_bin'); // indexed, so VARCHAR
+            $table->text('ip_address')->nullable();
+            $table->text('user_agent')->nullable();
             $table->dateTime('trusted_at')->useCurrent();
             $table->dateTime('expires_at');
             $table->dateTime('created_at')->useCurrent();
-            $table->dateTime('updated_at'); // NOT NULL, no default - Next parity
+            $table->dateTime('updated_at'); // NOT NULL, no default: the app sets it, as Next does
 
             $table->index('user_id', 'user_devices_user_idx');
             $table->index(['user_id', 'device_uid'], 'user_devices_lookup_idx');
-
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
     }

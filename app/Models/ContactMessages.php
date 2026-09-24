@@ -28,6 +28,11 @@ class ContactMessages extends Model
     public $timestamps = true;
 
     /**
+     * The table (mirrored from Next) has created_at only.
+     */
+    const UPDATED_AT = null;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

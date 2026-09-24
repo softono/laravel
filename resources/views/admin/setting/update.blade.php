@@ -110,16 +110,16 @@
                                                 <label class="form-label">Date Format</label> 
                                                 <select class="form-select" data-style="btn-default"
                                                     value="{{ $setting['date_format'] }}" name="setting_date_format">
-                                                    <option value="Y-m-d"
-                                                        {{ $setting['date_format'] == 'Y-m-d' ? 'selected' : '' }}> 
+                                                    <option value="yyyy-MM-dd"
+                                                        {{ $setting['date_format'] == 'yyyy-MM-dd' ? 'selected' : '' }}> 
                                                         {{ date('Y-m-d') }}
                                                     </option>
-                                                    <option value="d-m-Y"
-                                                        {{ $setting['date_format'] == 'd-m-Y' ? 'selected' : '' }}>
+                                                    <option value="dd-MM-yyyy"
+                                                        {{ $setting['date_format'] == 'dd-MM-yyyy' ? 'selected' : '' }}>
                                                         {{ date('d-m-Y') }}
                                                     </option>
-                                                    <option value="m-d-Y"
-                                                        {{ $setting['date_format'] == 'm-d-Y' ? 'selected' : '' }}>
+                                                    <option value="MM-dd-yyyy"
+                                                        {{ $setting['date_format'] == 'MM-dd-yyyy' ? 'selected' : '' }}>
                                                         {{ date('m-d-Y') }}
                                                     </option>
                                                 </select>
@@ -132,16 +132,16 @@
                                                 <select class="form-select" data-style="btn-default"
                                                     value="{{ $setting['date_time_format'] }}"
                                                     name="setting_date_time_format">
-                                                    <option value="Y-m-d h:i A"
-                                                        {{ $setting['date_time_format'] == 'Y-m-d h:i A' ? 'selected' : '' }}>
+                                                    <option value="yyyy-MM-dd hh:mm a"
+                                                        {{ $setting['date_time_format'] == 'yyyy-MM-dd hh:mm a' ? 'selected' : '' }}>
                                                         {{ date('Y-m-d h:i A') }}
                                                     </option>
-                                                    <option value="d-m-Y h:i A"
-                                                        {{ $setting['date_time_format'] == 'd-m-Y h:i A' ? 'selected' : '' }}>
+                                                    <option value="dd-MM-yyyy hh:mm a"
+                                                        {{ $setting['date_time_format'] == 'dd-MM-yyyy hh:mm a' ? 'selected' : '' }}>
                                                         {{ date('d-m-Y h:i A') }}
                                                     </option>
-                                                    <option value="m-d-Y h:i A"
-                                                        {{ $setting['date_time_format'] == 'm-d-Y h:i A' ? 'selected' : '' }}>
+                                                    <option value="MM-dd-yyyy hh:mm a"
+                                                        {{ $setting['date_time_format'] == 'MM-dd-yyyy hh:mm a' ? 'selected' : '' }}>
                                                         {{ date('m-d-Y h:i A') }}
                                                     </option>
                                                 </select>
@@ -205,7 +205,7 @@
                                     <div class="col-6">
                                         <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form-logo" method="post" enctype="multipart/form-data">
                                             {{ csrf_field() }}
-                                            <input type="hidden" name="key" value="setting.app_logo">
+                                            <input type="hidden" name="key" value="app_logo">
                                             <div class="form-row row">
                                                 <div class="col-md-12">
                                                     <div id="ajax-content">
@@ -244,7 +244,7 @@
                                     <div class="col-6">
                                         <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form-favicon" method="post" enctype="multipart/form-data">
                                             {{ csrf_field() }}
-                                            <input type="hidden" name="key" value="setting.app_favicon">
+                                            <input type="hidden" name="key" value="app_favicon">
                                             <div class="form-row row">
                                                 <div class="col-md-12">
                                                     <div id="ajax-content">

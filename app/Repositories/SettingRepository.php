@@ -6,8 +6,25 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * `settings` rows use the same plain keys as the Next.js app (`smtp_host`,
+ * `user_email_verify`, ...). Rows with a `type` of `private` hold secrets.
+ */
 class SettingRepository
 {
+    /** Setting keys that override a non-`setting.*` Laravel config key. */
+    private const CONFIG_KEYS = [
+        'smtp_host' => 'mail.mailers.smtp.host',
+        'smtp_port' => 'mail.mailers.smtp.port',
+        'smtp_username' => 'mail.mailers.smtp.username',
+        'smtp_password' => 'mail.mailers.smtp.password',
+        'smtp_encryption' => 'mail.mailers.smtp.encryption',
+        'mail_from_address' => 'mail.from.address',
+        'mail_from_name' => 'mail.from.name',
+        'google_client_id' => 'services.google.client_id',
+        'google_client_secret' => 'services.google.client_secret',
+    ];
+
     public function getOne(string $key): string|bool
     {
         $setting = Setting::where('key', $key)->first();
@@ -29,6 +46,9 @@ class SettingRepository
     {
         $setting = Setting::where('key', $key)->first();
 
+        // `value` is NOT NULL, matching the Next schema.
+        $value ??= '';
+
         if ($setting && $setting->value !== $value) {
             $setting->update(['value' => $value]);
         }
@@ -49,22 +69,40 @@ class SettingRepository
 
     public function allSettings(): array
     {
-        // dd(8888);
-        $data = [];
-        $options = Setting::where('type', 0)->get();
-        
-        foreach ($options as $row) {
-            $data[$row['key']] = $row['value'];
+        return Setting::pluck('value', 'key')->all();
+    }
+
+    /**
+     * Rows keep Next's date-fns patterns (`dd-MM-yyyy hh:mm a`); PHP's date() needs its own.
+     */
+    public static function toPhpDateFormat(string $pattern): string
+    {
+        return strtr($pattern, [
+            'yyyy' => 'Y', 'MM' => 'm', 'dd' => 'd', 'HH' => 'H', 'hh' => 'h', 'mm' => 'i', 'ss' => 's', 'a' => 'A',
+        ]);
+    }
+
+    /**
+     * Laravel config entries derived from the settings rows.
+     *
+     * @return array<string, string>
+     */
+    public function configOverrides(): array
+    {
+        $config = [];
+        foreach ($this->allSettings() as $key => $value) {
+            if ($key === 'date_format' || $key === 'date_time_format') {
+                $value = self::toPhpDateFormat($value);
+            }
+            $config[self::CONFIG_KEYS[$key] ?? 'setting.'.$key] = $value;
         }
-        return $data;
+
+        return $config;
     }
 
     public function getAllSettings(): array
     {
-       
-        // return Cache::remember('setting', now()->addDay(), function () {
-            return $this->allSettings();
-        // });
+        return $this->allSettings();
     }
 
     public function store(array $postData): array
@@ -83,13 +121,13 @@ class SettingRepository
                 'setting_cookie_consent' => 'required|boolean',
             ]);
             $updateData = [
-                'setting.app_name' => $postData['setting_app_name'],
-                'setting.date_format' => $postData['setting_date_format'],
-                'setting.date_time_format' => $postData['setting_date_time_format'],
-                'setting.user_email_verify' => $postData['setting_user_email_verify'],
-                'setting.user_login_with_otp' => $postData['setting_user_login_with_otp'],
-                'setting.admin_email' => $postData['setting_admin_email'],
-                'setting.cookie_consent' => $postData['setting_cookie_consent'],
+                'app_name' => $postData['setting_app_name'],
+                'date_format' => $postData['setting_date_format'],
+                'date_time_format' => $postData['setting_date_time_format'],
+                'user_email_verify' => $postData['setting_user_email_verify'],
+                'user_login_with_otp' => $postData['setting_user_login_with_otp'],
+                'admin_email' => $postData['setting_admin_email'],
+                'cookie_consent' => $postData['setting_cookie_consent'],
             ];
         } elseif ($postData['type'] == 'smtp') {
             $validator = Validator::make($postData, [
@@ -102,13 +140,13 @@ class SettingRepository
                 'mail_from_name' => 'required|string',
             ]);
             $updateData = [
-                'mail.mailers.smtp.host' => $postData['mail_mailers_smtp_host'],
-                'mail.mailers.smtp.username' => $postData['mail_mailers_smtp_username'],
-                'mail.mailers.smtp.password' => $postData['mail_mailers_smtp_password'],
-                'mail.mailers.smtp.encryption' => $postData['mail_mailers_smtp_encryption'],
-                'mail.mailers.smtp.port' => $postData['mail_mailers_smtp_port'],
-                'mail.from.address' => $postData['mail_from_address'],
-                'mail.from.name' => $postData['mail_from_name'],
+                'smtp_host' => $postData['mail_mailers_smtp_host'],
+                'smtp_username' => $postData['mail_mailers_smtp_username'],
+                'smtp_password' => $postData['mail_mailers_smtp_password'],
+                'smtp_encryption' => $postData['mail_mailers_smtp_encryption'],
+                'smtp_port' => $postData['mail_mailers_smtp_port'],
+                'mail_from_address' => $postData['mail_from_address'],
+                'mail_from_name' => $postData['mail_from_name'],
             ];
         } elseif ($postData['type'] == 'captcha') {
             $validator = Validator::make($postData, [
@@ -117,9 +155,9 @@ class SettingRepository
                 'setting_google_recaptcha_public_key' => 'required|string',
             ]);
             $updateData = [
-                'setting.google_recaptcha' => $postData['setting_google_recaptcha'],
-                'setting.google_recaptcha_secret_key' => $postData['setting_google_recaptcha_secret_key'],
-                'setting.google_recaptcha_public_key' => $postData['setting_google_recaptcha_public_key'],
+                'google_recaptcha' => $postData['setting_google_recaptcha'],
+                'google_recaptcha_secret_key' => $postData['setting_google_recaptcha_secret_key'],
+                'google_recaptcha_public_key' => $postData['setting_google_recaptcha_public_key'],
             ];
         } elseif ($postData['type'] == 'social') {
             $postData['services_google_login'] = $postData['services_google_login'] ?? 0;
@@ -129,9 +167,9 @@ class SettingRepository
                 'services_google_login' => 'required|boolean',
             ]);
             $updateData = [
-                'services.google_client_id' => $postData['services_google_client_id'],
-                'services.google_client_secret' => $postData['services_google_client_secret'],
-                'services.google_login' => $postData['services_google_login'],
+                'google_client_id' => $postData['services_google_client_id'],
+                'google_client_secret' => $postData['services_google_client_secret'],
+                'google_login' => $postData['services_google_login'],
             ];
         } elseif ($postData['type'] == 'content') {
             $validator = Validator::make($postData, [
@@ -139,8 +177,8 @@ class SettingRepository
                 'setting_footer_content' => 'string|nullable',
             ]);
             $updateData = [
-                'setting.header_content' => $postData['setting_header_content'],
-                'setting.footer_content' => $postData['setting_footer_content'],
+                'header_content' => $postData['setting_header_content'],
+                'footer_content' => $postData['setting_footer_content'],
             ];
         }
 

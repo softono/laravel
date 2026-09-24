@@ -1,6 +1,10 @@
-# API
+# HTTP Endpoints
 
-Reference for the JSON endpoints: response envelope, validation, error handling, rate limiting, and the full endpoint list.
+Reference for the AJAX/JSON endpoints: response envelope, validation, error handling, rate limiting, and the full endpoint list.
+
+> **URL convention: no `/api` prefix.** This is a server-rendered Laravel app, so every endpoint is an ordinary `web`-group route (session, CSRF, `device.uid`). JSON endpoints sit next to the pages they serve, grouped by module, e.g. `POST /auth/login` beside `GET /login`. There is no separate API surface, API guard or token auth.
+>
+> **Status:** paths below are the target. Until Phase 0 of [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix) is done, the code still registers these routes as `api/auth/*` and `api/admin/auth/login`, so `route:list` shows the old paths.
 
 Summary in [`../AGENTS.md`](../AGENTS.md#api-overview).
 
@@ -194,62 +198,62 @@ If you add a POST endpoint that a non-browser client must call, do **not** exemp
 
 | Method | Path | Throttle | Purpose |
 |---|---|---|---|
-| POST | `/api/auth/login` | `login` | Password login |
-| POST | `/api/auth/register` | `register` | Create an account |
-| POST | `/api/auth/logout` | — | End the session |
-| GET | `/api/auth/session` | — | Current user, or `status: 0` |
-| POST | `/api/auth/forgot-password` | `forgot_password` | Send reset OTP |
-| POST | `/api/auth/reset-password` | `reset_password` | Reset with OTP |
-| POST | `/api/auth/verify-account` | `verify_account` | Verify email with OTP |
-| POST | `/api/auth/otp` | `otp` | Resend verification OTP |
-| POST | `/api/admin/auth/login` | `admin_login` | Admin login (`requireAdmin`) |
+| POST | `/auth/login` | `login` | Password login |
+| POST | `/auth/register` | `register` | Create an account |
+| POST | `/auth/logout` | — | End the session |
+| GET | `/auth/session` | — | Current user, or `status: 0` |
+| POST | `/auth/forgot-password` | `forgot_password` | Send reset OTP |
+| POST | `/auth/reset-password` | `reset_password` | Reset with OTP |
+| POST | `/auth/verify-account` | `verify_account` | Verify email with OTP |
+| POST | `/auth/otp` | `otp` | Resend verification OTP |
+| POST | `/admin/auth/login` | `admin_login` | Admin login (`requireAdmin`) |
 
 ### Public — 2FA challenge (gated by the signed `tfa` cookie, not a session)
 
 | Method | Path | Throttle |
 |---|---|---|
-| GET | `/api/auth/tfa/methods` | `tfa` |
-| POST | `/api/auth/tfa/send-otp` | `tfa` |
-| POST | `/api/auth/tfa/verify` | `tfa` |
+| GET | `/auth/tfa/methods` | `tfa` |
+| POST | `/auth/tfa/send-otp` | `tfa` |
+| POST | `/auth/tfa/verify` | `tfa` |
 
 ### Public — magic login link
 
 | Method | Path | Throttle |
 |---|---|---|
-| POST | `/api/auth/login-link` | `login_link` |
-| POST | `/api/auth/login-link/poll` | `login_link_poll` |
-| GET | `/api/auth/login-link/approve` | `login_link_approve` |
-| POST | `/api/auth/login-link/approve` | `login_link_approve` |
+| POST | `/auth/login-link` | `login_link` |
+| POST | `/auth/login-link/poll` | `login_link_poll` |
+| GET | `/auth/login-link/approve` | `login_link_approve` |
+| POST | `/auth/login-link/approve` | `login_link_approve` |
 
 ### Public — passkeys & OAuth
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/auth/passkey/login-options` | Discoverable credentials |
-| POST | `/api/auth/passkey/login-verify` | Issues a session |
-| GET | `/api/auth/google` | Redirect to Google |
-| GET | `/api/auth/google/callback` | Link/create, then session |
+| POST | `/auth/passkey/login-options` | Discoverable credentials |
+| POST | `/auth/passkey/login-verify` | Issues a session |
+| GET | `/auth/google` | Redirect to Google |
+| GET | `/auth/google/callback` | Link/create, then session |
 
 ### Authenticated (`auth.user`)
 
 | Method | Path | Purpose |
 |---|---|---|
-| POST | `/api/auth/change-password` | Change password (revokes all sessions) |
-| GET | `/api/auth/2fa/status` | 2FA state + backup codes remaining |
-| POST | `/api/auth/2fa/enable` | Begin setup → secret, QR, backup codes |
-| POST | `/api/auth/2fa/verify-setup` | Confirm TOTP, activate |
-| POST | `/api/auth/2fa/disable` | Disable 2FA, revoke trusted devices |
-| POST | `/api/auth/2fa/remove-authenticator` | Remove TOTP only |
-| POST | `/api/auth/2fa/backup-codes` | Regenerate backup codes |
-| GET | `/api/auth/passkey/list` | List passkeys |
-| POST | `/api/auth/passkey/register-options` | Begin registration |
-| POST | `/api/auth/passkey/register-verify` | Complete registration |
-| POST | `/api/auth/passkey/delete` | Delete a passkey |
+| POST | `/auth/change-password` | Change password (revokes all sessions) |
+| GET | `/auth/2fa/status` | 2FA state + backup codes remaining |
+| POST | `/auth/2fa/enable` | Begin setup → secret, QR, backup codes |
+| POST | `/auth/2fa/verify-setup` | Confirm TOTP, activate |
+| POST | `/auth/2fa/disable` | Disable 2FA, revoke trusted devices |
+| POST | `/auth/2fa/remove-authenticator` | Remove TOTP only |
+| POST | `/auth/2fa/backup-codes` | Regenerate backup codes |
+| GET | `/auth/passkey/list` | List passkeys |
+| POST | `/auth/passkey/register-options` | Begin registration |
+| POST | `/auth/passkey/register-verify` | Complete registration |
+| POST | `/auth/passkey/delete` | Delete a passkey |
 
 Regenerate this list with:
 
 ```bash
-php artisan route:list --path=api
+php artisan route:list --path=auth
 ```
 
 ---

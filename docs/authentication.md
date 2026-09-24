@@ -1,5 +1,7 @@
 # Authentication
 
+> Endpoint paths in this document have no `/api` prefix (Laravel web-route style). The code still registers `api/auth/*` until Phase 0 of [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix) lands.
+
 Complete reference for the authentication system: cookies, sessions, guards, middleware, and every supported sign-in flow.
 
 Summary in [`../AGENTS.md`](../AGENTS.md#authentication-overview).
@@ -131,7 +133,7 @@ Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many reque
 
 ### Password login
 
-`POST /api/auth/login`
+`POST /auth/login`
 
 1. `AuthService::authenticate()` — lowercase the email, load the user, load the `credential` account, `Hash::check()`.
 2. Transparent rehash if `Hash::needsRehash()` (upgrades legacy bcrypt to argon2id).
@@ -145,13 +147,13 @@ Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many reque
 
 ### Admin login
 
-`POST /api/admin/auth/login` → same path with `requireAdmin: true`. A non-admin account gets `dummyPasswordCheck()` and the generic message — never "you are not an admin".
+`POST /admin/auth/login` → same path with `requireAdmin: true`. A non-admin account gets `dummyPasswordCheck()` and the generic message — never "you are not an admin".
 
 ### Registration & email verification
 
-`POST /api/auth/register` → creates `users` + `user_accounts(credential)` rows, logs `REGISTER`, and (when `setting.user_email_verify` is on) issues an OTP and returns `{next: 'verify-account'}`.
+`POST /auth/register` → creates `users` + `user_accounts(credential)` rows, logs `REGISTER`, and (when `setting.user_email_verify` is on) issues an OTP and returns `{next: 'verify-account'}`.
 
-`POST /api/auth/verify-account` verifies the OTP, sets `email_verified`, and invalidates the user cache.
+`POST /auth/verify-account` verifies the OTP, sets `email_verified`, and invalidates the user cache.
 
 ### OTP mechanics
 
@@ -166,8 +168,8 @@ Preserve this ordering: incrementing after the compare would let an attacker gue
 
 ### Forgot / reset password
 
-`POST /api/auth/forgot-password` always returns the same generic message regardless of whether the email exists.
-`POST /api/auth/reset-password` verifies the OTP, writes the new hash, then **revokes every session**.
+`POST /auth/forgot-password` always returns the same generic message regardless of whether the email exists.
+`POST /auth/reset-password` verifies the OTP, writes the new hash, then **revokes every session**.
 
 ---
 
@@ -186,10 +188,10 @@ Three methods, registered in `TfaService` and implemented under `Services/Auth/T
 ### Login-time challenge
 
 ```
-POST /api/auth/login          → {next: 'tfa'}, sets {uid}_tfa
-GET  /api/auth/tfa/methods    → available methods for this handle
-POST /api/auth/tfa/send-otp   → emails a code (method 'otp')
-POST /api/auth/tfa/verify     → {method, code, trust_device} → session issued
+POST /auth/login          → {next: 'tfa'}, sets {uid}_tfa
+GET  /auth/tfa/methods    → available methods for this handle
+POST /auth/tfa/send-otp   → emails a code (method 'otp')
+POST /auth/tfa/verify     → {method, code, trust_device} → session issued
 ```
 
 Failures call `bumpTfaAttempts()`. Past `tfa_max_attempts` the challenge is consumed and the user restarts login.
@@ -197,12 +199,12 @@ Failures call `bumpTfaAttempts()`. Past `tfa_max_attempts` the challenge is cons
 ### Setup and management
 
 ```
-GET  /api/auth/2fa/status
-POST /api/auth/2fa/enable              password → secret, otpauth URI, QR SVG, backup codes
-POST /api/auth/2fa/verify-setup        TOTP code → verified = 1, two_factor_enabled = 1
-POST /api/auth/2fa/disable
-POST /api/auth/2fa/remove-authenticator  drops TOTP only, keeps email/backup
-POST /api/auth/2fa/backup-codes        regenerate
+GET  /auth/2fa/status
+POST /auth/2fa/enable              password → secret, otpauth URI, QR SVG, backup codes
+POST /auth/2fa/verify-setup        TOTP code → verified = 1, two_factor_enabled = 1
+POST /auth/2fa/disable
+POST /auth/2fa/remove-authenticator  drops TOTP only, keeps email/backup
+POST /auth/2fa/backup-codes        regenerate
 ```
 
 The TOTP secret is stored with `Crypt::encryptString()`. Backup codes are 10 × `strtoupper(bin2hex(random_bytes(4)))`, stored as a JSON array of argon2id hashes.
@@ -220,10 +222,10 @@ Ticking "trust this device" upserts `user_devices` on `(user_id, device_uid)` wi
 Sign in on device A by approving on device B (or the same device, from email).
 
 ```
-POST /api/auth/login-link            → {request_id, poll_token, code, expires_at}
-POST /api/auth/login-link/poll       → {state: pending|approved|rejected|expired}
-GET  /api/auth/login-link/approve    → approval info for the emailed link
-POST /api/auth/login-link/approve    → {action: approve|reject}
+POST /auth/login-link            → {request_id, poll_token, code, expires_at}
+POST /auth/login-link/poll       → {state: pending|approved|rejected|expired}
+GET  /auth/login-link/approve    → approval info for the emailed link
+POST /auth/login-link/approve    → {action: approve|reject}
 ```
 
 Mechanics:
@@ -265,12 +267,12 @@ Configuration (`PasskeyService`):
 - Algorithms: ES256 (-7), RS256 (-257)
 
 ```
-POST /api/auth/passkey/register-options   (authenticated)
-POST /api/auth/passkey/register-verify    (authenticated)
-GET  /api/auth/passkey/list               (authenticated)
-POST /api/auth/passkey/delete             (authenticated)
-POST /api/auth/passkey/login-options      (public)
-POST /api/auth/passkey/login-verify       (public)
+POST /auth/passkey/register-options   (authenticated)
+POST /auth/passkey/register-verify    (authenticated)
+GET  /auth/passkey/list               (authenticated)
+POST /auth/passkey/delete             (authenticated)
+POST /auth/passkey/login-options      (public)
+POST /auth/passkey/login-verify       (public)
 ```
 
 Login options **omit `allowCredentials`** — credentials are discoverable, so the user signs in without typing an email.
@@ -288,8 +290,8 @@ Browser marshalling lives in `public/assets/js/auth/passkey.js`: the server spea
 Built on `laravel/socialite`, **not** a hand-rolled OIDC flow. Socialite exchanges the auth code server-to-server and reads the userinfo endpoint; it never consumes an `id_token`, so there is no JWT to verify and no PKCE/nonce step to implement.
 
 ```
-GET /api/auth/google            → redirect to Google
-GET /api/auth/google/callback   → link or create, then issue a session
+GET /auth/google            → redirect to Google
+GET /auth/google/callback   → link or create, then issue a session
 ```
 
 Linking precedence:

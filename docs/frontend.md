@@ -1,5 +1,7 @@
 # Frontend
 
+> Endpoint paths in this document have no `/api` prefix (Laravel web-route style). The code still registers `api/auth/*` until Phase 0 of [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix) lands.
+
 Reference for Blade layouts, the asset pipeline, JavaScript conventions and PJAX navigation.
 
 Summary in [`../AGENTS.md`](../AGENTS.md#frontend-overview).
@@ -98,7 +100,7 @@ Follow the established structure so pages stay visually consistent:
           <h4 class="mb-1">Welcome 👋</h4>
           <p class="mb-6">Please log in to your account</p>
 
-          <form id="login-form" action="{{ url('/api/auth/login') }}" method="POST">
+          <form id="login-form" action="{{ url('/auth/login') }}" method="POST">
             @csrf
             <div class="mb-6">
               <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
@@ -213,7 +215,7 @@ var loginApprove = (function () {
     <script src="{{ asset('assets/js/auth/approve.js') }}"></script>
     <script>
         loginApprove.init({
-            infoUrl: '{{ url('/api/auth/login-link/approve') }}',
+            infoUrl: '{{ url('/auth/login-link/approve') }}',
             id:      '{{ request('id') }}',
             token:   '{{ request('token') }}',
         });
