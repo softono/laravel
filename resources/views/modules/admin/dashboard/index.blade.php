@@ -11,14 +11,7 @@
         ];
     @endphp
 
-    <div class="breadcrumb-box">
-        <h4 class="text-xl font-bold text-slate-800">Dashboard</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-        </nav>
-    </div>
+    <x-ui.page-header title="Dashboard" :crumbs="[['Dashboard']]" />
 
     <div class="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($cards as $card)

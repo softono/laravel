@@ -3,17 +3,7 @@
     Email Templates
 @endsection
 @section('content')
-    <div class="breadcrumb-box">
-        <h4 class="text-xl font-bold text-slate-800">Email Templates</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('admin/dashboard') }}" class="pjax hover:text-primary-600">Dashboard</a>
-                </li>
-                <li class="breadcrumb-item active">Email Templates</li>
-            </ol>
-        </nav>
-    </div>
+    <x-ui.page-header title="Email Templates" :crumbs="[['Dashboard', route('admin/dashboard')], ['Email Templates']]" />
 
     <x-ui.card>
         <x-ui.card-header>

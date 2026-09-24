@@ -34,7 +34,7 @@ var loginApprove = (function () {
             function respond(action) {
                 app.ajaxPost(opts.infoUrl, { id: opts.id, token: opts.token, action: action }, function (resp) {
                     document.getElementById('approve-result-message').textContent = resp.message;
-                    document.getElementById('approve-result-message').className = resp.status == 1 ? 'mb-0 text-success' : 'mb-0 text-danger';
+                    document.getElementById('approve-result-message').className = resp.status == 1 ? 'text-success text-sm' : 'text-destructive text-sm';
                     show('approve-result');
                 });
             }

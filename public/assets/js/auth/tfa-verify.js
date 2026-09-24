@@ -105,7 +105,7 @@ var tfaVerify = (function () {
             var methods = (response.data && response.data.methods) || [];
 
             if (!methods.length) {
-                list.innerHTML = '<p class="text-danger">No verification methods are available. Please log in again.</p>';
+                list.innerHTML = '<p class="text-destructive text-sm">No verification methods are available. Please log in again.</p>';
                 return;
             }
 
@@ -114,8 +114,8 @@ var tfaVerify = (function () {
                 var info = METHOD_LABELS[method] || { title: method, desc: '' };
                 var btn = document.createElement('button');
                 btn.type = 'button';
-                btn.className = 'btn btn-outline-primary d-grid w-100 mb-2 text-start';
-                btn.innerHTML = '<strong>' + info.title + '</strong><br><small>' + info.desc + '</small>';
+                btn.className = 'border-input bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:hover:bg-input/50 mb-2 flex w-full cursor-pointer flex-col items-start gap-0.5 rounded-md border px-4 py-2 text-left text-sm shadow-xs transition-colors';
+                btn.innerHTML = '<strong class="font-medium">' + info.title + '</strong><small class="text-muted-foreground">' + info.desc + '</small>';
                 btn.addEventListener('click', function () {
                     showForm(method);
                 });

@@ -13,10 +13,10 @@ Summary in [`../AGENTS.md`](../AGENTS.md#frontend-overview).
 | Markup | Blade; module views in `resources/views/modules/<module>/` (`modules/admin/<module>/` for the admin panel) |
 | CSS | Tailwind CSS v4 built by Vite from `resources/css/app.css` (+ `next-theme.css`, `common.css`) |
 | Components | `resources/views/components/ui/*` — anonymous Blade components wrapping Next's shadcn class strings |
-| Icons | Boxicons (`bx bx-…`) |
+| Icons | Boxicons (`bx bx-…`, bundled by Vite) |
 | Tables | jQuery DataTables 2 with the Tailwind styling integration |
 | JS | `public/assets/js/*.js`, plain `<script>` tags — **not** bundled by Vite |
-| Interactivity | jQuery (`app.*` helpers, `jquery-validate`), PJAX page loading. No Alpine or other framework |
+| Interactivity | jQuery (`app.*` helpers, `jquery-validate`), PJAX page loading. No Alpine, Bootstrap or other framework |
 
 Vite compiles **CSS only** (`@vite('resources/css/app.css')`); there is no JS bundle. After using a Tailwind utility class that no view used before, run `npm run build`.
 
@@ -60,11 +60,15 @@ The components carry Next's exact class strings:
 
 | Component | Props |
 |---|---|
-| `<x-ui.button>` | `variant` (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`), `size` (`default`, `sm`, `lg`, `icon`, `icon-sm`), `href` (renders `<a>`), `type` |
-| `<x-ui.input>`, `<x-ui.textarea>`, `<x-ui.select>`, `<x-ui.label>` | native attributes pass through |
+| `<x-ui.button>` | `variant` (`default`, `destructive`, `success`, `outline`, `secondary`, `ghost`, `link`), `size` (`default`, `sm`, `lg`, `icon`, `icon-sm`), `href` (renders `<a>`), `type` (default `button`; pass `submit`) |
+| `<x-ui.input>`, `<x-ui.textarea>`, `<x-ui.select>`, `<x-ui.label>`, `<x-ui.checkbox>` | native attributes pass through; `:checked="…"` / `:readonly="…"` for conditional attributes |
+| `<x-ui.password-input id="…">` | Input with a show/hide button (`data-password-toggle`, handled in `app.ui`) |
 | `<x-ui.card>`, `card-header`, `card-title`, `card-description`, `card-content` | `class` merges |
 | `<x-ui.badge>` | `variant` (`default`, `secondary`, `destructive`, `success`, `outline`) |
-| `<x-ui.alert>` | `variant` (`default`, `destructive`) |
+| `<x-ui.alert>`, `alert-title`, `alert-description` | `variant` (`default`, `destructive`, `success`, `warning`) |
+| `<x-ui.modal id="…">`, `dialog-header`, `dialog-title`, `dialog-footer` | Dialog shell (`size`: `md`, `lg`, `xl`; `content-id` for AJAX-filled modals); see [Modals](#modals) |
+| `<x-ui.page-header title="…" :crumbs="[['Dashboard', route('admin/dashboard')], ['Users']]">` | Page title + breadcrumb trail (last crumb has no link) |
+| `<x-ui.theme-switch>` | Light / dark / system picker; see [Theme switch](#theme-switch) |
 | `<x-ui.table>`, `tr`, `th`, `td` | plain tables |
 | `<x-ui.pagination :paginator="$posts" />` | Previous / Next for a Laravel paginator |
 
@@ -77,7 +81,7 @@ The components carry Next's exact class strings:
 </x-ui.card>
 ```
 
-The older admin markup (`.card`, `.btn-primary`, `.form-input`, `.breadcrumb-box`, …) is defined in `resources/css/app.css` and still used by the shells; write **new** content with `x-ui`.
+There is no separate legacy stylesheet: every screen (public, user and admin) is built from these components and plain Tailwind utilities with the theme tokens (`bg-card`, `text-muted-foreground`, `border-border`, `bg-sidebar`, …). Do not hardcode palette colours (`slate-*`, `rose-*`); they do not follow dark mode. Component tags cannot contain Blade directives or unquoted `{{ }}`: use bound attributes (`:checked="$x"`, `:readonly="(bool) $y"`) instead of `@if … checked @endif`.
 
 Shared admin partials in `resources/views/modules/admin/partials/`: `status-badge`, `row-actions`, `account-form`, `account-profile`, `recent-sessions`, `recent-activity`, `editor` (Summernote with image upload).
 
@@ -95,12 +99,12 @@ They speak the [response envelope](api.md) and read the follow-up from the trigg
 | `app.confirmAction(button)` | Confirmation dialog, then POST `data-action` with `data-id`; follow-up from the button's `data-next` |
 | `app.dataTable(selector, {url, columns, order})` | Server-side DataTable (Tailwind integration); sets the global `datatableObj` |
 | `app.showMessage(msg, 'success' \| 'error')` | Toast |
-| `app.showModalView(url)` / `app.openModal($m)` / `app.closeModal($m)` | Modals |
+| `app.showModalView(url)` / `app.openModal($m)` / `app.closeModal($m)` / `app.isModalOpen($m)` | Modals (see below) |
 | `app.loadScript(url, cb)` / `app.addCSS([...])` | Lazy third-party assets (Chart.js, Summernote, Cropper) |
 
 ### Declarative UI behaviours (`app.ui`)
 
-Dropdowns, collapsible menus, the admin sidebar, tabs and the theme picker are plain jQuery, delegated from `document` in `app.js`, so they also work on PJAX-loaded content. Markup opts in with data attributes; toggled elements start with the Tailwind `hidden` class.
+Dropdowns, collapsible menus, the admin sidebar, tabs, modals, alerts and the theme switch are plain jQuery, delegated from `document` in `app.js`, so they also work on PJAX-loaded content. Markup opts in with data attributes; toggled elements start with the Tailwind `hidden` class.
 
 | Attributes | Behaviour |
 |---|---|
@@ -108,9 +112,27 @@ Dropdowns, collapsible menus, the admin sidebar, tabs and the theme picker are p
 | `data-collapse-toggle="#id"` (+ `data-toggle-icon` icons) | Toggles `hidden` on `#id` and on the icons (menu/close swap) |
 | `data-sidebar-toggle="open\|close"` | Admin sidebar (`#layout-menu`) and `#sidebar-backdrop` |
 | `data-tabs` (with `data-tabs-active` / `data-tabs-inactive` class strings), `data-tab="x"`, `data-tab-panel="x"` | Tabs; render the first tab active and the other panels `hidden` |
-| `data-theme-option="light\|dark\|system"`, `data-theme-icon` | Stores the choice in `localStorage`, swaps the icon |
+| `data-menu-toggle` on a sidebar link | Toggles `open` on its `<li>` (submenu group) |
+| `data-modal-open="#id"`, `data-modal-dismiss` | Open / close a `[data-modal]` |
+| `data-alert-dismiss` inside an `x-ui.alert` | Removes the alert |
+| `data-password-toggle="#input"` | Show/hide a password field |
+| `data-theme-option="light\|dark\|system"`, `data-theme-icon` | Theme switch (below) |
 
-Keep the class strings that JS applies (`!translate-x-0`, the tab classes) present in a Blade file, so Tailwind's scan generates them.
+Tailwind also scans `public/assets/js`, so utility classes written in JS strings (toasts, DataTables classes) are generated; run `npm run build` after adding one.
+
+### Modals
+
+`<x-ui.modal id="note-modal">…</x-ui.modal>` renders a hidden `[data-modal]` overlay (backdrop, panel, close button). Open it with `data-modal-open="#note-modal"` or `app.openModal($('#note-modal'))`; the backdrop, any `data-modal-dismiss` element and Escape close it. State lives in `data-state="open|closed"` and the `hidden`/`flex` classes. The layouts include one shared `#common-modal` whose content (`#common-modal-content`) is loaded by `app.showModalView(url)`; the `hide_modal` follow-up closes it.
+
+### Theme switch
+
+`<x-ui.theme-switch />` is a dropdown (trigger button with the current mode's icon; Light, Dark, System with a check on the active one). It is placed in the public/user navbar (`layouts/component/main_navbar`, desktop and mobile), the admin navbar, and floats top-right on both `blank` (auth) layouts (`<x-ui.theme-switch float />`).
+
+- **State:** `localStorage["app-color-mode"]` = `light` \| `dark` \| `system` (Next's key; default `system`). All storage access is wrapped in try/catch.
+- **Effect:** `app.ui.theme` toggles the `dark` class and `data-theme="dark|light"` on `<html>` (what `@custom-variant dark` and the `.dark { … }` tokens in `next-theme.css` key off), sets `aria-checked` on the options and swaps the trigger icon. `system` follows `prefers-color-scheme` live; changes in another tab sync through the `storage` event.
+- **No flash:** every layout `@include('common.theme-init')`, a tiny inline script in `<head>` that applies the stored/system theme before first paint. Keep it in sync with `app.ui.theme`.
+- **PJAX:** handlers are delegated from `document`, so nothing needs re-binding after a page swap.
+- **Dark-aware markup:** use the tokens (`bg-background`, `bg-card`, `text-foreground`, `border-border`, `bg-sidebar`, …); DataTables' classes are replaced with token-based ones in `app.styleDataTables()`.
 
 ### Follow-up actions
 
@@ -121,7 +143,7 @@ The server never returns `next` or `url`. Put them on the element:
 <button onclick="app.confirmAction(this);" data-action="{{ route('notes/delete') }}" data-id="{{ $row->id }}" data-next="table_refresh">
 ```
 
-Actions: `load`, `refresh`, `table_refresh`, `list_refresh`, `redirect`, `reload`, `hide_modal`, `show_modal_view` (comma-separate to combine). Programmatic requests can pass their own callback and call `app.ajaxSuccess(response, {next, url})`.
+Actions: `load`, `refresh`, `table_refresh`, `redirect`, `reload`, `hide_modal`, `show_modal_view` (comma-separate to combine). Programmatic requests can pass their own callback and call `app.ajaxSuccess(response, {next, url})`.
 
 ### DataTables
 

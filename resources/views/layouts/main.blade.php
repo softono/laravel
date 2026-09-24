@@ -39,6 +39,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
         @include('common.datatables-css')
+        @include('common.theme-init')
         @vite('resources/css/app.css')
         @stack('styles')
         <script>
@@ -57,14 +58,14 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         {!! config('setting.header_content') !!}
     </head>
 
-    <body class="flex min-h-screen flex-col bg-slate-50">
-        <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center">
-            <div class="common-loader-backdrop"></div>
-            <div class="common-loader-conetent">
-                <i class="bx bx-loader-alt animate-spin text-4xl text-primary-600"></i>
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
+    <body class="flex min-h-screen flex-col bg-background">
+        <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center" role="status">
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative text-center">
+        <i class="bx bx-loader-alt animate-spin text-4xl text-white"></i>
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
 
         <!-- Navbar -->
         {{ view('layouts/component/main_navbar', compact('sessionUser')) }}
@@ -82,33 +83,27 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <!--/ Content -->
 
         <!-- Footer -->
-        <footer class="border-t border-slate-200 bg-white">
-            <div class="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-sm text-slate-500 sm:flex-row sm:px-6 lg:px-8">
+        <footer class="border-t border-border bg-card">
+            <div class="mx-auto flex w-full max-w-7xl flex-col items-center justify-between gap-2 px-4 py-4 text-sm text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
                 <div>
-                    ©{{date('Y')}}, made by <a href="{{route('home')}}" target="_blank" class="font-semibold text-slate-700 hover:text-primary-600">{{ config('setting.app_name') }}</a>
+                    ©{{date('Y')}}, made by <a href="{{route('home')}}" target="_blank" class="font-semibold text-foreground hover:underline">{{ config('setting.app_name') }}</a>
                 </div>
                 <div class="hidden gap-4 sm:flex">
-                    <a target="_blank" href="page/terms" class="pjax hover:text-primary-600">Terms &amp; Condition</a>
-                    <a target="_blank" href="page/privacy-policy" class="pjax hover:text-primary-600">Privacy Policy</a>
+                    <a target="_blank" href="page/terms" class="pjax hover:text-foreground">Terms &amp; Condition</a>
+                    <a target="_blank" href="page/privacy-policy" class="pjax hover:text-foreground">Privacy Policy</a>
                 </div>
             </div>
         </footer>
         <!-- / Footer -->
 
-        <div id="common-modal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-            <div class="modal-backdrop" data-modal-dismiss></div>
-            <div class="modal-dialog relative z-10 w-full max-w-lg">
-                <div class="modal-content" id="common-modal-content"></div>
-            </div>
-        </div>
+        <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
         <!-- Toast placement -->
-        <div id="common-toast" class="fixed top-4 end-4 z-[9999] flex flex-col items-end gap-2"></div>
+        <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
         <!-- Core JS -->
         {{ view('common/cookie_consent') }}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         @include('common.datatables-js')
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js" integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="assets/js/common.js"></script>
         <script src="assets/js/app.js"></script>
         @stack('scripts')
         {!! config('setting.footer_content') !!}

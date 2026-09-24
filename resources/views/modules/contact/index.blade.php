@@ -9,19 +9,19 @@
             <form id="contact-form" method="post" action="{{ route('contact-process') }}" class="space-y-5" data-next="refresh">
                 @csrf
                 <div class="space-y-2">
-                    <x-ui.label for="name">Name <span class="text-red-500">*</span></x-ui.label>
+                    <x-ui.label for="name">Name <span class="text-destructive">*</span></x-ui.label>
                     <x-ui.input id="name" name="name" placeholder="Name" required />
                 </div>
                 <div class="space-y-2">
-                    <x-ui.label for="email">Email <span class="text-red-500">*</span></x-ui.label>
+                    <x-ui.label for="email">Email <span class="text-destructive">*</span></x-ui.label>
                     <x-ui.input type="email" id="email" name="email" placeholder="Email" required />
                 </div>
                 <div class="space-y-2">
-                    <x-ui.label for="subject">Subject <span class="text-red-500">*</span></x-ui.label>
+                    <x-ui.label for="subject">Subject <span class="text-destructive">*</span></x-ui.label>
                     <x-ui.input id="subject" name="subject" placeholder="Subject" required />
                 </div>
                 <div class="space-y-2">
-                    <x-ui.label for="message">Message <span class="text-red-500">*</span></x-ui.label>
+                    <x-ui.label for="message">Message <span class="text-destructive">*</span></x-ui.label>
                     <x-ui.textarea id="message" name="message" placeholder="Message" rows="5" required />
                 </div>
                 @include('common.recaptcha')

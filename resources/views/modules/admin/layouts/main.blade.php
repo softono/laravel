@@ -35,6 +35,8 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @include('common.datatables-css')
 
+    @include('common.theme-init')
+
     @vite('resources/css/app.css')
 
     @stack('style')
@@ -54,14 +56,14 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     </script>
 </head>
 
-<body class="bg-slate-50">
-    <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center">
-        <div class="common-loader-backdrop"></div>
-        <div class="common-loader-conetent">
-            <i class="bx bx-loader-alt animate-spin text-4xl text-primary-600"></i>
-            <span class="sr-only">Loading...</span>
-        </div>
+<body class="bg-background">
+    <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center" role="status">
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative text-center">
+        <i class="bx bx-loader-alt animate-spin text-4xl text-white"></i>
+        <span class="sr-only">Loading...</span>
     </div>
+</div>
 
     <!-- Layout wrapper -->
     <div class="flex min-h-screen">
@@ -69,7 +71,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         {{ view('modules.admin.layouts.component.main_sidebar', compact('sessionUser')) }}
         <!-- / Sidebar -->
 
-        <div class="flex min-h-screen w-full flex-1 flex-col lg:ps-64">
+        <div class="flex min-h-screen w-full flex-1 flex-col lg:pl-64">
             <!-- Navbar -->
             {{ view('modules.admin.layouts.component.main_navbar', compact('sessionUser')) }}
             <!-- / Navbar -->
@@ -84,24 +86,19 @@ if (isset($_GET['partial']) && $_GET['partial']) {
             </div>
 
             <!-- Footer -->
-            <footer class="border-t border-slate-200 bg-white">
-                <div class="px-4 py-4 text-sm text-slate-500 sm:px-6 lg:px-8">
+            <footer class="border-t border-border bg-card">
+                <div class="px-4 py-4 text-sm text-muted-foreground sm:px-6 lg:px-8">
                     ©{{ date('Y') }}, made by
-                    <a href="admin/dashboard" target="_self" class="pjax font-medium text-slate-700 hover:text-primary-600">{{ config('setting.app_name') }}</a>
+                    <a href="admin/dashboard" target="_self" class="pjax font-medium text-foreground hover:underline">{{ config('setting.app_name') }}</a>
                 </div>
             </footer>
             <!-- / Footer -->
         </div>
     </div>
 
-    <div id="common-modal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-        <div class="modal-backdrop" data-modal-dismiss></div>
-        <div class="modal-dialog relative z-10 w-full max-w-lg">
-            <div class="modal-content" id="common-modal-content"></div>
-        </div>
-    </div>
+    <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
     <!-- Toast with Placements -->
-    <div id="common-toast" class="fixed top-4 end-4 z-[9999] flex flex-col items-end gap-2"></div>
+    <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
     <!-- Toast with Placements -->
 
     <!-- Core JS -->
@@ -112,7 +109,6 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script src="assets/js/common.js"></script>
     <script src="assets/js/app.js"></script>
     @stack('scripts')
     <script src="assets/js/admin-idle.js"></script>

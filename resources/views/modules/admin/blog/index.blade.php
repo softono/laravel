@@ -4,17 +4,7 @@
 @endsection
 @section('content')
     @php($viewer = auth()->user())
-    <div class="breadcrumb-box">
-        <h4 class="text-xl font-bold text-slate-800">Blog</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('admin/dashboard') }}" class="pjax hover:text-primary-600">Dashboard</a>
-                </li>
-                <li class="breadcrumb-item active">Blog</li>
-            </ol>
-        </nav>
-    </div>
+    <x-ui.page-header title="Blog" :crumbs="[['Dashboard', route('admin/dashboard')], ['Blog']]" />
 
     <x-ui.card>
         <x-ui.card-header class="!grid-cols-[1fr_auto] items-center">

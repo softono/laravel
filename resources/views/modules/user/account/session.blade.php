@@ -6,15 +6,15 @@
     <div>
         @include('modules.user.account.component.account_block')
         <!-- Invoice List Table -->
-        <div class="card">
-            <div class="card-header flex items-center justify-between gap-4">
-                <h5 class="card-title"><span class="font-normal text-slate-500">Sessions /</span> List</h5>
-                <button type="button" class="btn-outline" onclick="app.confirmAction(this);"
+        <x-ui.card>
+            <x-ui.card-header class="!grid-cols-[1fr_auto] items-center">
+                <x-ui.card-title><span class="font-normal text-muted-foreground">Sessions /</span> List</x-ui.card-title>
+                <x-ui.button variant="outline" type="button" onclick="app.confirmAction(this);"
                     data-action="{{ route($prefix.'account/session-logout-others') }}" data-next="table_refresh">
                     Sign out other devices
-                </button>
-            </div>
-            <div class="card-body overflow-x-auto">
+                </x-ui.button>
+            </x-ui.card-header>
+            <x-ui.card-content class="overflow-x-auto">
                 <table class="w-full text-sm" id="data-table">
                     <thead>
                         <tr>
@@ -26,8 +26,8 @@
                         </tr>
                     </thead>
                 </table>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
     </div>
 @endsection
 @push('scripts')

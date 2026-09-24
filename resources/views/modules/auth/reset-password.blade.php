@@ -4,65 +4,54 @@
 @endsection
 @section('content')
     <div class="w-full max-w-md">
-        <div class="card">
-            <div class="card-body p-6 sm:p-8">
+        <x-ui.card>
+            <x-ui.card-content>
                 <div class="mb-6 flex justify-center">
                     <a href="{{ url('/') }}" class="flex items-center gap-2">
                         <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
                             class="h-10 w-10 rounded-full object-cover" alt="">
-                        <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
+                        <span class="text-lg font-bold text-foreground">{{ config('setting.app_name') }}</span>
                     </a>
                 </div>
-                <h4 class="mb-1 text-xl font-semibold text-slate-800">Reset Password</h4>
-                <p class="mb-6 text-sm text-slate-500">Enter the OTP we sent you and choose a new password.</p>
+                <h4 class="mb-1 text-xl font-semibold text-foreground">Reset Password</h4>
+                <p class="mb-6 text-sm text-muted-foreground">Enter the OTP we sent you and choose a new password.</p>
 
                 <form id="reset-form" class="mb-4" action="{{ url('/auth/reset-password') }}" method="POST">
                     @csrf
                     <div class="mb-4">
-                        <label for="email" class="form-label">Email <span class="text-rose-600">*</span></label>
-                        <input type="email" class="form-input" id="email" name="email"
+                        <x-ui.label for="email" class="mb-2">Email <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="email" id="email" name="email"
                             value="{{ request('email') }}" placeholder="Enter your email" />
                     </div>
                     <div class="mb-4">
-                        <label for="otp" class="form-label">OTP <span class="text-rose-600">*</span></label>
-                        <input type="text" class="form-input" id="otp" name="otp" maxlength="6"
+                        <x-ui.label for="otp" class="mb-2">OTP <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="text" id="otp" name="otp" maxlength="6"
                             inputmode="numeric" placeholder="Enter the 6-digit OTP" autofocus />
                     </div>
                     <div class="mb-4">
-                        <label class="form-label" for="password">New Password <span class="text-rose-600">*</span></label>
-                        <div class="input-group">
-                            <input type="password" id="password" class="form-input" name="password"
+                        <x-ui.label class="mb-2" for="password">New Password <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.password-input id="password" name="password"
                                 placeholder="Enter a new password" aria-describedby="password" />
-                            <span class="input-group-text cursor-pointer" data-password-toggle="#password">
-                                <i class="bx bx-hide"></i>
-                            </span>
-                        </div>
                     </div>
                     <div class="mb-6">
-                        <label class="form-label" for="confirm_password">Confirm Password <span class="text-rose-600">*</span></label>
-                        <div class="input-group">
-                            <input type="password" id="confirm_password" class="form-input"
+                        <x-ui.label class="mb-2" for="confirm_password">Confirm Password <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.password-input id="confirm_password"
                                 name="confirm_password" placeholder="Re-enter the new password"
                                 aria-describedby="confirm_password" />
-                            <span class="input-group-text cursor-pointer" data-password-toggle="#confirm_password">
-                                <i class="bx bx-hide"></i>
-                            </span>
-                        </div>
                     </div>
-                    <button class="btn-primary w-full mb-4" type="submit" id="reset-submit">Reset Password</button>
+                    <x-ui.button class="w-full mb-4" type="submit" id="reset-submit">Reset Password</x-ui.button>
                 </form>
 
                 <p class="text-center">
-                    <a href="{{ url('/login') }}" class="inline-flex items-center gap-1 text-sm text-primary-600 hover:underline">
+                    <a href="{{ url('/login') }}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                         <i class="bx bx-chevron-left"></i> Back to login
                     </a>
                 </p>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/password-toggle.js') }}"></script>
     <script>
         document.getElementById('reset-form').addEventListener('submit', function (event) {
             event.preventDefault();

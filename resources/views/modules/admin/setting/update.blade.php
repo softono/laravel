@@ -1,70 +1,58 @@
 @extends('modules.admin.layouts.main')
 @section('title', 'Setting Update')
 @section('content')
-<div class="breadcrumb-box">
-    <h4 class="text-xl font-bold text-slate-800">Setting</h4>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
-            </li>
-            <li class="breadcrumb-item active">Setting</li>
-        </ol>
-    </nav>
-</div>
+<x-ui.page-header title="Setting" :crumbs="[['Dashboard', 'admin/dashboard'], ['Setting']]" />
 <div>
     <!-- Content -->
     <!-- Tabs -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="card-title">Setting Update</h5>
-            <div>
-                <button type="submit" class="btn-primary"
-                    onclick="app.ajaxPost('{{ route('admin/setting/cache-clear') }}', {}, app.ajaxSuccess)">
-                    Clear Cache
-                </button>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="mb-6" data-tabs data-tabs-active="border-primary-600 text-primary-600" data-tabs-inactive="border-transparent text-slate-500 hover:text-slate-700">
-                <ul class="flex flex-wrap gap-1 border-b border-slate-200" role="tablist">
-                    <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-primary-600 text-primary-600"
+    <x-ui.card>
+        <x-ui.card-header class="!grid-cols-[1fr_auto] items-center">
+            <x-ui.card-title>Setting Update</x-ui.card-title>
+            <x-ui.button type="button"
+                onclick="app.ajaxPost('{{ route('admin/setting/cache-clear') }}', {}, app.ajaxSuccess)">
+                Clear Cache
+            </x-ui.button>
+        </x-ui.card-header>
+        <x-ui.card-content>
+            <div class="mb-6" data-tabs data-tabs-active="border-primary text-primary" data-tabs-inactive="border-transparent text-muted-foreground hover:text-foreground">
+                <ul class="flex flex-wrap gap-1 border-b border-border" role="tablist">
+                    <li>
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-primary text-primary"
                             data-tab="general" role="tab" aria-controls="navs-top-general"
                             aria-selected="true">
                             General
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                    <li>
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-muted-foreground hover:text-foreground"
                             data-tab="logo" role="tab" aria-controls="navs-top-logo"
                             aria-selected="false">
                             Logo
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                    <li>
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-muted-foreground hover:text-foreground"
                             data-tab="mail" role="tab" aria-controls="navs-top-mail"
                             aria-selected="false">
                             Mail
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                    <li>
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-muted-foreground hover:text-foreground"
                             data-tab="recaptcha" role="tab" aria-controls="navs-top-recaptcha"
                             aria-selected="false">
                             Google recaptcha
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                    <li>
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-muted-foreground hover:text-foreground"
                             data-tab="login" role="tab" aria-controls="navs-top-login"
                             aria-selected="false">
                             Social Login
                         </button>
                     </li>
-                    <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                    <li>
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-muted-foreground hover:text-foreground"
                             data-tab="content" role="tab" aria-controls="navs-top-content"
                             aria-selected="false">
                             Content
@@ -80,10 +68,10 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">App Name <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">App Name <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" placeholder="App Name" id="app_name"
+                                            <x-ui.input type="text" placeholder="App Name" id="app_name"
                                                 name="app_name" value="{{ $setting['app_name'] }}"
                                                 required />
                                         </div>
@@ -91,24 +79,23 @@
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Admin Contact Email <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Admin Contact Email <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <div class="input-group">
-                                                <span class="input-group-text cursor-pointer"><i
-                                                        class="bx bx-envelope"></i></span>
-                                                <input type="email" id="admin_email" class="form-input"
+                                            <div class="relative">
+<i class="bx bx-envelope text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"></i>
+<x-ui.input class="pl-9" type="email" id="admin_email"
                                                     placeholder="Admin Contact Email" name="admin_email"
                                                     value="{{ $setting['admin_email'] }}" required />
-                                            </div>
+</div>
                                         </div>
-                                        <label id="admin_email-error" class="error text-rose-500" for="admin_email" style="display: none;"></label>
+                                        <label id="admin_email-error" class="error text-destructive" for="admin_email" style="display: none;"></label>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Date Format</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Date Format</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['date_format'] }}" name="date_format">
                                             <option value="yyyy-MM-dd"
                                                 {{ $setting['date_format'] == 'yyyy-MM-dd' ? 'selected' : '' }}>
@@ -122,14 +109,14 @@
                                                 {{ $setting['date_format'] == 'MM-dd-yyyy' ? 'selected' : '' }}>
                                                 {{ date('m-d-Y') }}
                                             </option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Date Time Format</label>
+                                        <x-ui.label class="mb-2">Date Time Format</x-ui.label>
 
-                                        <select class="form-select"
+                                        <x-ui.select
                                             value="{{ $setting['date_time_format'] }}"
                                             name="date_time_format">
                                             <option value="yyyy-MM-dd hh:mm a"
@@ -144,13 +131,13 @@
                                                 {{ $setting['date_time_format'] == 'MM-dd-yyyy hh:mm a' ? 'selected' : '' }}>
                                                 {{ date('m-d-Y h:i A') }}
                                             </option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Login With OTP</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Login With OTP</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['user_login_with_otp'] }}"
                                             name="user_login_with_otp">
                                             <option value="1"
@@ -159,13 +146,13 @@
                                             <option value="0"
                                                 {{ $setting['user_login_with_otp'] == '0' ? 'selected' : '' }}>
                                                 Disable</option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Cookie Consent</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Cookie Consent</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['cookie_consent'] }}"
                                             name="cookie_consent">
                                             <option value="1"
@@ -174,13 +161,13 @@
                                             <option value="0"
                                                 {{ $setting['cookie_consent'] == '0' ? 'selected' : '' }}>
                                                 Disable</option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Email Verify</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Email Verify</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['user_email_verify'] }}"
                                             name="user_email_verify">
                                             <option value="1"
@@ -189,11 +176,11 @@
                                             <option value="0"
                                                 {{ $setting['user_email_verify'] == '0' ? 'selected' : '' }}>
                                                 Disable</option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div class="md:col-span-2">
-                                    <button type="submit" class="btn-primary">Submit</button>
+                                    <x-ui.button type="submit">Submit</x-ui.button>
                                 </div>
                             </div>
                         </form>
@@ -206,25 +193,25 @@
                                     <input type="hidden" name="key" value="app_logo">
                                     <div id="ajax-content">
                                         <div class="mb-4">
-                                            <label class="form-label">App Logo <span
-                                                    class="text-rose-500">*</span></label>
+                                            <x-ui.label class="mb-2">App Logo <span
+                                                    class="text-destructive">*</span></x-ui.label>
                                             <div class="mb-4">
-                                                <div class="card">
-                                                    <img class="w-full rounded-t-lg preview-app-logo"
+                                                <div class="overflow-hidden rounded-lg border">
+                                                    <img class="w-full preview-app-logo"
                                                         src="{{ $general->getFileUrl($setting['app_logo'], 'logo') }}"
                                                         alt="Card image cap" />
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <input type="file" required="required"
+                                            <x-ui.input type="file" required="required"
                                                 name="image"
                                                 onchange="previewImage(this,'.preview-app-logo')"
-                                                class="form-input" accept="image/*"
-                                                id="applogo">
+                                                accept="image/*"
+                                                id="applogo" />
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn-primary">Submit</button>
+                                    <x-ui.button type="submit">Submit</x-ui.button>
                                 </form>
                             </div>
                             <div class="w-full md:w-[calc(50%-1rem)]">
@@ -233,27 +220,25 @@
                                     <input type="hidden" name="key" value="app_favicon">
                                     <div id="ajax-content">
                                         <div class="mb-3">
-                                            <label class="form-label">App Favicon <span
-                                                    class="text-rose-500">*</span></label>
+                                            <x-ui.label class="mb-2">App Favicon <span
+                                                    class="text-destructive">*</span></x-ui.label>
                                             <div class="mb-4">
-                                                <div class="card">
-                                                    <img class="w-full rounded-t-lg preview-app-fevicon"
+                                                <div class="overflow-hidden rounded-lg border">
+                                                    <img class="w-full preview-app-fevicon"
                                                         src="{{ $general->getFileUrl($setting['app_favicon'], 'logo') }}"
                                                         alt="Card image cap" />
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="mb-3">
-                                            <div class="input-group">
-                                                <input type="file" required name="image"
+                                            <x-ui.input type="file" required name="image"
                                                     onchange="previewImage(this,'.preview-app-fevicon')"
-                                                    class="form-input" accept="image/*"
-                                                    id="input-app-fevicon">
-                                            </div>
+                                                    accept="image/*"
+                                                    id="input-app-fevicon" />
                                             <label id="input-app-fevicon-error" for="input-app-fevicon" class="error"></label>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn-primary">Submit</button>
+                                    <x-ui.button type="submit">Submit</x-ui.button>
                                 </form>
                             </div>
                         </div>
@@ -265,10 +250,10 @@
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                                 <div class="md:col-span-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Host <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Host <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" id="smtp_host" placeholder="Host"
+                                            <x-ui.input type="text" id="smtp_host" placeholder="Host"
                                                 name="smtp_host" value="{{ $setting['smtp_host'] }}"
                                                 required />
                                         </div>
@@ -276,8 +261,8 @@
                                 </div>
                                 <div class="md:col-span-3">
                                     <div class="mb-3">
-                                        <label class="form-label">Encryption</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Encryption</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['smtp_encryption'] }}" name="smtp_encryption">
                                             <option value="ssl"
                                                 {{ $setting['smtp_encryption'] == 'ssl' ? 'selected' : '' }}>
@@ -285,26 +270,24 @@
                                             <option value="tls"
                                                 {{ $setting['smtp_encryption'] == 'tls' ? 'selected' : '' }}>
                                                 TLS</option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div class="md:col-span-3">
                                     <div class="mb-3">
-                                        <label class="form-label">Port <span
-                                                class="text-rose-500">*</span></label>
-                                        <div class="input-group">
-                                            <input type="text" class="form-input" placeholder="Port"
+                                        <x-ui.label class="mb-2">Port <span
+                                                class="text-destructive">*</span></x-ui.label>
+                                        <x-ui.input type="text" placeholder="Port"
                                                 name="smtp_port" value="{{ $setting['smtp_port'] }}"
                                                 required />
-                                        </div>
                                     </div>
                                 </div>
                                 <div class="md:col-span-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Username <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Username <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" placeholder="Username"
+                                            <x-ui.input type="text" placeholder="Username"
                                                 id="smtp_username" name="smtp_username"
                                                 value="{{ $setting['smtp_username'] }}" required />
                                         </div>
@@ -312,10 +295,10 @@
                                 </div>
                                 <div class="md:col-span-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Password <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Password <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" id="smtp_password" placeholder="Password"
+                                            <x-ui.input type="text" id="smtp_password" placeholder="Password"
                                                 name="smtp_password"
                                                 value="{{ $setting['smtp_password'] }}" required />
                                         </div>
@@ -323,10 +306,10 @@
                                 </div>
                                 <div class="md:col-span-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Mail From Name <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Mail From Name <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" id="mail_from_name" placeholder="Mail From Name"
+                                            <x-ui.input type="text" id="mail_from_name" placeholder="Mail From Name"
                                                 name="mail_from_name"
                                                 value="{{ $setting['mail_from_name'] }}" required />
                                         </div>
@@ -335,24 +318,23 @@
                                 </div>
                                 <div class="md:col-span-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Mail From Address <span
-                                                class="text-rose-500">*</span></label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i
-                                                    class="bx bx-envelope"></i></span>
-                                            <input type="text" class="form-input" id="mail_from_address"
+                                        <x-ui.label class="mb-2">Mail From Address <span
+                                                class="text-destructive">*</span></x-ui.label>
+                                        <div class="relative">
+<i class="bx bx-envelope text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"></i>
+<x-ui.input class="pl-9" type="text" id="mail_from_address"
                                                 placeholder="Mail From Address"
                                                 name="mail_from_address"
                                                 value="{{ $setting['mail_from_address'] }}" required />
-                                        </div>
+</div>
                                         <label id="mail_from_address-error" class="error" for="mail_from_address" style="display:none;"></label>
                                     </div>
                                 </div>
 
                                 <div class="md:col-span-12">
                                     <div class="flex gap-2">
-                                        <button type="submit" class="btn-primary">Submit</button>
-                                        <button type="button" class="btn-primary" data-modal-open="#email-test">Send Test Email</button>
+                                        <x-ui.button type="submit">Submit</x-ui.button>
+                                        <x-ui.button type="button" data-modal-open="#email-test">Send Test Email</x-ui.button>
                                     </div>
                                 </div>
 
@@ -368,8 +350,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Enable</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Enable</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['google_recaptcha'] }}"
                                             name="google_recaptcha">
                                             <option value="1"
@@ -378,36 +360,36 @@
                                             <option value="0"
                                                 {{ $setting['google_recaptcha'] == '0' ? 'selected' : '' }}>
                                                 No</option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Secret key <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Secret key <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" required
+                                            <x-ui.input type="text" required
                                                 value="{{ $setting['google_recaptcha_secret_key'] }}"
                                                 name="google_recaptcha_secret_key" id="secret_key"
-                                                placeholder="google_recaptcha_secret_key">
+                                                placeholder="google_recaptcha_secret_key" />
                                         </div>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Public key <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Public key <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" required
+                                            <x-ui.input type="text" required
                                                 value="{{ $setting['google_recaptcha_public_key'] }}"
                                                 name="google_recaptcha_public_key" id="public_key"
-                                                placeholder="google recaptcha public key">
+                                                placeholder="google recaptcha public key" />
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <button type="submit" class="btn-primary">Submit</button>
+                                    <x-ui.button type="submit">Submit</x-ui.button>
                                 </div>
                             </div>
                         </form>
@@ -420,8 +402,8 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Google Login</label>
-                                        <select class="form-select"
+                                        <x-ui.label class="mb-2">Google Login</x-ui.label>
+                                        <x-ui.select
                                             value="{{ $setting['google_login'] }}"
                                             name="google_login">
                                             <option value="1"
@@ -430,18 +412,18 @@
                                             <option value="0"
                                                 {{ $setting['google_login'] == '0' ? 'selected' : '' }}>
                                                 Disable</option>
-                                        </select>
+                                        </x-ui.select>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Google Client ID <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Google Client ID <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input"
+                                            <x-ui.input type="text"
                                                 value="{{ $setting['google_client_id'] }}" required
                                                 name="google_client_id"
-                                                placeholder="Google client id">
+                                                placeholder="Google client id" />
                                         </div>
                                         <label id="client_id-error" class="error" for="client_id"
                                             style="display:none;"></label>
@@ -449,12 +431,12 @@
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Google Client Secret <span
-                                                class="text-rose-500">*</span></label>
+                                        <x-ui.label class="mb-2">Google Client Secret <span
+                                                class="text-destructive">*</span></x-ui.label>
                                         <div>
-                                            <input type="text" class="form-input" required
+                                            <x-ui.input type="text" required
                                                 value="{{ $setting['google_client_secret'] }}"
-                                                name="google_client_secret" placeholder="Google client secret">
+                                                name="google_client_secret" placeholder="Google client secret" />
                                         </div>
                                         <label id="client_secret-error" class="error" for="client_secret"
                                             style="display:none;"></label>
@@ -462,7 +444,7 @@
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <button type="submit" class="btn-primary">Submit</button>
+                                    <x-ui.button type="submit">Submit</x-ui.button>
                                 </div>
                             </div>
                         </form>
@@ -475,56 +457,47 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Header</label>
-                                        <textarea class="form-input" rows="8" name="header_content"
-                                            placeholder="Header content">{{ $setting['header_content'] }}</textarea>
+                                        <x-ui.label class="mb-2">Header</x-ui.label>
+                                        <x-ui.textarea rows="8" name="header_content"
+                                            placeholder="Header content">{{ $setting['header_content'] }}</x-ui.textarea>
 
                                     </div>
                                 </div>
                                 <div>
                                     <div class="mb-3">
-                                        <label class="form-label">Footer</label>
-                                        <textarea class="form-input" rows="8" name="footer_content"
-                                            placeholder="Footer content">{{ $setting['footer_content'] }}</textarea>
+                                        <x-ui.label class="mb-2">Footer</x-ui.label>
+                                        <x-ui.textarea rows="8" name="footer_content"
+                                            placeholder="Footer content">{{ $setting['footer_content'] }}</x-ui.textarea>
                                     </div>
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <button type="submit" class="btn-primary">Submit</button>
+                                    <x-ui.button type="submit">Submit</x-ui.button>
                                 </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </x-ui.card-content>
+    </x-ui.card>
     <!-- Mail Process start -->
-    <div class="modal fixed inset-0 z-50 hidden items-center justify-center p-4" id="email-test" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-backdrop" data-modal-dismiss></div>
-        <div class="modal-dialog relative z-10 w-full max-w-lg" role="document">
-            <div class="modal-content">
-                <form action="{{ route('admin/setting/mail-process') }}" class="ajax-form-mail-test" method="POST">
-                    @csrf
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Mail</h5>
-                        <button type="button" class="btn-close closebtnmodal" data-modal-dismiss aria-label="Close">
-                            <i class="bx bx-x text-xl"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <label class="form-label">Email <span class="text-rose-500">*</span></label>
-                        <input type="email" class="form-input" id="email" placeholder="Email Address" name="email" aria-label="Name" required />
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn-primary">Submit</button>
-                        <button type="reset" class="btn-dark btn-reset" data-modal-dismiss aria-label="Close">Cancel</button>
-                    </div>
-                </form>
+    <x-ui.modal id="email-test">
+        <form action="{{ route('admin/setting/mail-process') }}" class="ajax-form-mail-test space-y-4" method="POST">
+            @csrf
+            <x-ui.dialog-header>
+                <x-ui.dialog-title>Mail</x-ui.dialog-title>
+            </x-ui.dialog-header>
+            <div class="space-y-2">
+                <x-ui.label for="email">Email <span class="text-destructive">*</span></x-ui.label>
+                <x-ui.input type="email" id="email" placeholder="Email Address" name="email" aria-label="Name" required />
             </div>
-        </div>
-    </div>
+            <x-ui.dialog-footer>
+                <x-ui.button variant="outline" type="reset" data-modal-dismiss>Cancel</x-ui.button>
+                <x-ui.button type="submit">Submit</x-ui.button>
+            </x-ui.dialog-footer>
+        </form>
+    </x-ui.modal>
     <!-- mail Process End -->
 </div>
 @endsection

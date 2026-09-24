@@ -3,35 +3,34 @@
 @section('content')
     <div>
         @include('modules.user.account.component.account_block')
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-2">Passkeys</h5>
-                <p class="mb-4 text-sm text-slate-500">Sign in without a password using your device's fingerprint, face, or security key.</p>
+        <x-ui.card>
+            <x-ui.card-header>
+                <x-ui.card-title>Passkeys</x-ui.card-title>
+                <x-ui.card-description>Sign in without a password using your device's fingerprint, face, or security key.</x-ui.card-description>
+            </x-ui.card-header>
+            <x-ui.card-content>
+                <x-ui.alert variant="warning" id="passkey-unsupported" style="display:none;">
+                    <x-ui.alert-description>Passkeys are not supported in this browser.</x-ui.alert-description>
+                </x-ui.alert>
 
-                <div id="passkey-unsupported" class="alert-warning" style="display:none;">
-                    Passkeys are not supported in this browser.
-                </div>
+                <x-ui.table id="passkey-table">
+                    <thead>
+                        <x-ui.tr>
+                            <x-ui.th>Name</x-ui.th>
+                            <x-ui.th>Type</x-ui.th>
+                            <x-ui.th>Added</x-ui.th>
+                            <x-ui.th></x-ui.th>
+                        </x-ui.tr>
+                    </thead>
+                    <tbody id="passkey-list"></tbody>
+                </x-ui.table>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm" id="passkey-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Added</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="passkey-list"></tbody>
-                    </table>
+                <div class="mt-4 flex items-center gap-2">
+                    <x-ui.input type="text" id="passkey-name" placeholder="Name this passkey (e.g. My Phone)" class="max-w-70" />
+                    <x-ui.button id="passkey-add" type="button">Add a Passkey</x-ui.button>
                 </div>
-
-                <div class="mt-3 flex items-center gap-2">
-                    <input type="text" class="form-input" id="passkey-name" placeholder="Name this passkey (e.g. My Phone)" style="max-width:280px;" />
-                    <button class="btn-primary" id="passkey-add">Add a Passkey</button>
-                </div>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
     </div>
 @endsection
 @push('scripts')

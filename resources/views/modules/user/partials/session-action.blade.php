@@ -1,4 +1,4 @@
-<button type="button" class="text-body cursor-pointer border-0 bg-transparent" title="Log out this device"
+<x-ui.button variant="ghost" size="icon-sm" title="Log out this device"
     onclick="app.confirmAction(this);" data-action="{{ route($route) }}" data-id="{{ $id }}" data-next="table_refresh">
-    <i class="bx bx-log-out icon-base"></i>
-</button>
+    <i class="bx bx-log-out"></i>
+</x-ui.button>

@@ -4,43 +4,38 @@
 @endsection
 @section('content')
     <div class="w-full max-w-md">
-        <div class="card">
-            <div class="card-body p-6 sm:p-8">
+        <x-ui.card>
+            <x-ui.card-content>
                 <div class="mb-6 flex justify-center">
                     <a href="{{ url('/admin/auth/login') }}" class="flex items-center gap-2">
                         <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
                             class="h-10 w-10 rounded-full object-cover" alt="">
-                        <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
+                        <span class="text-lg font-bold text-foreground">{{ config('setting.app_name') }}</span>
                     </a>
                 </div>
-                <h4 class="mb-1 text-xl font-semibold text-slate-800">Welcome to {{ config('setting.app_name') }} 👋</h4>
-                <p class="mb-6 text-sm text-slate-500">Please Log-in to your admin account</p>
+                <h4 class="mb-1 text-xl font-semibold text-foreground">Welcome to {{ config('setting.app_name') }} 👋</h4>
+                <p class="mb-6 text-sm text-muted-foreground">Please Log-in to your admin account</p>
 
                 <form id="login-form" class="mb-4" action="{{ url('/admin/auth/login') }}" method="POST">
                     @csrf
                     <div class="mb-6">
-                        <label for="login-email" class="form-label">Email <span class="text-rose-600">*</span></label>
-                        <input type="email" class="form-input" id="login-email" name="email"
+                        <x-ui.label for="login-email" class="mb-2">Email <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="email" id="login-email" name="email"
                             placeholder="Enter your email" autocomplete="username" autofocus />
                     </div>
                     <div class="mb-6">
-                        <label class="form-label" for="password">Password <span class="text-rose-600">*</span></label>
-                        <div class="input-group">
-                            <input type="password" id="password" class="form-input" name="password"
+                        <x-ui.label class="mb-2" for="password">Password <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.password-input id="password" name="password"
                                 autocomplete="current-password" aria-describedby="password" />
-                            <span class="input-group-text cursor-pointer" data-password-toggle="#password">
-                                <i class="bx bx-hide"></i>
-                            </span>
-                        </div>
                     </div>
                     <div class="mb-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <input class="form-check-input" type="checkbox" id="remember-me" name="remember"
+                                <x-ui.checkbox id="remember-me" name="remember"
                                     value="1" />
-                                <label class="form-check-label" for="remember-me"> Remember Me </label>
+                                <x-ui.label class="font-normal" for="remember-me"> Remember Me </x-ui.label>
                             </div>
-                            <a href="{{ url('/admin/auth/password-forgot') }}" class="text-sm text-primary-600 hover:underline">
+                            <a href="{{ url('/admin/auth/password-forgot') }}" class="text-sm text-primary hover:underline">
                                 Forgot Password?
                             </a>
                         </div>
@@ -52,15 +47,14 @@
                     </div>
 
                     <div class="mb-6">
-                        <button class="btn-primary w-full" type="submit" id="login-submit">Login</button>
+                        <x-ui.button class="w-full" type="submit" id="login-submit">Login</x-ui.button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/password-toggle.js') }}"></script>
     <script>
         document.getElementById('login-form').addEventListener('submit', function (event) {
             event.preventDefault();

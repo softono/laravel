@@ -4,47 +4,42 @@
 @endsection
 @section('content')
     <div class="w-full max-w-md">
-        <div class="card">
-            <div class="card-body p-6 sm:p-8">
+        <x-ui.card>
+            <x-ui.card-content>
                 <!-- Logo -->
                 <div class="mb-6 flex justify-center">
                     <a href="/" class="flex items-center gap-2">
                         <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
                             class="h-10 w-10 rounded-full object-cover" alt="">
-                        <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
+                        <span class="text-lg font-bold text-foreground">{{ config('setting.app_name') }}</span>
                     </a>
                 </div>
                 <!-- /Logo -->
-                <h4 class="mb-1 text-xl font-semibold text-slate-800">Welcome to {{ config('setting.app_name') }} 👋</h4>
-                <p class="mb-6 text-sm text-slate-500">Please Log-in to your account</p>
+                <h4 class="mb-1 text-xl font-semibold text-foreground">Welcome to {{ config('setting.app_name') }} 👋</h4>
+                <p class="mb-6 text-sm text-muted-foreground">Please Log-in to your account</p>
 
                 <form id="login-form" class="mb-4" action="{{ url('/auth/login') }}" method="POST">
                     @csrf
                     <div class="mb-6">
-                        <label for="login-email" class="form-label">Email <span class="text-rose-600">*</span></label>
-                        <input type="email" class="form-input" id="login-email" name="email"
+                        <x-ui.label for="login-email" class="mb-2">Email <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="email" id="login-email" name="email"
                             placeholder="Enter your email" autocomplete="username webauthn" autofocus />
                         <label id="email-error" class="error" for="login-email" style="display:none;"></label>
                     </div>
                     <div class="mb-6">
-                        <label class="form-label" for="password">Password <span class="text-rose-600">*</span></label>
-                        <div class="input-group">
-                            <input type="password" id="password" class="form-input" name="password"
+                        <x-ui.label class="mb-2" for="password">Password <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.password-input id="password" name="password"
                                 autocomplete="current-password" aria-describedby="password" />
-                            <span class="input-group-text cursor-pointer" data-password-toggle="#password">
-                                <i class="bx bx-hide"></i>
-                            </span>
-                        </div>
                         <label id="password-error" class="error" for="password" style="display:none;"></label>
                     </div>
                     <div class="mb-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <input class="form-check-input" type="checkbox" id="remember-me" name="remember"
+                                <x-ui.checkbox id="remember-me" name="remember"
                                     value="1" />
-                                <label class="form-check-label" for="remember-me">Remember Me</label>
+                                <x-ui.label class="font-normal" for="remember-me">Remember Me</x-ui.label>
                             </div>
-                            <a href="{{ url('/password-forgot') }}" class="text-sm text-primary-600 hover:underline">
+                            <a href="{{ url('/password-forgot') }}" class="text-sm text-primary hover:underline">
                                 Forgot Password?
                             </a>
                         </div>
@@ -56,91 +51,90 @@
                     </div>
 
                     <div class="mb-6">
-                        <button class="btn-primary w-full" type="submit" id="login-submit">Login</button>
+                        <x-ui.button class="w-full" type="submit" id="login-submit">Login</x-ui.button>
                     </div>
                 </form>
 
-                <button type="button" class="btn-outline w-full mb-4" id="passkey-login-btn"
+                <x-ui.button variant="outline" type="button" class="w-full mb-4" id="passkey-login-btn"
                     data-options-url="{{ url('/auth/passkey/login-options') }}"
                     data-verify-url="{{ url('/auth/passkey/login-verify') }}"
                     data-dashboard-url="{{ url($redirectPath) }}">
                     Sign in with a passkey
-                </button>
+                </x-ui.button>
 
-                <button type="button" class="btn-outline w-full mb-4" id="magic-link-toggle"
+                <x-ui.button variant="outline" type="button" class="w-full mb-4" id="magic-link-toggle"
                     data-start-url="{{ url('/auth/login-link') }}"
                     data-poll-url="{{ url('/auth/login-link/poll') }}"
                     data-dashboard-url="{{ url($redirectPath) }}">
                     Login with Magic Link
-                </button>
+                </x-ui.button>
 
                 @if (config('setting.user_login_with_otp') == 1)
-                    <button type="button" class="btn-outline w-full mb-4" id="otp-toggle"
+                    <x-ui.button variant="outline" type="button" class="w-full mb-4" id="otp-toggle"
                         data-url="{{ url('/auth/login-otp') }}"
                         data-captcha="{{ config('setting.google_recaptcha') ? 1 : 0 }}"
                         data-tfa-url="{{ url('/verify') }}?type=tfa&redirect={{ urlencode($redirectPath) }}"
                         data-verify-account-url="{{ url('/verify-account') }}"
                         data-dashboard-url="{{ url($redirectPath) }}">
                         Login with OTP
-                    </button>
+                    </x-ui.button>
                     <div id="otp-panel" style="display:none;" class="mb-4">
                         <div id="otp-start">
                             <div class="mb-4">
-                                <label for="otp-email" class="form-label">Email</label>
-                                <input type="email" class="form-input" id="otp-email" placeholder="Enter your email" />
+                                <x-ui.label for="otp-email" class="mb-2">Email</x-ui.label>
+                                <x-ui.input type="email" id="otp-email" placeholder="Enter your email" />
                             </div>
-                            <button type="button" class="btn-primary w-full" id="otp-send">Send OTP</button>
+                            <x-ui.button type="button" class="w-full" id="otp-send">Send OTP</x-ui.button>
                         </div>
                         <div id="otp-verify" style="display:none;">
                             <div class="mb-4">
-                                <label for="otp-code" class="form-label">OTP</label>
-                                <input type="text" class="form-input" id="otp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6-digit code" />
+                                <x-ui.label for="otp-code" class="mb-2">OTP</x-ui.label>
+                                <x-ui.input type="text" id="otp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6-digit code" />
                             </div>
-                            <button type="button" class="btn-primary w-full mb-2" id="otp-submit">Login</button>
-                            <button type="button" class="btn-outline w-full" id="otp-resend">Resend OTP</button>
+                            <x-ui.button type="button" class="w-full mb-2" id="otp-submit">Login</x-ui.button>
+                            <x-ui.button variant="outline" type="button" class="w-full" id="otp-resend">Resend OTP</x-ui.button>
                         </div>
                     </div>
                 @endif
 
                 @if (config('services.google.client_id'))
-                    <a href="{{ url('/auth/google') }}" class="btn-outline w-full mb-4 inline-flex items-center justify-center">
+                    <x-ui.button variant="outline" href="{{ url('/auth/google') }}" class="w-full mb-4 inline-flex items-center justify-center">
                         Sign in with Google
-                    </a>
+                    </x-ui.button>
                 @endif
 
                 <div id="magic-link-panel" style="display:none;" class="mb-4">
                     <div id="magic-link-start">
                         <div class="mb-4">
-                            <label for="magic-link-email" class="form-label">Email</label>
-                            <input type="email" class="form-input" id="magic-link-email" placeholder="Enter your email" />
+                            <x-ui.label for="magic-link-email" class="mb-2">Email</x-ui.label>
+                            <x-ui.input type="email" id="magic-link-email" placeholder="Enter your email" />
                         </div>
-                        <button type="button" class="btn-primary w-full" id="magic-link-send">Send Login Link</button>
+                        <x-ui.button type="button" class="w-full" id="magic-link-send">Send Login Link</x-ui.button>
                     </div>
                     <div id="magic-link-waiting" style="display:none;" class="text-center">
                         <div class="mb-3 flex justify-center">
-                            <span class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></span>
+                            <span class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary"></span>
                         </div>
                         <p class="mb-2">We sent a login link to your email. Open it on any device to continue.</p>
                         <p class="mb-1">Confirm this code matches:</p>
                         <p class="mb-3">
-                            <span id="magic-link-code" style="font-family:monospace;font-size:1.5rem;letter-spacing:0.2em;background:#f5f5f5;border-radius:999px;padding:0.4rem 1.2rem;display:inline-block;"></span>
+                            <span id="magic-link-code" class="bg-muted inline-block rounded-full px-5 py-1.5 font-mono text-2xl tracking-[0.2em]"></span>
                         </p>
-                        <p id="magic-link-status" class="text-rose-600 mb-0" style="display:none;"></p>
+                        <p id="magic-link-status" class="text-destructive mb-0" style="display:none;"></p>
                     </div>
                 </div>
 
-                <p class="text-center text-sm text-slate-500">
+                <p class="text-center text-sm text-muted-foreground">
                     <span>New on our platform?</span>
-                    <a href="{{ url('/register') }}" class="text-primary-600 hover:underline">
+                    <a href="{{ url('/register') }}" class="text-primary hover:underline">
                         <span>Create an account</span>
                     </a>
                 </p>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/password-toggle.js') }}"></script>
     <script src="{{ asset('assets/js/auth/login-link.js') }}"></script>
     <script src="{{ asset('assets/js/auth/login-otp.js') }}"></script>
     <script src="{{ asset('assets/js/auth/passkey.js') }}"></script>

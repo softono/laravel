@@ -8,10 +8,10 @@ var accountTfa = (function () {
     function renderBackupCodes(container, codes) {
         container.innerHTML = '';
         codes.forEach(function (code) {
-            var col = document.createElement('div');
-            col.className = 'col-6 col-md-3';
-            col.innerHTML = '<div class="border rounded text-center p-2 font-monospace">' + code + '</div>';
-            container.appendChild(col);
+            var item = document.createElement('div');
+            item.className = 'border-border rounded-md border p-2 text-center font-mono text-sm';
+            item.textContent = code;
+            container.appendChild(item);
         });
     }
 
@@ -27,15 +27,15 @@ var accountTfa = (function () {
                 setupCard.style.display = 'none';
 
                 if (data.enabled) {
-                    statusBlock.innerHTML = '<p class="text-success mb-0">Two-factor authentication is enabled.' +
+                    statusBlock.innerHTML = '<p class="text-success text-sm">Two-factor authentication is enabled.' +
                         (data.backup_codes_remaining ? ' (' + data.backup_codes_remaining + ' backup codes remaining)' : '') +
                         '</p>';
-                    manageCard.style.display = 'block';
+                    manageCard.style.display = '';
                     enableCard.style.display = 'none';
                 } else {
-                    statusBlock.innerHTML = '<p class="text-muted mb-0">Two-factor authentication is disabled.</p>';
+                    statusBlock.innerHTML = '<p class="text-muted-foreground text-sm">Two-factor authentication is disabled.</p>';
                     manageCard.style.display = 'none';
-                    enableCard.style.display = 'block';
+                    enableCard.style.display = '';
                 }
             });
         }
@@ -63,7 +63,7 @@ var accountTfa = (function () {
                 }
 
                 enableCard.style.display = 'none';
-                setupCard.style.display = 'block';
+                setupCard.style.display = '';
             });
         });
 
@@ -108,7 +108,7 @@ var accountTfa = (function () {
 
                 document.getElementById('tfa-backup-codes-container').style.display = 'block';
                 renderBackupCodes(document.getElementById('tfa-backup-codes-grid'), response.data.codes);
-                setupCard.style.display = 'block';
+                setupCard.style.display = '';
                 app.showMessage(response.message, 'success');
             });
         });

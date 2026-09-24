@@ -4,94 +4,83 @@
 @endsection
 @section('content')
     <div class="w-full max-w-md">
-        <div class="card">
-            <div class="card-body p-6 sm:p-8">
+        <x-ui.card>
+            <x-ui.card-content>
                 <div class="mb-4 mt-2 flex justify-center">
                     <a href="{{ url('/') }}" class="flex items-center gap-2">
                         <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
                             class="h-10 w-10 rounded-full object-cover" alt="">
-                        <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
+                        <span class="text-lg font-bold text-foreground">{{ config('setting.app_name') }}</span>
                     </a>
                 </div>
-                <h4 class="mb-1 pt-2 text-center text-xl font-semibold text-slate-800">Welcome to {{ config('setting.app_name') }}</h4>
-                <p class="mb-4 text-center text-sm text-slate-500">Create your account</p>
+                <h4 class="mb-1 pt-2 text-center text-xl font-semibold text-foreground">Welcome to {{ config('setting.app_name') }}</h4>
+                <p class="mb-4 text-center text-sm text-muted-foreground">Create your account</p>
 
                 <form class="mb-3" action="{{ url('/auth/register') }}" method="POST" id="register-form">
                     @csrf
                     <div class="mb-3">
-                        <label for="first_name" class="form-label">First Name <span class="text-rose-600">*</span></label>
-                        <input type="text" class="form-input" id="first_name" name="first_name" required
+                        <x-ui.label for="first_name" class="mb-2">First Name <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="text" id="first_name" name="first_name" required
                             placeholder="Enter your first name" maxlength="50" autofocus />
                     </div>
                     <div class="mb-3">
-                        <label for="last_name" class="form-label">Last Name <span class="text-rose-600">*</span></label>
-                        <input type="text" class="form-input" id="last_name" name="last_name" required
+                        <x-ui.label for="last_name" class="mb-2">Last Name <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="text" id="last_name" name="last_name" required
                             placeholder="Enter your last name" maxlength="50" />
                     </div>
                     <div class="mb-3">
-                        <label for="phone" class="form-label">Phone Number <span class="text-rose-600">*</span></label>
-                        <input type="tel" class="form-input" id="phone" name="phone" required
+                        <x-ui.label for="phone" class="mb-2">Phone Number <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="tel" id="phone" name="phone" required
                             placeholder="Enter your 10-digit phone number" maxlength="10" />
                     </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email <span class="text-rose-600">*</span></label>
-                        <input type="email" class="form-input" id="email" name="email" required
+                        <x-ui.label for="email" class="mb-2">Email <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.input type="email" id="email" name="email" required
                             placeholder="Enter your email address" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="password">Password <span class="text-rose-600">*</span></label>
-                        <div class="input-group">
-                            <input type="password" id="password" class="form-input" required name="password"
+                        <x-ui.label class="mb-2" for="password">Password <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.password-input id="password" required name="password"
                                 placeholder="Create a password" aria-describedby="password" />
-                            <span class="input-group-text cursor-pointer" data-password-toggle="#password">
-                                <i class="bx bx-hide"></i>
-                            </span>
-                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="confirm_password">Confirm Password <span class="text-rose-600">*</span></label>
-                        <div class="input-group">
-                            <input type="password" id="confirm_password" class="form-input" required
+                        <x-ui.label class="mb-2" for="confirm_password">Confirm Password <span class="text-destructive">*</span></x-ui.label>
+                        <x-ui.password-input id="confirm_password" required
                                 name="confirm_password" placeholder="Re-enter your password"
                                 aria-describedby="confirm_password" />
-                            <span class="input-group-text cursor-pointer" data-password-toggle="#confirm_password">
-                                <i class="bx bx-hide"></i>
-                            </span>
-                        </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="flex items-center gap-2">
-                            <input class="form-check-input" type="checkbox" id="agree" name="agree" value="1" />
-                            <label class="form-check-label" for="agree">
+                            <x-ui.checkbox id="agree" name="agree" value="1" />
+                            <x-ui.label class="font-normal" for="agree">
                                 I agree to
-                                <a target="_blank" href="{{ url('/page/privacy-policy') }}" class="text-primary-600 hover:underline">privacy policy &amp; terms</a>
-                            </label>
+                                <a target="_blank" href="{{ url('/page/privacy-policy') }}" class="text-primary hover:underline">privacy policy &amp; terms</a>
+                            </x-ui.label>
                         </div>
                     </div>
 
                     @include('common.recaptcha')
-                    <button class="btn-primary w-full" type="submit">Sign up</button>
+                    <x-ui.button class="w-full" type="submit">Sign up</x-ui.button>
                 </form>
 
                 @if (config('services.google.client_id'))
-                    <a href="{{ url('/auth/google') }}" class="btn-outline w-full mb-3 inline-flex items-center justify-center">
+                    <x-ui.button variant="outline" href="{{ url('/auth/google') }}" class="w-full mb-3 inline-flex items-center justify-center">
                         Register with Google
-                    </a>
+                    </x-ui.button>
                 @endif
 
-                <p class="text-center text-sm text-slate-500">
+                <p class="text-center text-sm text-muted-foreground">
                     <span>Already have an account?</span>
-                    <a href="{{ url('/login') }}" class="text-primary-600 hover:underline">
+                    <a href="{{ url('/login') }}" class="text-primary hover:underline">
                         <span>Log in instead</span>
                     </a>
                 </p>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/password-toggle.js') }}"></script>
     <script>
         document.getElementById('register-form').addEventListener('submit', function (event) {
             event.preventDefault();

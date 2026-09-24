@@ -66,8 +66,7 @@
                         <x-ui.card-content class="space-y-2">
                             @foreach ($group['list'] ?? [] as $permission)
                                 <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" name="permission[]" value="{{ $permission['key'] }}"
-                                        class="border-input size-4 rounded" @checked(in_array($permission['key'], $granted, true))>
+                                    <x-ui.checkbox name="permission[]" value="{{ $permission['key'] }}" :checked="in_array($permission['key'], $granted, true)" />
                                     {{ $permission['title'] }}
                                 </label>
                             @endforeach

@@ -15,7 +15,7 @@ const app = {
      * Runs a follow-up action. The view decides what happens after a successful request
      * with `data-next` (and `data-next-url`) on the element that triggered it; the
      * server response never carries navigation.
-     * @param {string} next - load | refresh | list_refresh | table_refresh | redirect | reload | hide_modal | show_modal_view
+     * @param {string} next - load | refresh | table_refresh | redirect | reload | hide_modal | show_modal_view
      * @param {string} [url] - Target for load, redirect and show_modal_view
      */
     runNextAction: function (next, url) {
@@ -23,8 +23,6 @@ const app = {
             pjax.loadPage(url);
         } else if (next === "refresh") {
             pjax.loadPage(window.location.href);
-        } else if (next === "list_refresh") {
-            pagination.loadData(false, false);
         } else if (next === "table_refresh") {
             datatableObj.ajax.reload();
         } else if (next === "redirect") {
@@ -87,30 +85,33 @@ const app = {
     },
 
     showModal: function () {
-        if (!this.commonModel.hasClass("modal-open")) {
+        if (!app.isModalOpen(this.commonModel)) {
             app.openModal(this.commonModel);
         }
     },
 
     hideModal: function () {
-        if (this.commonModel.hasClass("modal-open")) {
+        if (app.isModalOpen(this.commonModel)) {
             app.closeModal(this.commonModel);
         }
     },
 
     /**
-     * Generic Tailwind modal open/close helpers (replaces Bootstrap's .modal() plugin)
+     * Modals are `[data-modal]` elements (x-ui.modal): hidden by default, shown as a flex
+     * overlay while `data-state="open"`. Open them with `[data-modal-open="#id"]`.
      */
+    isModalOpen: function ($modal) {
+        return $($modal).attr("data-state") === "open";
+    },
+
     openModal: function ($modal) {
-        $modal = $modal.jquery ? $modal : $($modal);
-        $modal.removeClass("hidden").addClass("modal-open");
+        $($modal).removeClass("hidden").addClass("flex").attr("data-state", "open");
         $("body").addClass("overflow-hidden");
     },
 
     closeModal: function ($modal) {
-        $modal = $modal.jquery ? $modal : $($modal);
-        $modal.removeClass("modal-open").addClass("hidden");
-        if ($(".modal.modal-open").length === 0) {
+        $($modal).removeClass("flex").addClass("hidden").attr("data-state", "closed");
+        if (!$("[data-modal][data-state=open]").length) {
             $("body").removeClass("overflow-hidden");
         }
     },
@@ -158,10 +159,6 @@ const app = {
                 showCancelButton: true,
                 confirmButtonText: "Yes",
                 cancelButtonText: "No",
-                customClass: {
-                    confirmButton: "btn btn-primary",
-                    cancelButton: "btn btn-secondary",
-                },
             })
             .then((result) => {
                 if (result) {
@@ -177,6 +174,7 @@ const app = {
      * @param {{url: string, columns: Object[], method?: string, order?: Array}} options
      */
     dataTable: function (selector, { url, columns, method = "post", order = [[0, "desc"]] }) {
+        app.styleDataTables();
         datatableObj = $(selector).DataTable({
             ajax: dataTableAjax({ url, method }),
             columns,
@@ -185,6 +183,44 @@ const app = {
             serverSide: true,
         });
         return datatableObj;
+    },
+
+    /**
+     * Replaces the palette classes of DataTables' Tailwind integration (gray-*, blue-*) with the
+     * theme tokens, so tables follow light/dark. Runs once, before the first table is created.
+     */
+    styleDataTables: function () {
+        if (app.dataTablesStyled) {
+            return;
+        }
+        app.dataTablesStyled = true;
+        const field =
+            "border-input dark:bg-input/30 placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 h-9 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px]";
+        $.extend(true, $.fn.dataTable.ext.classes, {
+            search: { input: field + " ml-2" },
+            length: { select: field + " mx-1 pr-8" },
+            paging: {
+                active: "bg-accent text-accent-foreground font-semibold",
+                notActive: "bg-transparent",
+                button: "relative inline-flex items-center justify-center border border-border -mr-px px-3 py-1.5 text-sm leading-6 hover:z-10 focus:z-10",
+                first: "rounded-l-md",
+                last: "rounded-r-md",
+                enabled: "text-foreground hover:bg-accent",
+                notEnabled: "text-muted-foreground opacity-50",
+            },
+            thead: {
+                row: "border-b border-border",
+                cell: "px-3 py-3 text-left font-medium text-foreground",
+            },
+            tbody: {
+                row: "border-b border-border hover:bg-muted/50 transition-colors",
+                cell: "p-3",
+            },
+            tfoot: {
+                row: "border-t border-border",
+                cell: "p-3 text-left",
+            },
+        });
     },
 
     /**
@@ -350,35 +386,38 @@ const app = {
      */
     showLoading: function () {
         //Swal.showLoading();
-        $("#common-loader").show();
+        $("#common-loader").removeClass("hidden").addClass("flex");
     },
 
     hideLoading: function () {
         // Swal.close();
-        $("#common-loader").hide();
+        $("#common-loader").removeClass("flex").addClass("hidden");
     },
 
     showMessage: function (message, type) {
-        var toastHtml = `
-        <div class="toast-msg toast-__type__" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-msg-header">
-                <div class="flex items-center gap-2">
-                    <i class="bx bx-bell"></i>
-                    <span class="font-medium">__title__</span>
-                </div>
-                <button type="button" class="toast-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
+        const kinds = {
+            success: { icon: "bx-check-circle", color: "text-success" },
+            error: { icon: "bx-error-circle", color: "text-destructive" },
+            warning: { icon: "bx-error", color: "text-amber-600 dark:text-amber-400" },
+            info: { icon: "bx-info-circle", color: "text-muted-foreground" },
+        };
+        const kind = kinds[type] || kinds.info;
+        const title = type.charAt(0).toUpperCase() + type.slice(1);
+        const toastHtml = `
+        <div class="bg-popover text-popover-foreground border-border pointer-events-auto flex w-80 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-lg border p-4 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+            <i class="bx ${kind.icon} ${kind.color} text-xl"></i>
+            <div class="flex-1 text-sm">
+                <p class="font-medium">__title__</p>
+                <p class="text-muted-foreground mt-0.5">__message__</p>
             </div>
-            <div class="toast-msg-body">__message__</div>
+            <button type="button" class="text-muted-foreground hover:text-foreground cursor-pointer" data-toast-dismiss aria-label="Close"><i class="bx bx-x text-lg"></i></button>
         </div>`;
-        var title = type.charAt(0).toUpperCase() + type.slice(1);
-        type = type.replace("error", "danger");
         $("#common-toast").html(
-            app.dataToHtml(toastHtml, { message: message, title: title, type: type })
+            app.dataToHtml(toastHtml, { message: message, title: title })
         );
         setTimeout(function () {
             $("#common-toast").html("");
         }, 5000);
-        // Swal.fire(title,message,type);
     },
     showMessageWithCallback: function (message, type) {
         app.showMessage(message, type);
@@ -599,33 +638,37 @@ const app = {
 $(document).ready(function () {
     app.init();
 
-    // Generic modal triggers/dismissals (replaces Bootstrap's data-bs-toggle="modal")
+    // Error labels go under the field; a password field is wrapped with its show/hide button.
+    if ($.validator) {
+        $.validator.setDefaults({
+            errorPlacement: function (error, element) {
+                const $wrapper = element.closest("[data-slot=password-input]");
+                error.insertAfter($wrapper.length ? $wrapper : element);
+            },
+        });
+    }
+
     $(document).on("click", "[data-modal-open]", function (e) {
         e.preventDefault();
         app.openModal($($(this).data("modal-open")));
     });
     $(document).on("click", "[data-modal-dismiss]", function (e) {
         e.preventDefault();
-        app.closeModal($(this).closest(".modal"));
+        app.closeModal($(this).closest("[data-modal]"));
     });
-    $(document).on("click", ".modal", function (e) {
-        if ($(e.target).is(".modal")) {
-            app.closeModal($(this));
-        }
+    $(document).on("click", "[data-toast-dismiss]", function () {
+        $(this).parent().remove();
     });
-    $(document).on("click", ".toast-dismiss", function () {
-        $(this).closest(".toast-msg").remove();
+    $(document).on("click", "[data-alert-dismiss]", function () {
+        $(this).closest("[data-slot=alert]").remove();
     });
-    $(document).on("click", ".alert-dismiss", function () {
-        $(this).closest(".alert").remove();
-    });
-    $(document).on("click", ".menu-toggle", function (e) {
+    $(document).on("click", "[data-menu-toggle]", function (e) {
         e.preventDefault();
-        $(this).closest(".menu-item").toggleClass("open");
+        $(this).closest("li").toggleClass("open");
     });
     $(document).on("keydown", function (e) {
         if (e.key === "Escape") {
-            $(".modal.modal-open").each(function () {
+            $("[data-modal][data-state=open]").each(function () {
                 app.closeModal($(this));
             });
         }
@@ -635,312 +678,6 @@ $(document).ready(function () {
 
 
 
-/**
- * A class for managing dynamic content loading and interactions with a target HTML element.
- */
-class View {
-    /**
-     * Target element where content will be dynamically loaded.
-     * @type {string}
-     */
-    target = "";
-    /**
-     * Initializes the View class with a target element.
-     * @param {string} target - Selector for the target element.
-     */
-    init(target) {
-        this.target = $(target);
-    }
-    /**
-     * Clears the content of the target element.
-     */
-    clear() {
-        this.target.html("");
-    }
-    /**
-     * Loads content into the target element via an AJAX GET request.
-     * @param {string} url - The URL to fetch the content from.
-     */
-    load(url) {
-        var target = this.target;
-        const cachedPage = AppCache.get(url);
-        if (cachedPage) {
-            this.setModalContent(response);
-            this.showModal();
-            runDocumentReady();
-        } else {
-            target.html('<div class="loading-text">Loading...</div>');
-        }
-        $.ajax({
-            url: url,
-            method: "get",
-            success: function (response) {
-                //cache start
-                if (cachedPage === response) {
-                    return false;
-                }
-                AppCache.set(url, response);
-                //cache end
-                target.html(response);
-                runDocumentReady();
-            },
-            error: function (e) {
-                app.showMessage(
-                    "Something went wrong. Pelase Try after sometime.",
-                    "error"
-                );
-            },
-        });
-    }
-}
-
-/**
- * A class for managing AJAX-based pagination functionality.
- */
-class Pagination {
-    /**
-     * URL for AJAX requests.
-     * @type {string}
-     */
-    ajaxUrl = "";
-    /**
-     * jQuery object representing the container for pagination content.
-     * @type {jQuery}
-     */
-    ajaxContainer = false;
-    /**
-     * Determines whether to load data on initialization.
-     * @type {boolean}
-     */
-    initLoadData = true;
-    /**
-     * Pagination type (e.g., normal or load-more).
-     * @type {number}
-     */
-    type = 1; // 1: link pagination, 2: load more, 3: load old , 4: scroll
-    /**
-     * Data sent with AJAX requests.
-     * @type {object}
-     */
-    postData = {
-        page: 1,
-        _token: CSRF_TOKEN,
-        sort: { field: "", direction: "asc" },
-        search: "",
-        filter: {},
-        filter_extra: {},
-    };
-
-    /**
-     * Initializes the pagination with URL and container ID.
-     * @param {string} url - The URL for AJAX requests.
-     * @param {string} [ajaxContainerId] - The container for displaying pagination.
-     */
-    init(url, ajaxContainerId) {
-        if (ajaxContainerId === undefined) {
-            ajaxContainerId = "#pagination-ajax-container";
-        }
-        this.ajaxUrl = url;
-        this.ajaxContainer = $(ajaxContainerId);
-
-        var urlParam = new URLSearchParams(new URL(window.location.href).search);
-        this.postData.filter = urlParam.get("filter");
-        this.postData.page = urlParam.get("page");
-        if (this.postData.filter == "") {
-            this.postData.filter = {};
-        } else if (typeof this.postData.filter == "object") {
-        } else {
-            this.postData.filter = this.postData.filter.replaceAll("&quot;", '"');
-            this.postData.filter = JSON.parse(this.postData.filter);
-        }
-        if (this.initLoadData) {
-            this.loadData();
-        } else {
-            var _this = this;
-            _this.ajaxContainer.find(".page-link").click(function () {
-                _this.loadList($(this).data("page"));
-            });
-        }
-    }
-
-    /**
-     * Initializes the pagination functionality by setting the URL for AJAX requests
-     * and the container where the paginated data will be loaded.
-     * Then, it triggers the data loading process.
-     *
-     * @param {string} url - The URL for AJAX requests to fetch paginated data.
-     * @param {string} ajaxContainer - The selector or DOM element where the data will be injected.
-     */
-    initPagination(url, ajaxContainer) {
-        // Set the AJAX URL and container for future use
-        this.ajaxUrl = url;
-        this.ajaxContainer = $(ajaxContainer);
-        // Load the data from the provided URL
-        this.loadData();
-    }
-    /**
-     * Loads data via an AJAX request and updates the container.
-     */
-    loadData(cacheEnabled = true, showLoading = true) {
-        var _this = this;
-
-        //cache start
-        const cacheKey = _this.ajaxUrl + "|" + JSON.stringify(_this.postData);
-        let cachedPage = false;
-        if (cacheEnabled) {
-            cachedPage = AppCache.get(cacheKey);
-            if (cachedPage) {
-                if (_this.type == 1) {
-                    _this.ajaxContainer.html(cachedPage);
-                } else {
-                    _this.ajaxContainer.find(".pagination-load-more").remove();
-                    _this.ajaxContainer.append(cachedPage);
-                }
-                _this.ajaxContainer.find(".page-link").click(function () {
-                    _this.loadList($(this).data("page"));
-                });
-                runDocumentReady();
-                scrollToTop();
-                showLoading = false;
-            }
-        }
-        //cache end
-        if (showLoading) {
-            if (_this.type == 1) {
-                _this.ajaxContainer.css("min-height", _this.ajaxContainer.height());
-                _this.ajaxContainer.html('<div class="loading-text">Loading...</div>');
-            } else {
-                _this.ajaxContainer
-                    .find(".page-link")
-                    .text('<div class="loading-text">Loading...</div>');
-            }
-        }
-        $.ajax({
-            method: "post",
-            url: this.ajaxUrl,
-            data: this.postData,
-            success: function (response) {
-                //cache start
-                if (cachedPage === response) {
-                    return false;
-                }
-                AppCache.set(cacheKey, response);
-                //cache end
-                if (_this.type == 1) {
-                    _this.ajaxContainer.html(response);
-                    _this.ajaxContainer.css("min-height", 0);
-                } else {
-                    _this.ajaxContainer.find(".pagination-load-more").remove();
-                    _this.ajaxContainer.append(response);
-                }
-                _this.ajaxContainer.find(".page-link").click(function () {
-                    _this.loadList($(this).data("page"));
-                });
-                runDocumentReady();
-                scrollToTop();
-            },
-            error: function (e) {
-                _this.ajaxContainer.html(e.message);
-            },
-        });
-    }
-    /**
-     * Loads the list of data for the specified page.
-     *
-     * @param {number} page - The page number to load.
-     */
-    loadList(page) {
-        this.postData.page = page;
-        this.loadData(); // Fetch the data based on updated page
-        app.setUrl(window.location.href, { page: page }); // Update the URL to reflect the page number
-    }
-    /**
-     * Sorts the data by the specified field and direction.
-     *
-     * @param {string} field - The field by which to sort the data.
-     * @param {string} direction - The direction to sort the data (e.g., 'asc' or 'desc').
-     */
-    sort(field, direction) {
-        this.postData.sort.field = field;
-        this.postData.sort.direction = direction;
-        this.loadList(1); // Reset to the first page after sorting
-        app.setUrl(window.location.href, {
-            page: 1,
-            sort: field + "-" + direction,
-        }); // Update the URL with sort parameters
-    }
-    /**
-     * Searches the data based on the provided search value.
-     *
-     * @param {string} value - The search value to filter the data by.
-     */
-    search(value) {
-        this.postData.search = value;
-        this.loadList(1); // Reset to the first page after search
-        app.setUrl(window.location.href, { page: 1, search: value }); // Update the URL with search parameters
-    }
-
-    filterClear() {
-        this.postData.filter = {};
-        this.setUrl(window.location.href, {
-            page: 1,
-            filter: "",
-        });
-    }
-    /**
-     * Filters the data based on a key-value pair. If the value is empty or the same as the current filter, it removes the filter.
-     *
-     * @param {string} key - The key to filter the data by.
-     * @param {string} value - The value to filter the data by.
-     */
-    filter(key, value) {
-        if (value == "" || this.postData.filter[key] == value) {
-            delete this.postData.filter[key]; // Remove filter if value is empty or matches the existing one
-        } else {
-            this.postData.filter[key] = value; // Add or update the filter with the new value
-        }
-        this.loadList(1); // Reset to the first page after filtering
-        app.setUrl(window.location.href, {
-            page: 1,
-            filter: JSON.stringify(this.postData.filter), // Update the URL with the current filters
-        });
-    }
-    /**
-     * Handles filtering for multiple values. It adds or removes values from the filter based on whether they are already included.
-     *
-     * @param {string} key - The key to filter the data by.
-     * @param {string} value - The value to filter by, potentially multiple values separated by commas.
-     */
-    filterMultiple(key, value) {
-        var oldData = this.postData.filter[key];
-        if (oldData) {
-            oldData = oldData.split(",");
-            // Remove the value if it's already in the filter, else add it
-            if (oldData.indexOf(value) >= 0) {
-                oldData = $.grep(oldData, function (v) {
-                    return v != value;
-                });
-            } else {
-                oldData.push(value);
-            }
-            value = oldData.join(",");
-        }
-        this.filter(key, value); // Apply the updated filter
-    }
-    /**
-     * Submits the filter form and updates the list accordingly.
-     *
-     * @param {HTMLFormElement} form - The form element containing the filter data.
-     */
-    filterFormSubmit(form) {
-        this.postData.filter = $(form).serializeObject(); // Serialize the form data into an object
-        this.loadList(1); // Reset to the first page after form submission
-        app.setUrl(window.location.href, {
-            page: 1,
-            filter: JSON.stringify(this.postData.filter), // Update the URL with the serialized filter
-        });
-    }
-}
 /**
  * Handles image cropping functionality using the Cropper.js library.
  */
@@ -1079,117 +816,6 @@ class ImageCrop {
         }
     }
 }
-
-/**
- * Manages file uploads with drag-and-drop support.
- */
-var fileDropBox = {
-    files: [],
-    fileDropBoxContainer: false,
-    fileAccept: "image/png, image/jpeg, image/webp , image/jpg",
-    fileInputHtml: "",
-    /**
-     * Initializes the file drop box.
-     * @param {string} previewTarget - The selector for the preview container.
-     * @param {Array<Object>} oldFiles - Previously uploaded files.
-     */
-    init: function (previewTarget, oldFiles) {
-        (this.fileInputHtml =
-            '<input style="visibility:hidden;" onchange="fileDropBox.selectFiles(this.files)" class="form-control file-input" type="file"  accept="' +
-            this.fileAccept +
-            '" multiple>'),
-            (this.fileDropBoxContainer = $(previewTarget));
-        var oldFilesHtml = "";
-        $.each(oldFiles, function (index, fileData) {
-            oldFilesHtml += fileDropBox.previewFile(
-                fileData.type,
-                fileData.url,
-                fileData.name,
-                fileData.name
-            );
-        });
-        this.fileDropBoxContainer.html(
-            '<div class="drop-file" ondragover="event.preventDefault();" ondrop="event.preventDefault();fileDropBox.selectFiles(event.dataTransfer.files);" onclick="$(this).next().find(\'.file-input\').click()"><h3 class="drop-text">Drop file here Or Click here to select File</h3></div><div class="file-input-container">' +
-            fileDropBox.fileInputHtml +
-            '</div><div class="file-preview row">' +
-            oldFilesHtml +
-            "</div>"
-        );
-    },
-    /**
-     * Handles file selection.
-     * @param {FileList} files - The selected files.
-     */
-    selectFiles: function (files) {
-        var previewHtml = "";
-        $.each(files, function (index, file) {
-            previewHtml += fileDropBox.previewFile(
-                file.type,
-                URL.createObjectURL(file),
-                file.name,
-                false
-                
-            );
-            fileDropBox.files.push(file);
-        });
-        this.fileDropBoxContainer.find(".file-preview").append(previewHtml);
-        this.fileDropBoxContainer
-            .find(".file-input-container")
-            .html(fileDropBox.fileInputHtml);
-    },
-    /**
-     * Generates a preview for a file.
-     * @param {string} type - The file type.
-     * @param {string} url - The file URL.
-     * @param {string} name - The file name.
-     * @param {string|null} id - The file ID (for old files).
-     * @returns {string} - The HTML string for the file preview.
-     */
-    previewFile: function (type, url, name, id) {
-        var previewHtml = '<div class="file-preview-item mb-3 col-md-4">';
-        if (type.match("video")) {
-            previewHtml +=
-                '<video class="video-preview" controls><source type="' +
-                type +
-                '" src="' +
-                url +
-                '"/></video>';
-        } else if (type.match("image")) {
-            previewHtml += '<img class="image-preview" src="' + url + '" />';
-        } else {
-            previewHtml += '<a href="' + url + '" class="pjax">' + name + "</a>";
-        }
-        previewHtml +=
-            '<button onclick="fileDropBox.removeFile(this);" data-file-name="' +
-            name +
-            '" type="button" class="" style="display: flex;justify-content: center;align-items: end;"><i class="fa-solid fa-xmark"></i></button>';
-        if (id) {
-            previewHtml +=
-                '<input type="hidden" name="file_old[]" value="' + id + '"></input>';
-        }
-        previewHtml += "</div>";
-        return previewHtml;
-    },
-    /**
-     * Removes a file from the preview and internal file list.
-     * @param {HTMLElement} obj - The button element that triggered the removal.
-     */
-    removeFile: function (obj) {
-        var target = $(obj);
-        var filename = target.data("file-name");
-        target.closest(".file-preview-item").remove();
-        fileDropBox.files = $.grep(fileDropBox.files, function (file, index) {
-            return file.name != filename;
-        });
-    },
-    /**
-     * Removes an old file from the preview.
-     * @param {HTMLElement} obj - The button element that triggered the removal.
-     */
-    removeOldFile: function (obj) {
-        $(obj).closest(".file-preview-item").remove();
-    },
-};
 
 /**
  * Extends jQuery with a utility to serialize a form into a JSON object.
@@ -1360,7 +986,7 @@ function dataTableAjax(params) {
 
 /**
  * Small declarative UI behaviours (dropdowns, collapsible menus, the admin
- * sidebar, tabs, the theme picker). Everything is delegated from `document`,
+ * sidebar, tabs, the theme switch). Everything is delegated from `document`,
  * so it keeps working on content that pjax.js swaps in. Markup opts in with
  * data attributes:
  *
@@ -1368,7 +994,8 @@ function dataTableAjax(params) {
  *   [data-collapse-toggle="#id"]     toggles `hidden` on #id and on the button's [data-toggle-icon]s
  *   [data-sidebar-toggle="open|close"]   admin sidebar (#layout-menu + #sidebar-backdrop)
  *   [data-tabs] > [data-tab="x"] + [data-tab-panel="x"]   data-tabs-active / data-tabs-inactive hold the classes
- *   [data-theme-option="light|dark|system"] + [data-theme-icon]
+ *   [data-password-toggle="#input"]   show/hide a password field
+ *   [data-theme-option="light|dark|system"] + [data-theme-icon]   theme switch (x-ui.theme-switch)
  */
 app.ui = {
     init: function () {
@@ -1424,10 +1051,18 @@ app.ui = {
             });
         });
 
-        $doc.on("click", "[data-theme-option]", function () {
-            app.ui.setTheme($(this).data("themeOption"));
+        // Show/hide toggle of x-ui.password-input.
+        $doc.on("click", "[data-password-toggle]", function () {
+            const $input = $($(this).data("passwordToggle"));
+            const reveal = $input.attr("type") === "password";
+            $input.attr("type", reveal ? "text" : "password");
+            $(this).find("i").toggleClass("bx-hide", !reveal).toggleClass("bx-show", reveal);
         });
-        app.ui.setTheme(app.ui.storedTheme(), false);
+
+        $doc.on("click", "[data-theme-option]", function () {
+            app.ui.theme.set($(this).data("themeOption"));
+        });
+        app.ui.theme.init();
     },
 
     sidebar: function (open) {
@@ -1435,25 +1070,77 @@ app.ui = {
         $("#sidebar-backdrop").toggleClass("hidden", !open);
     },
 
-    storedTheme: function () {
-        try {
-            return localStorage.getItem("admin-theme") || "light";
-        } catch (e) {
-            return "light";
-        }
-    },
+    /**
+     * Light / dark / system. The choice lives in localStorage under Next's key; the resolved
+     * theme is the `dark` class plus data-theme on <html> (what next-theme.css and DataTables
+     * key off). `system` follows prefers-color-scheme live. The inline script in
+     * common/theme-init.blade.php applies the same rule before first paint.
+     */
+    theme: {
+        key: "app-color-mode",
+        icons: { light: "bx-sun", dark: "bx-moon", system: "bx-desktop" },
 
-    /** The picker only records the choice and shows its icon; nothing else is themed yet. */
-    setTheme: function (theme, persist = true) {
-        const icons = { dark: "bx-moon", system: "bx-desktop", light: "bx-sun" };
-        $("[data-theme-icon]")
-            .removeClass(Object.values(icons).join(" "))
-            .addClass(icons[theme] || icons.light);
-        if (persist) {
+        stored: function () {
             try {
-                localStorage.setItem("admin-theme", theme);
+                const mode = localStorage.getItem(this.key);
+                return this.icons[mode] ? mode : "system";
+            } catch (e) {
+                return "system";
+            }
+        },
+
+        prefersDark: function () {
+            return window.matchMedia("(prefers-color-scheme: dark)").matches;
+        },
+
+        /** Applies a mode to the document and to every switch on the page. */
+        apply: function (mode) {
+            const dark = mode === "dark" || (mode === "system" && this.prefersDark());
+            const root = document.documentElement;
+            root.classList.toggle("dark", dark);
+            root.classList.toggle("cc--darkmode", dark);
+            root.setAttribute("data-theme", dark ? "dark" : "light");
+
+            $("[data-theme-option]").each(function () {
+                $(this).attr("aria-checked", $(this).data("themeOption") === mode);
+            });
+            $("[data-theme-icon]")
+                .removeClass(Object.values(this.icons).join(" "))
+                .addClass(this.icons[mode]);
+        },
+
+        set: function (mode) {
+            if (!this.icons[mode]) {
+                return;
+            }
+            try {
+                localStorage.setItem(this.key, mode);
             } catch (e) {}
-        }
+            this.apply(mode);
+        },
+
+        init: function () {
+            const theme = this;
+            theme.apply(theme.stored());
+
+            const query = window.matchMedia("(prefers-color-scheme: dark)");
+            const onSystemChange = function () {
+                if (theme.stored() === "system") {
+                    theme.apply("system");
+                }
+            };
+            if (query.addEventListener) {
+                query.addEventListener("change", onSystemChange);
+            } else {
+                query.addListener(onSystemChange);
+            }
+            // Another tab changed the choice.
+            window.addEventListener("storage", function (event) {
+                if (event.key === theme.key) {
+                    theme.apply(theme.stored());
+                }
+            });
+        },
     },
 };
 

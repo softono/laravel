@@ -23,7 +23,7 @@
                     <img src="{{ $general->getFileUrl($post->image, 'blog') }}" alt="{{ $post->title }}" class="mb-6 w-full rounded-lg border object-cover">
                 @endif
 
-                <div class="prose prose-neutral max-w-none">
+                <div class="prose max-w-none">
                     {!! $post->body !!}
                 </div>
             </article>

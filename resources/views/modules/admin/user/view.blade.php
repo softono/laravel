@@ -3,20 +3,7 @@
     User View
 @endsection
 @section('content')
-    <div class="breadcrumb-box">
-        <h4 class="text-xl font-bold text-slate-800">User</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('admin/dashboard') }}" class="pjax hover:text-primary-600">Dashboard</a>
-                </li>
-                <li class="breadcrumb-item">
-                    <a href="{{ route('admin/user') }}" class="pjax hover:text-primary-600">Users</a>
-                </li>
-                <li class="breadcrumb-item active">User View</li>
-            </ol>
-        </nav>
-    </div>
+    <x-ui.page-header title="User" :crumbs="[['Dashboard', route('admin/dashboard')], ['Users', route('admin/user')], ['User View']]" />
 
     <div class="grid gap-6 lg:grid-cols-3">
         <div>

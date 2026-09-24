@@ -2,8 +2,10 @@
 <x-ui.card id="email-change" class="mt-4">
     <x-ui.card-header>
         <x-ui.card-title>Email Address</x-ui.card-title>
-        <p class="text-sm text-muted-foreground">Currently <span class="font-medium text-foreground">{{ $model->email }}</span>. Changing it requires your password and a code sent to the new address.</p>
     </x-ui.card-header>
+    <x-ui.card-content>
+        <p class="text-sm text-muted-foreground">Currently <span class="font-medium text-foreground">{{ $model->email }}</span>. Changing it requires your password and a code sent to the new address.</p>
+    </x-ui.card-content>
     <x-ui.card-content>
         <form data-step="start" class="grid max-w-md gap-4">
             <div class="grid gap-2">

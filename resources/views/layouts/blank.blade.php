@@ -35,6 +35,8 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.15.10/sweetalert2.min.css" integrity="sha512-Of+yU7HlIFqXQcG8Usdd67ejABz27o7CRB1tJCvzGYhTddCi4TZLVhh9tGaJCwlrBiodWCzAx+igo9oaNbUk5A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+    @include('common.theme-init')
+
     @vite('resources/css/app.css')
     @stack('styles')
     <script>
@@ -53,14 +55,15 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     {!! config('setting.header_content') !!}
   </head>
 
-  <body class="min-h-screen bg-slate-50">
-    <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center">
-      <div class="common-loader-backdrop"></div>
-      <div class="common-loader-conetent">
-        <i class="bx bx-loader-alt animate-spin text-4xl text-primary-600"></i>
+  <body class="min-h-screen bg-background">
+    <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center" role="status">
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="relative text-center">
+        <i class="bx bx-loader-alt animate-spin text-4xl text-white"></i>
         <span class="sr-only">Loading...</span>
-      </div>
     </div>
+</div>
+    <x-ui.theme-switch float />
     <!-- Layout wrapper -->
     <div id="main-container" data-layout="blank" class="flex min-h-screen items-center justify-center px-4 py-10">
       <div id="main-content" class="w-full" data-title="@php if($metaData['title']){echo $metaData['title'];}else{ @endphp@yield('title') | {{config('setting.app_name')}}@php }@endphp">
@@ -70,20 +73,14 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     </div>
 
     <!-- / Layout wrapper -->
-    <div id="common-modal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
-      <div class="modal-backdrop" data-modal-dismiss></div>
-      <div class="modal-dialog relative z-10 w-full max-w-lg">
-        <div class="modal-content" id="common-modal-content"></div>
-      </div>
-    </div>
+    <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
     <!-- Toast placement -->
-    <div id="common-toast" class="fixed top-4 end-4 z-[9999] flex flex-col items-end gap-2"></div>
+    <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
     <!-- Core JS -->
     {{view('common/cookie_consent')}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js" integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script src="assets/js/common.js"></script>
     <script src="assets/js/app.js"></script>
     <script src="assets/js/session-handler.js"></script>
     @stack('scripts')

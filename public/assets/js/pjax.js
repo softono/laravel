@@ -25,7 +25,7 @@ const pjax = {
             if (!scroll) $(window).scrollTop(0);
             if (cache) { return false; }
         } else {
-            this.$mainContainer.css("min-height", this.$mainContainer.height()).html('<div class="loading-text">Loading...</div>');
+            this.$mainContainer.css("min-height", this.$mainContainer.height()).html('<div class="text-muted-foreground py-12 text-center text-sm">Loading...</div>');
         }
 
         const ajaxUrl = `${url}${url.includes("?") ? "&" : "?"}partial=1&layout=${this.$mainContainer.data("layout")}`;

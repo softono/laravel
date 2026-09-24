@@ -6,7 +6,7 @@ Working guide for AI coding agents on this repository. Read this before making c
 
 ## Project Overview
 
-A Laravel 12 application with a **public site** (home, blog, pages, contact), a **user area** (dashboard, notes, account) and a **Bootstrap-free Tailwind admin panel**. Its defining feature is a hand-rolled authentication system: password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys and Google OAuth.
+A Laravel 12 application with a **public site** (home, blog, pages, contact), a **user area** (dashboard, notes, account) and a **Tailwind admin panel**. The whole UI is Bootstrap-free (`NoBootstrapTest` enforces it) and themeable (light / dark / system). Its defining feature is a hand-rolled authentication system: password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys and Google OAuth.
 
 It is a port of a Next.js app (`/www/wwwroot/demo/next/next`). **The database is identical to Next's** (same tables, columns, defaults, enums, indexes, foreign keys — see [Database](#database)), and new pages reuse Next's Tailwind/shadcn class vocabulary.
 
@@ -57,7 +57,7 @@ resources/views/
   modules/<module>/            module views  (modules/admin/<module>/ for the admin panel)
   components/ui/               x-ui.* Blade components (Next's shadcn class strings)
   layouts/  common/  email/    shared
-public/assets/js/              app.js, common.js, pjax.js, auth/*, account/*   (NOT built by Vite)
+public/assets/js/              app.js, pjax.js, admin-idle.js, auth/*, account/*   (NOT built by Vite)
 docs/                          documentation; docs/local/ is gitignored working notes
 ```
 
@@ -179,7 +179,8 @@ For the cookie table, guard internals, 2FA and passkey ceremonies → **[`docs/a
 Server-rendered Blade + Tailwind.
 
 - **Layouts:** `layouts/blank` (auth pages), `layouts/main` (site shell, PJAX-aware); admin mirrors them in `modules/admin/layouts/`.
-- **New pages use Next's class vocabulary** through the `x-ui.*` components (`button`, `input`, `textarea`, `select`, `label`, `card`, `card-header`, `card-title`, `card-content`, `badge`, `alert`, `table`/`tr`/`th`/`td`, `pagination`). The design tokens (`bg-card`, `text-muted-foreground`, `border-border`, …) come from `resources/css/next-theme.css`. Run `npm run build` after using a new utility class.
+- **Every screen uses Next's class vocabulary** through the `x-ui.*` components (`button`, `input`, `textarea`, `select`, `label`, `checkbox`, `password-input`, `card*`, `badge`, `alert*`, `table`/`tr`/`th`/`td`, `pagination`, `modal`, `dialog-*`, `page-header`, `theme-switch`). The design tokens (`bg-card`, `text-muted-foreground`, `border-border`, …) come from `resources/css/next-theme.css`; use them instead of palette colours so dark mode works. No Bootstrap class names (`btn-*`, `form-*`, `modal-*`, `d-*`, `col-*`, `data-bs-*`) anywhere. Run `npm run build` after using a new utility class.
+- **Theme:** `<x-ui.theme-switch>` (light / dark / system, stored in `localStorage["app-color-mode"]`, applied as `dark` class + `data-theme` on `<html>`, early script `common/theme-init`) sits in every layout.
 - **JS lives in `public/assets/js/`** and is included with plain `<script>`: jQuery + `app.js` (helpers and the `app.ui` data-attribute behaviours) + `pjax.js`. Vite builds CSS only; there is no JS bundle and no Alpine. Toggle/dropdown/tab behaviour is declared with `data-*` attributes (see `docs/frontend.md`).
 - Pass URLs in from Blade (`route()`, `data-*`), never hardcode paths in JS.
 

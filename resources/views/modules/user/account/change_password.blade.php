@@ -9,8 +9,10 @@
             <x-ui.card>
                 <x-ui.card-header>
                     <x-ui.card-title>Set a Password</x-ui.card-title>
-                    <p class="text-sm text-muted-foreground">You signed up with Google and have no password yet. Set one to also sign in with your email.</p>
                 </x-ui.card-header>
+                <x-ui.card-content>
+                    <p class="text-sm text-muted-foreground">You signed up with Google and have no password yet. Set one to also sign in with your email.</p>
+                </x-ui.card-content>
                 <x-ui.card-content>
                     <form action="{{ url('auth/set-password') }}" method="post" id="set-password-form" class="grid max-w-md gap-4"
                         data-next="reload">
@@ -28,65 +30,52 @@
                 </x-ui.card-content>
             </x-ui.card>
         @else
-        <div class="card">
-            <h5 class="card-header">Change Password</h5>
-            <div class="card-body">
-                <p class="mb-4 text-sm text-slate-500">Changing your password signs you out of every device, including this one.</p>
+        <x-ui.card>
+            <x-ui.card-header>
+                <x-ui.card-title>Change Password</x-ui.card-title>
+            </x-ui.card-header>
+            <x-ui.card-content>
+                <p class="mb-4 text-sm text-muted-foreground">Changing your password signs you out of every device, including this one.</p>
                 <form action="{{ url('auth/change-password') }}" method="post" id="ajax-form"
                     data-next="redirect" data-next-url="{{ route($loginRoute) }}">
                     {{ csrf_field() }}
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                            <label class="form-label" for="currentPassword">Current Password <span
-                                    class="text-rose-600">*</span></label>
-                            <div class="input-group">
-                                <input class="form-input" maxlength="32" minlength="6" type="password"
-                                    name="current_password" id="current_password" required="required" />
-                                <span class="input-group-text cursor-pointer"><i
-                                        class="bx bx-hide"></i></span>
-                            </div>
+                            <x-ui.label class="mb-2" for="currentPassword">Current Password <span
+                                    class="text-destructive">*</span></x-ui.label>
+                            <x-ui.password-input maxlength="32" minlength="6" name="current_password" id="current_password" required="required" />
                             <label id="current_password-error" class="error" for="current_password"
                                 style="display:none;"></label>
                         </div>
                     </div>
                     <div class="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                            <label class="form-label" for="newPassword">New Password <span
-                                    class="text-rose-600">*</span></label>
-                            <div class="input-group">
-                                <input class="form-input" maxlength="32" minlength="6" type="password" id="password"
-                                    name="password" required="required" />
-                                <span class="input-group-text cursor-pointer"><i
-                                        class="bx bx-hide"></i></span>
-                            </div>
+                            <x-ui.label class="mb-2" for="newPassword">New Password <span
+                                    class="text-destructive">*</span></x-ui.label>
+                            <x-ui.password-input maxlength="32" minlength="6" id="password" name="password" required="required" />
                             <label id="password-error" class="error" for="password" style="display:none;"></label>
                         </div>
                         <div>
-                            <label class="form-label" for="confirmPassword">Confirm New Password <span
-                                    class="text-rose-600">*</span></label>
-                            <div class="input-group">
-                                <input class="form-input" maxlength="32" minlength="6" type="password"
-                                    name="confirm_password" id="confirm_password" required="required" />
-                                <span class="input-group-text cursor-pointer"><i
-                                        class="bx bx-hide"></i></span>
-                            </div>
+                            <x-ui.label class="mb-2" for="confirmPassword">Confirm New Password <span
+                                    class="text-destructive">*</span></x-ui.label>
+                            <x-ui.password-input maxlength="32" minlength="6" name="confirm_password" id="confirm_password" required="required" />
                             <label id="confirm_password-error" class="error" for="confirm_password"
                                 style="display:none;"></label>
                         </div>
                         <div class="md:col-span-2">
-                            <h6 class="text-slate-700">Password Requirements:</h6>
+                            <h6 class="text-foreground">Password Requirements:</h6>
                             <ul class="mb-0 list-disc pl-8">
                                 <li class="mb-4">Password must be at least 6 characters long.</li>
                             </ul>
                         </div>
                         <div class="mt-2 md:col-span-2">
-                            <button type="submit" class="btn-primary mr-2">Save changes</button>
-                            <button type="reset" class="btn-dark">Cancel</button>
+                            <x-ui.button type="submit" class="mr-2">Save changes</x-ui.button>
+                            <x-ui.button variant="secondary" type="reset">Cancel</x-ui.button>
                         </div>
                     </div>
                 </form>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
         @endunless
     </div>
 
@@ -121,28 +110,6 @@
                         required: "Please enter the confirm password",
                     },
                 },
-                highlight: function(element) {
-                    $(element).addClass('is-invalid');
-                    $(element)
-                        .closest('.input-group')
-                        .find('.input-group-text')
-                        .addClass('error');
-                },
-                unhighlight: function(element) {
-                    $(element).removeClass('is-invalid');
-
-                    $(element)
-                        .closest('.input-group')
-                        .find('.input-group-text')
-                        .removeClass('error');
-                },
-                errorPlacement: function(error, element) {
-                    if ($(element).closest('.input-group').length) {
-                        error.insertAfter($(element).closest('.input-group'));
-                    } else {
-                        error.insertAfter(element);
-                    }
-                }
             })
         });
     </script>

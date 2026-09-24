@@ -7,103 +7,102 @@
     <div>
         @include('modules.user.account.component.account_block')
         <div class="space-y-4">
-            <div class="card">
-                <div class="card-body">
+            <x-ui.card>
+                <x-ui.card-content>
 
-                    <div class="flex items-start gap-6 border-b border-slate-200 pb-4 sm:items-center">
+                    <div class="flex items-start gap-6 border-b border-border pb-4 sm:items-center">
                         <img src="{{ $general->getFileUrl($model->image, 'profile') }}" alt="user-avatar"
                             class="block h-[100px] w-[100px] rounded" height="100px" width="100px"
                             id="uploadedAvatar">
                         <div>
-                            <a onclick="app.showModalView('{{ route($prefix.'account/image') }}')" for="upload"
-                                class="btn-primary pjax mb-4 mr-3 text-white" tabindex="0">
+                            <x-ui.button onclick="app.showModalView('{{ route($prefix.'account/image') }}')" class="mb-4 mr-3">
                                 <span class="hidden sm:block">Upload new photo</span>
                                 <i class="bx bx-upload block sm:hidden"></i>
-                            </a>
-                            <div class="text-sm text-slate-600">Allowed JPG, GIF or PNG.</div>
+                            </x-ui.button>
+                            <div class="text-sm text-muted-foreground">Allowed JPG, GIF or PNG.</div>
                         </div>
                     </div>
-                </div>
-                <div class="card-body pt-4">
+                </x-ui.card-content>
+                <x-ui.card-content class="pt-4">
                     <form action="{{ route($prefix.'account/update-process') }}" method="post" id="ajax-form">
                         {{ csrf_field() }}
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <label for="firstName" class="form-label">First Name <span
-                                        class="text-rose-600">*</span></label>
-                                <input class="form-input" type="text" id="first_name" name="first_name"
+                                <x-ui.label for="firstName" class="mb-2">First Name <span
+                                        class="text-destructive">*</span></x-ui.label>
+                                <x-ui.input type="text" id="first_name" name="first_name"
                                     value="{{ $model->first_name }}" autofocus="" placeholder="Enter First Name"
-                                    required="required" maxlength="128">
+                                    required="required" maxlength="128" />
                             </div>
 
                             <div>
-                                <label for="lastName" class="form-label">Last Name <span
-                                        class="text-rose-600">*</span></label>
-                                <input type="text" value="{{ $model->last_name }}" name="last_name" class="form-input"
-                                    id="last_name" placeholder="Enter Last Name" required="required" maxlength="128">
+                                <x-ui.label for="lastName" class="mb-2">Last Name <span
+                                        class="text-destructive">*</span></x-ui.label>
+                                <x-ui.input type="text" value="{{ $model->last_name }}" name="last_name"
+                                    id="last_name" placeholder="Enter Last Name" required="required" maxlength="128" />
                             </div>
 
                             <div>
-                                <label for="email" class="form-label">E-mail</label>
-                                <input type="email" value="{{ $model->email }}" class="form-input" id="email"
-                                    readonly disabled>
+                                <x-ui.label for="email" class="mb-2">E-mail</x-ui.label>
+                                <x-ui.input type="email" value="{{ $model->email }}" id="email"
+                                    readonly disabled />
                             </div>
 
                             <div>
-                                <label class="form-label" for="phone">Phone Number</label>
-                                <input type="tel" value="{{ $model->phone }}" name="phone" class="form-input"
-                                    id="phone" placeholder="Enter Phone">
+                                <x-ui.label class="mb-2" for="phone">Phone Number</x-ui.label>
+                                <x-ui.input type="tel" value="{{ $model->phone }}" name="phone"
+                                    id="phone" placeholder="Enter Phone" />
                             </div>
 
                             <div>
-                                <label class="form-label" for="country">Country</label>
-                                <select name="country" id="country" class="form-select">
+                                <x-ui.label class="mb-2" for="country">Country</x-ui.label>
+                                <x-ui.select name="country" id="country">
                                     <option value="">Select country</option>
                                     @foreach ($countries as $code => $name)
                                         <option value="{{ $code }}" @selected($model->country === $code)>{{ $name }}</option>
                                     @endforeach
-                                </select>
+                                </x-ui.select>
                             </div>
 
                             <div>
-                                <label class="form-label" for="timezone">Timezone</label>
-                                <select name="timezone" id="timezone" class="form-select">
+                                <x-ui.label class="mb-2" for="timezone">Timezone</x-ui.label>
+                                <x-ui.select name="timezone" id="timezone">
                                     @foreach ($timezones as $timezone)
                                         <option value="{{ $timezone }}" @selected($model->timezone === $timezone)>{{ $timezone }}</option>
                                     @endforeach
-                                </select>
+                                </x-ui.select>
                             </div>
                         </div>
                         <div class="mt-6">
-                            <button type="submit" class="btn-primary mr-3">Save changes</button>
-                            <button type="reset" class="btn-dark">Cancel</button>
+                            <x-ui.button type="submit" class="mr-3">Save changes</x-ui.button>
+                            <x-ui.button variant="secondary" type="reset">Cancel</x-ui.button>
                         </div>
                     </form>
-                </div>
-            </div>
+                </x-ui.card-content>
+            </x-ui.card>
             @include('modules.user.account.component.email_change')
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Deactivate Account</h5>
-                </div>
-                <div class="card-body">
+            <x-ui.card>
+                <x-ui.card-header>
+                    <x-ui.card-title>Deactivate Account</x-ui.card-title>
+                </x-ui.card-header>
+                <x-ui.card-content>
                     <div class="mb-6">
-                        <div class="alert-warning">
-                            <h5 class="mb-1 font-semibold">Are you sure you want to deactivate your account?</h5>
-                            <p>Your account will be deactivated and you will be signed out on every device.</p>
-                        </div>
+                        <x-ui.alert variant="warning">
+                            <x-ui.alert-title>Are you sure you want to deactivate your account?</x-ui.alert-title>
+                            <x-ui.alert-description>Your account will be deactivated and you will be signed out on every device.</x-ui.alert-description>
+                        </x-ui.alert>
                     </div>
                     <form action="{{ route($prefix.'account/deactivate') }}" id="formAccountDeactivation" method="POST">
                         @csrf
                         <div class="my-8 ml-2 flex items-center gap-2">
-                            <input type="checkbox" class="form-check-input" name="accountActivation" id="accountActivation" required>
-                            <label for="accountActivation" class="form-check-label">I confirm my account
-                                deactivation</label>
+                            <x-ui.checkbox name="accountActivation" id="accountActivation" required />
+                            <x-ui.label for="accountActivation" class="font-normal">I confirm my account
+                                deactivation</x-ui.label>
                         </div>
-                        <button type="submit" class="btn-danger deactivate-account">Deactivate Account</button>
+                        <x-ui.button variant="destructive" type="submit" class="deactivate-account">Deactivate Account</x-ui.button>
                     </form>
-                </div>
-            </div>
+                </x-ui.card-content>
+            </x-ui.card>
         </div>
     </div>
 @endsection

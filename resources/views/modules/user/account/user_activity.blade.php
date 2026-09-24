@@ -7,11 +7,11 @@
     <div>
         @include('modules.user.account.component.account_block')
         <!-- Ajax Sourced Server-side -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title"><span class="font-normal text-slate-500">Log /</span> List</h5>
-            </div>
-            <div class="card-body overflow-x-auto">
+        <x-ui.card>
+            <x-ui.card-header>
+                <x-ui.card-title><span class="font-normal text-muted-foreground">Log /</span> List</x-ui.card-title>
+            </x-ui.card-header>
+            <x-ui.card-content class="overflow-x-auto">
                 <table class="w-full text-sm" id="data-table">
                     <thead>
                         <tr>
@@ -22,8 +22,8 @@
                         </tr>
                     </thead>
                 </table>
-            </div>
-        </div>
+            </x-ui.card-content>
+        </x-ui.card>
         <!--/ Ajax Sourced Server-side -->
         <!-- / Content -->
     </div>

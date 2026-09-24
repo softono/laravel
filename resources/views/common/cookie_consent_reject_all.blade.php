@@ -4,10 +4,7 @@
         import 'https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.umd.js';
 
         window.addEventListener('load', function() {
-            if (window.templateCustomizer?.settings?.style === 'dark') {
-                document.documentElement.classList.add('cc--darkmode');
-            }
-            
+            // app.ui.theme (app.js) toggles .cc--darkmode on <html> with the theme.
             setTimeout(function(){
                 if(CookieConsent.getUserPreferences().rejectedCategories.indexOf('necessary')>=0){
                     console.log('revision');

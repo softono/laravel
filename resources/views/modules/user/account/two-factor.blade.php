@@ -4,26 +4,30 @@
     <div>
         @include('modules.user.account.component.account_block')
         <div class="space-y-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Two-Factor Authentication</h5>
+            <x-ui.card>
+                <x-ui.card-header>
+                    <x-ui.card-title>Two-Factor Authentication</x-ui.card-title>
+                </x-ui.card-header>
+                <x-ui.card-content>
                     <div id="tfa-status-block">
                         @if ($tfaStatus['enabled'] ?? false)
-                            <p class="mb-0 text-emerald-600">Two-factor authentication is enabled.
+                            <p class="mb-0 text-success">Two-factor authentication is enabled.
                                 @if (!empty($tfaStatus['backup_codes_remaining']))
                                     ({{ $tfaStatus['backup_codes_remaining'] }} backup codes remaining)
                                 @endif
                             </p>
                         @else
-                            <p class="mb-0 text-slate-500">Two-factor authentication is disabled.</p>
+                            <p class="mb-0 text-muted-foreground">Two-factor authentication is disabled.</p>
                         @endif
                     </div>
-                </div>
-            </div>
+                </x-ui.card-content>
+            </x-ui.card>
 
-            <div class="card" id="tfa-setup-card" style="display:none;">
-                <div class="card-header">
-                    <h5 class="card-title mb-4">Set Up Authenticator App</h5>
+            <x-ui.card id="tfa-setup-card" style="display:none;">
+                <x-ui.card-header>
+                    <x-ui.card-title>Set Up Authenticator App</x-ui.card-title>
+                </x-ui.card-header>
+                <x-ui.card-content>
                     <div id="tfa-qr-container" class="mb-3"></div>
                     <p class="mb-1"><strong>Secret key</strong> (if you can't scan the QR code):</p>
                     <p class="mb-3"><code id="tfa-secret"></code></p>
@@ -34,35 +38,39 @@
                     </div>
 
                     <div class="mb-3" style="max-width: 320px;">
-                        <label for="tfa-setup-code" class="form-label">Enter the 6-digit code from your app to confirm setup</label>
-                        <input type="text" class="form-input" id="tfa-setup-code" maxlength="6" placeholder="000000" />
+                        <x-ui.label for="tfa-setup-code" class="mb-2">Enter the 6-digit code from your app to confirm setup</x-ui.label>
+                        <x-ui.input type="text" id="tfa-setup-code" maxlength="6" placeholder="000000" />
                     </div>
-                    <button class="btn-primary" id="tfa-confirm-setup">Confirm and Enable</button>
-                </div>
-            </div>
+                    <x-ui.button id="tfa-confirm-setup" type="submit">Confirm and Enable</x-ui.button>
+                </x-ui.card-content>
+            </x-ui.card>
 
-            <div class="card" id="tfa-manage-card" style="{{ ($tfaStatus['enabled'] ?? false) ? '' : 'display:none;' }}">
-                <div class="card-header">
-                    <h5 class="card-title mb-4">Manage</h5>
+            <x-ui.card id="tfa-manage-card" style="{{ ($tfaStatus['enabled'] ?? false) ? '' : 'display:none;' }}">
+                <x-ui.card-header>
+                    <x-ui.card-title>Manage</x-ui.card-title>
+                </x-ui.card-header>
+                <x-ui.card-content>
                     <div class="mb-3">
-                        <label for="tfa-current-password" class="form-label">Current Password</label>
-                        <input type="password" class="form-input" id="tfa-current-password" style="max-width:320px;" />
+                        <x-ui.label for="tfa-current-password" class="mb-2">Current Password</x-ui.label>
+                        <x-ui.input type="password" id="tfa-current-password" style="max-width:320px;" />
                     </div>
-                    <button class="btn-outline mr-2" id="tfa-regenerate-codes">Regenerate Backup Codes</button>
-                    <button class="btn-danger" id="tfa-disable">Disable Two-Factor Authentication</button>
-                </div>
-            </div>
+                    <x-ui.button variant="outline" class="mr-2" id="tfa-regenerate-codes" type="submit">Regenerate Backup Codes</x-ui.button>
+                    <x-ui.button variant="destructive" id="tfa-disable" type="submit">Disable Two-Factor Authentication</x-ui.button>
+                </x-ui.card-content>
+            </x-ui.card>
 
-            <div class="card" id="tfa-enable-card" style="{{ ($tfaStatus['enabled'] ?? false) ? 'display:none;' : '' }}">
-                <div class="card-header">
-                    <h5 class="card-title mb-4">Enable Two-Factor Authentication</h5>
+            <x-ui.card id="tfa-enable-card" style="{{ ($tfaStatus['enabled'] ?? false) ? 'display:none;' : '' }}">
+                <x-ui.card-header>
+                    <x-ui.card-title>Enable Two-Factor Authentication</x-ui.card-title>
+                </x-ui.card-header>
+                <x-ui.card-content>
                     <div class="mb-3">
-                        <label for="tfa-enable-password" class="form-label">Current Password</label>
-                        <input type="password" class="form-input" id="tfa-enable-password" style="max-width:320px;" />
+                        <x-ui.label for="tfa-enable-password" class="mb-2">Current Password</x-ui.label>
+                        <x-ui.input type="password" id="tfa-enable-password" style="max-width:320px;" />
                     </div>
-                    <button class="btn-primary" id="tfa-start-setup">Start Setup</button>
-                </div>
-            </div>
+                    <x-ui.button id="tfa-start-setup" type="submit">Start Setup</x-ui.button>
+                </x-ui.card-content>
+            </x-ui.card>
         </div>
     </div>
 @endsection

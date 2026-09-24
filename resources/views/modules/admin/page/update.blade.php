@@ -3,20 +3,7 @@
     Page Update
 @endsection
 @section('content')
-    <div class="breadcrumb-box">
-        <h4 class="text-xl font-bold text-slate-800">Pages</h4>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('admin/dashboard') }}" class="pjax hover:text-primary-600">Dashboard</a>
-                </li>
-                <li class="breadcrumb-item">
-                    <a href="{{ route('admin/page') }}" class="pjax hover:text-primary-600">Pages</a>
-                </li>
-                <li class="breadcrumb-item active">Page Update</li>
-            </ol>
-        </nav>
-    </div>
+    <x-ui.page-header title="Pages" :crumbs="[['Dashboard', route('admin/dashboard')], ['Pages', route('admin/page')], ['Page Update']]" />
 
     <x-ui.card>
         <x-ui.card-header>
