@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Services;
 use App\Constants\UserActivity;
 use App\Constants\UserRole;
 use App\Constants\UserStatus;
+use App\Helpers\ApiResult;
 use App\Models\Auth\User;
 use App\Repositories\Auth\UserAccountRepository;
 use App\Repositories\Auth\UserRepository;
@@ -36,20 +37,22 @@ class OAuthService
     }
 
     /**
-     * @return array{ok: bool, message: ?string, user: ?User}
+     * `data.user` is the signed-in `User` model, for the controller; it is never sent as is.
+     *
+     * @return array{http_status: int, status: int, message: string, data: array{user?: User}}
      */
     public function handleCallback(Request $request): array
     {
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Throwable $e) {
-            return ['ok' => false, 'message' => 'Google sign-in failed. Please try again.', 'user' => null];
+            return ApiResult::failure('Google sign-in failed. Please try again.');
         }
 
         $emailVerified = $googleUser->user['email_verified'] ?? $googleUser->user['verified_email'] ?? false;
 
         if (! $emailVerified) {
-            return ['ok' => false, 'message' => 'Your Google account email is not verified.', 'user' => null];
+            return ApiResult::failure('Your Google account email is not verified.');
         }
 
         $account = $this->userAccounts->findProviderAccount('google', $googleUser->getId());
@@ -58,12 +61,12 @@ class OAuthService
             $user = $this->users->findById($account->user_id);
 
             if (! $user || ! $user->isActive()) {
-                return ['ok' => false, 'message' => 'Account is disabled', 'user' => null];
+                return ApiResult::failure('Account is disabled');
             }
 
             $this->activity->log($request, $user->id, UserActivity::LOGIN_WITH_SOCIAL);
 
-            return ['ok' => true, 'message' => null, 'user' => $user];
+            return ApiResult::success('', ['user' => $user]);
         }
 
         $email = strtolower(trim($googleUser->getEmail()));
@@ -71,7 +74,7 @@ class OAuthService
 
         if ($user) {
             if (! $user->isActive()) {
-                return ['ok' => false, 'message' => 'Account is disabled', 'user' => null];
+                return ApiResult::failure('Account is disabled');
             }
 
             $this->userAccounts->create([
@@ -85,7 +88,7 @@ class OAuthService
 
             $this->activity->log($request, $user->id, UserActivity::LOGIN_WITH_SOCIAL);
 
-            return ['ok' => true, 'message' => null, 'user' => $user];
+            return ApiResult::success('', ['user' => $user]);
         }
 
         [$firstName, $lastName] = $this->splitName($googleUser->getName() ?: $googleUser->getNickname() ?: $email);
@@ -113,7 +116,7 @@ class OAuthService
 
         $this->activity->log($request, $user->id, UserActivity::REGISTER_WITH_SOCIAL);
 
-        return ['ok' => true, 'message' => null, 'user' => $user];
+        return ApiResult::success('', ['user' => $user]);
     }
 
     /** @return array{0: string, 1: string} */

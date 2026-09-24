@@ -3,6 +3,7 @@
 namespace App\Modules\User\Services;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Modules\Auth\Services\ChallengeService;
@@ -47,23 +48,23 @@ class EmailChangeService
         $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password || ! Hash::check($password, $account->password)) {
-            return ['ok' => false, 'message' => 'Current password is incorrect'];
+            return ApiResult::failure('Current password is incorrect');
         }
 
         $newEmail = strtolower(trim($newEmail));
 
         if ($newEmail === strtolower($user->email)) {
-            return ['ok' => false, 'message' => 'New email is the same as your current email'];
+            return ApiResult::failure('New email is the same as your current email');
         }
 
         if ($this->users->findByEmail($newEmail)) {
-            return ['ok' => false, 'message' => 'Email already in use'];
+            return ApiResult::failure('Email already in use');
         }
 
         $handle = $this->challenges->createEmailChange($user->id, $newEmail);
         $this->sendNewEmailOtp($user, $newEmail);
 
-        return ['ok' => true, 'message' => 'Verification code sent to your new email', 'handle' => $handle];
+        return ApiResult::success('Verification code sent to your new email', ['handle' => $handle]);
     }
 
     /** @return array{ok: bool, message: string, restart?: bool} */
@@ -77,7 +78,7 @@ class EmailChangeService
 
         $this->sendNewEmailOtp($user, $pending['new_email']);
 
-        return ['ok' => true, 'message' => 'Verification code sent to your new email'];
+        return ApiResult::success('Verification code sent to your new email');
     }
 
     /** @return array{ok: bool, message: string, methods?: string[], restart?: bool} */
@@ -91,7 +92,7 @@ class EmailChangeService
 
         $result = $this->otp->verify(self::OTP_PURPOSE, $pending['new_email'], $code);
 
-        if (! $result['valid']) {
+        if (! $result['status']) {
             return $this->failure($handle, $result['message']);
         }
 
@@ -108,7 +109,7 @@ class EmailChangeService
             $methods[] = 'backup';
         }
 
-        return ['ok' => true, 'message' => 'New email verified', 'methods' => $methods];
+        return ApiResult::success('New email verified', ['methods' => $methods]);
     }
 
     /** Mails a code to the CURRENT address, for the `otp` proof in the second stage. */
@@ -128,15 +129,15 @@ class EmailChangeService
 
         $result = $this->tfa->verifyByMethod($user, $method, $code);
 
-        if (! $result['valid']) {
-            return $this->failure($handle, $result['message'] ?? 'Invalid code');
+        if (! $result['status']) {
+            return $this->failure($handle, $result['message']);
         }
 
         $this->challenges->consumeEmailChange($handle);
 
         // The address may have been registered by someone else since the challenge started.
         if ($this->users->findByEmail($pending['new_email'])) {
-            return ['ok' => false, 'message' => 'Email already in use', 'restart' => true];
+            return ApiResult::failure('Email already in use', ['restart' => true]);
         }
 
         $old = $user->email;
@@ -147,7 +148,7 @@ class EmailChangeService
             'new' => ['email' => $pending['new_email']],
         ]);
 
-        return ['ok' => true, 'message' => 'Email updated successfully'];
+        return ApiResult::success('Email updated successfully');
     }
 
     /** @return array{user_id: string, new_email: string, new_email_verified: bool}|null */
@@ -174,14 +175,14 @@ class EmailChangeService
         if ($this->challenges->bumpEmailChangeAttempts($handle)) {
             $this->challenges->consumeEmailChange($handle);
 
-            return ['ok' => false, 'message' => 'Too many failed attempts. Please start over.', 'restart' => true];
+            return ApiResult::failure('Too many failed attempts. Please start over.', ['restart' => true]);
         }
 
-        return ['ok' => false, 'message' => $message];
+        return ApiResult::failure($message);
     }
 
     protected function expired(): array
     {
-        return ['ok' => false, 'message' => 'Challenge expired. Please start over.', 'restart' => true];
+        return ApiResult::failure('Challenge expired. Please start over.', ['restart' => true]);
     }
 }

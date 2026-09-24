@@ -5,6 +5,7 @@ namespace App\Modules\Admin\Services;
 use App\Constants\UserActivity;
 use App\Constants\UserRole;
 use App\Constants\UserStatus;
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Modules\Auth\Services\SessionService;
@@ -33,14 +34,13 @@ class AccountManagementService
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{ok: bool, message: string}
      */
     public function create(Request $request, User $actor, string $role, array $data): array
     {
         $email = strtolower(trim($data['email']));
 
         if ($conflict = $this->uniqueConflict($email, $data['phone'] ?? null)) {
-            return ['ok' => false, 'message' => $conflict];
+            return ApiResult::failure($conflict);
         }
 
         $user = $this->users->create([
@@ -65,19 +65,18 @@ class AccountManagementService
 
         $this->activity->log($request, $actor->id, $this->activityType($role), ['action' => 'created', 'user_id' => $user->id]);
 
-        return ['ok' => true, 'message' => 'Saved successfully'];
+        return ApiResult::success('Saved successfully');
     }
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{ok: bool, message: string}
      */
     public function update(Request $request, User $actor, string $role, string $id, array $data): array
     {
         $user = $this->users->findByIdAndRole($id, $role);
 
         if (! $user) {
-            return ['ok' => false, 'message' => 'No data found'];
+            return ApiResult::failure('No data found');
         }
 
         $email = strtolower(trim($data['email']));
@@ -85,7 +84,7 @@ class AccountManagementService
         $phoneChanged = ! empty($data['phone']) && $data['phone'] !== $user->phone;
 
         if ($conflict = $this->uniqueConflict($emailChanged ? $email : null, $phoneChanged ? $data['phone'] : null)) {
-            return ['ok' => false, 'message' => $conflict];
+            return ApiResult::failure($conflict);
         }
 
         $changes = array_intersect_key($data, array_flip(self::FIELDS));
@@ -111,22 +110,19 @@ class AccountManagementService
         $this->sessions->invalidateUserCache($user->id);
         $this->activity->log($request, $actor->id, $this->activityType($role), ['action' => 'updated', 'user_id' => $user->id]);
 
-        return ['ok' => true, 'message' => 'Saved successfully'];
+        return ApiResult::success('Saved successfully');
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function toggleStatus(Request $request, User $actor, string $role, string $id): array
     {
         $user = $this->users->findByIdAndRole($id, $role);
 
         if (! $user) {
-            return ['ok' => false, 'message' => 'No data found'];
+            return ApiResult::failure('No data found');
         }
 
         if ($user->id === $actor->id) {
-            return ['ok' => false, 'message' => 'You cannot change your own status'];
+            return ApiResult::failure('You cannot change your own status');
         }
 
         $status = $user->isActive() ? UserStatus::INACTIVE : UserStatus::ACTIVE;
@@ -139,22 +135,19 @@ class AccountManagementService
         $this->sessions->invalidateUserCache($user->id);
         $this->activity->log($request, $actor->id, $this->activityType($role), ['action' => $status, 'user_id' => $user->id]);
 
-        return ['ok' => true, 'message' => 'Status updated successfully'];
+        return ApiResult::success('Status updated successfully');
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function delete(Request $request, User $actor, string $role, string $id): array
     {
         $user = $this->users->findByIdAndRole($id, $role);
 
         if (! $user) {
-            return ['ok' => false, 'message' => 'No data found'];
+            return ApiResult::failure('No data found');
         }
 
         if ($user->id === $actor->id) {
-            return ['ok' => false, 'message' => 'You cannot delete your own account'];
+            return ApiResult::failure('You cannot delete your own account');
         }
 
         $this->removeImage($user);
@@ -163,7 +156,7 @@ class AccountManagementService
         $this->users->delete($user);
         $this->activity->log($request, $actor->id, $this->activityType($role), ['action' => 'deleted', 'user_id' => $id]);
 
-        return ['ok' => true, 'message' => 'Data deleted successfully'];
+        return ApiResult::success('Data deleted successfully');
     }
 
     protected function uniqueConflict(?string $email, ?string $phone): ?string
@@ -193,7 +186,7 @@ class AccountManagementService
 
         $upload = $this->general->uploadFile($data['image'], 'profile');
 
-        return $upload['status'] ? $upload['file_name'] : null;
+        return $upload['status'] ? $upload['data']['file_name'] : null;
     }
 
     protected function removeImage(User $user): void

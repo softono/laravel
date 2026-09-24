@@ -197,12 +197,12 @@ Details → **[`docs/frontend.md`](docs/frontend.md)**
       protected ActivityService $activity,
   ) {}
   ```
-- Type-hint parameters and return types; array shapes in docblocks (`@return array{ok: bool, message: string}`).
+- Type-hint parameters and return types; array shapes in docblocks (`@return array{http_status: int, status: int, message: string, data: array}`).
 - Prefer constructor injection over `app(Foo::class)`.
 - Controllers call `parent::__construct()` (they extend `App\Http\Controllers\Controller`, or `App\Modules\Admin\Controllers\Controller` for admin, which share `$general` and settings with the views).
 - **FormRequests** validate; do not override `failedValidation()` — the exception handler renders the envelope.
 - Use constants for roles, statuses, activity types and blog categories (`UserRole`, `UserStatus`, `UserActivity`, `BlogCategory`).
-- Services return `['ok' => bool, 'message' => string, …extra]`; `Response::sendResult()` maps `ok` to `status` and nests extras in `data`.
+- **Every service method returns Next's `ApiResult` shape**: `['http_status' => 200, 'status' => 1, 'message' => '', 'data' => [...]]`, built with `ApiResult::success($message, $data)` / `ApiResult::failure($message, $data, $http_status = 200)`. Extras live in `data`, never at the top level. The controller returns `Response::sendResult($result)`. DataTables lists follow the same rule (`data` = the DataTables payload, unwrapped by `app.dataTable`). Never use `ok`, `valid` or bare arrays/models as a service result; `ServiceContractTest` enforces it.
 - Comments explain **why**, not what.
 
 **Blade**

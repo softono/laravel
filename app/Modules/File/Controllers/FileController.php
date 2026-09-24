@@ -23,13 +23,13 @@ class FileController extends Controller
             return Response::sendError(400, 'Missing file parameter');
         }
 
-        $path = $this->files->resolve($encoded);
+        $result = $this->files->resolve($encoded);
 
-        if (! $path) {
-            return Response::sendError(404, 'File not found');
+        if (! $result['status']) {
+            return Response::sendResult($result);
         }
 
-        return response()->file($path, [
+        return response()->file($result['data']['path'], [
             'Cache-Control' => 'private, no-store',
             // Whatever was uploaded must never run as a page on this origin.
             'Content-Security-Policy' => "default-src 'none'; sandbox",

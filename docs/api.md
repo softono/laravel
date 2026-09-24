@@ -62,15 +62,17 @@ Response::sendResponse(200, [                                    // full control
 ]);
 ```
 
-Mapping a service result with `sendResult()`. It accepts either shape:
+Every service method returns Next's `ApiResult` shape, built with `App\Helpers\ApiResult`:
 
 ```php
-// Next style: ['status' => 1|0, 'message' => ..., 'data' => [...], 'http_status' => 200]
-// This app's service style: ['ok' => bool, 'message' => ..., ...extra]
-//   ok    -> status (1/0)
-//   extra -> merged into data
-return Response::sendResult($result);
+return ApiResult::success('Note created successfully', ['id' => $note->id]);
+// ['http_status' => 200, 'status' => 1, 'message' => 'Note created successfully', 'data' => ['id' => 5]]
+
+return ApiResult::failure('Note not found');            // HTTP 200, status 0: the page handles it
+return ApiResult::failure('Invalid code', [], 422);     // a real 4xx
 ```
+
+`Response::sendResult($result)` sends `http_status` as the HTTP code and `status`, `message`, `data` as the body. When a service must hand the controller something that is not for the browser (the `user` model after login, a session token), it goes in `data` and the controller strips it before responding, as Next's routes do.
 
 Extra headers: `Response::sendResultWithHeaders($result, ['X-Foo' => 'bar'])`. Cookies are queued instead (`SignedCookie::queueRaw()`) and attached by the framework.
 
@@ -276,7 +278,7 @@ php artisan route:list --path=auth
 
 1. **Route** in the module's `<module>_routes.php` (admin modules: relative to the admin group), with a throttle for public endpoints.
 2. **FormRequest** in the module's `Requests/`.
-3. **Service method** returning `['ok' => bool, 'message' => …]`, calling repositories.
+3. **Service method** returning `ApiResult::success(…)` / `ApiResult::failure(…)`, calling repositories.
 4. **Controller** maps that to `Response::sendResult()`.
 5. **View**: put `data-next` / `data-next-url` on the form or button.
 6. **Log** via `ActivityService` if security-relevant.

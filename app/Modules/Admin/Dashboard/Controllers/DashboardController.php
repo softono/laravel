@@ -16,13 +16,13 @@ class DashboardController extends Controller
 
     public function index()
     {
-        return view('modules.admin.dashboard.index', ['counts' => $this->dashboard->counts()]);
+        return view('modules.admin.dashboard.index', ['counts' => $this->dashboard->counts()['data']]);
     }
 
     public function chartUser(Request $request)
     {
         $request->validate(['type' => ['nullable', 'in:day,month,year']]);
 
-        return Response::sendData($this->dashboard->userChart((string) $request->input('type')));
+        return Response::sendResult($this->dashboard->userChart((string) $request->input('type')));
     }
 }

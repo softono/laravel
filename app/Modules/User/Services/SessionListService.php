@@ -3,6 +3,7 @@
 namespace App\Modules\User\Services;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
 use App\Helpers\ClientInfo;
 use App\Helpers\General;
 use App\Models\Auth\User;
@@ -40,8 +41,6 @@ class SessionListService
     /**
      * Signs a session out. Users may only end their own; a session cannot end itself,
      * because that is what logging out is for.
-     *
-     * @return array{ok: bool, message: string}
      */
     public function logout(Request $request, User $actor, string $sessionId, bool $anyUser = false): array
     {
@@ -50,36 +49,34 @@ class SessionListService
             : $this->userSessions->findForUser($actor->id, $sessionId);
 
         if (! $session) {
-            return ['ok' => false, 'message' => 'Session not found'];
+            return ApiResult::failure('Session not found');
         }
 
         if ($session->id === $this->currentSession()?->id) {
-            return ['ok' => false, 'message' => 'Cannot log out the current device'];
+            return ApiResult::failure('Cannot log out the current device');
         }
 
         $this->sessions->revokeSession($session);
         $this->activity->log($request, $actor->id, UserActivity::DEVICE_LOGGED_OUT, ['session_user_id' => $session->user_id]);
 
-        return ['ok' => true, 'message' => 'Device logged out successfully'];
+        return ApiResult::success('Device logged out successfully');
     }
 
     /**
      * Ends every session of the user but the one making the request.
-     *
-     * @return array{ok: bool, message: string, sessions_terminated?: int}
      */
     public function logoutOthers(Request $request, User $user): array
     {
         $current = $this->currentSession();
 
         if (! $current) {
-            return ['ok' => false, 'message' => 'Session not found'];
+            return ApiResult::failure('Session not found');
         }
 
         $count = $this->userSessions->revokeOthersForUser($user->id, $current->id);
         $this->activity->log($request, $user->id, UserActivity::DEVICE_LOGGED_OUT, ['sessions_terminated' => $count]);
 
-        return ['ok' => true, 'message' => 'All other sessions terminated successfully', 'sessions_terminated' => $count];
+        return ApiResult::success('All other sessions terminated successfully', ['sessions_terminated' => $count]);
     }
 
     protected function present(array $result, string $logoutRoute): array
@@ -97,7 +94,7 @@ class SessionListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 
     protected function currentSession(): ?UserSession

@@ -4,6 +4,7 @@ namespace App\Modules\Admin\Dashboard\Services;
 
 use App\Constants\UserRole;
 use App\Constants\UserStatus;
+use App\Helpers\ApiResult;
 use App\Repositories\Auth\UserRepository;
 use Carbon\CarbonImmutable;
 
@@ -11,22 +12,20 @@ class DashboardService
 {
     public function __construct(protected UserRepository $users) {}
 
-    /**
-     * @return array{total: int, active: int, inactive: int}
-     */
+    /** `data`: total, active and inactive end-user counts. */
     public function counts(): array
     {
-        return [
+        return ApiResult::success('', [
             'total' => $this->users->countByRole(UserRole::USER),
             'active' => $this->users->countByRole(UserRole::USER, UserStatus::ACTIVE),
             'inactive' => $this->users->countByRole(UserRole::USER, UserStatus::INACTIVE),
-        ];
+        ]);
     }
 
     /**
      * New end-user sign-ups per day (last 7 days) or per month (last 6 or 12).
      *
-     * @return array{label: string[], data: int[]}
+     * `data`: `label` (string[]) and `data` (int[]).
      */
     public function userChart(string $period): array
     {
@@ -55,6 +54,6 @@ class DashboardService
             $data[] = (int) ($counts[$at->format($key)] ?? 0);
         }
 
-        return ['label' => $labels, 'data' => $data];
+        return ApiResult::success('', ['label' => $labels, 'data' => $data]);
     }
 }

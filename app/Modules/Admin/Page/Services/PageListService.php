@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Page\Services;
 
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Repositories\PageRepository;
 
@@ -25,6 +26,6 @@ class PageListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 }

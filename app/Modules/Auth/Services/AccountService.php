@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Services;
 use App\Constants\UserActivity;
 use App\Constants\UserRole;
 use App\Constants\UserStatus;
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Repositories\Auth\UserAccountRepository;
@@ -28,14 +29,16 @@ class AccountService
     ) {}
 
     /**
-     * @return array{ok: bool, message: ?string, requires_verification: bool, user: ?User}
+     * `data` carries the new `user` model for the controller; it is never sent to the client as is.
+     *
+     * @return array{http_status: int, status: int, message: string, data: array{user?: User, requires_verification?: bool}}
      */
     public function register(Request $request, array $data): array
     {
         $email = strtolower(trim($data['email']));
 
         if ($this->users->findByEmail($email)) {
-            return ['ok' => false, 'message' => 'Email already registered', 'requires_verification' => false, 'user' => null];
+            return ApiResult::failure('Email already registered');
         }
 
         $user = $this->users->create([
@@ -63,10 +66,10 @@ class AccountService
         if (config('setting.user_email_verify') == 1) {
             $this->sendOtp('verify', $user);
 
-            return ['ok' => true, 'message' => null, 'requires_verification' => true, 'user' => $user];
+            return ApiResult::success('', ['user' => $user, 'requires_verification' => true]);
         }
 
-        return ['ok' => true, 'message' => 'Registered successfully', 'requires_verification' => false, 'user' => $user];
+        return ApiResult::success('Registered successfully', ['user' => $user, 'requires_verification' => false]);
     }
 
     public function sendOtp(string $purpose, User $user): void
@@ -88,27 +91,24 @@ class AccountService
         ]);
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function verifyAccount(Request $request, string $email, string $otp): array
     {
         $result = $this->otp->verify('verify', $email, $otp);
 
-        if (! $result['valid']) {
-            return ['ok' => false, 'message' => $result['message']];
+        if (! $result['status']) {
+            return $result;
         }
 
         $user = $this->users->findByEmail($email);
 
         if (! $user) {
-            return ['ok' => false, 'message' => 'Invalid or expired OTP'];
+            return ApiResult::failure('Invalid or expired OTP', [], 422);
         }
 
         $this->users->update($user, ['email_verified' => true]);
         $this->sessions->invalidateUserCache($user->id);
 
-        return ['ok' => true, 'message' => 'Account verified successfully'];
+        return ApiResult::success('Account verified successfully');
     }
 
     /**
@@ -123,24 +123,21 @@ class AccountService
             $this->sendOtp('reset', $user);
         }
 
-        return ['ok' => true, 'message' => 'If the email exists, an OTP has been sent'];
+        return ApiResult::success('If the email exists, an OTP has been sent');
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function resetPassword(Request $request, string $email, string $otp, string $newPassword): array
     {
         $result = $this->otp->verify('reset', $email, $otp);
 
-        if (! $result['valid']) {
-            return ['ok' => false, 'message' => $result['message']];
+        if (! $result['status']) {
+            return $result;
         }
 
         $user = $this->users->findByEmail($email);
 
         if (! $user) {
-            return ['ok' => false, 'message' => 'Invalid or expired OTP'];
+            return ApiResult::failure('Invalid or expired OTP', [], 422);
         }
 
         $account = $this->userAccounts->findCredentialAccount($user->id);
@@ -159,6 +156,42 @@ class AccountService
         $this->sessions->revokeAllForUser($user->id);
         $this->activity->log($request, $user->id, UserActivity::PASSWORD_CHANGED);
 
-        return ['ok' => true, 'message' => 'Password reset successfully'];
+        return ApiResult::success('Password reset successfully');
+    }
+
+    /** The signed-in user as the page may see them, or a 401 failure for a guest. */
+    public function sessionInfo(?User $user): array
+    {
+        if (! $user) {
+            return ApiResult::failure('Not authenticated', [], 401);
+        }
+
+        return ApiResult::success('', [
+            'id' => $user->id,
+            'email' => $user->email,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'role' => $user->role,
+            'email_verified' => $user->email_verified,
+            'two_factor_enabled' => $user->two_factor_enabled,
+        ]);
+    }
+
+    /** `data.accounts`: the sign-in methods linked to the user (`credential` = a password is set). */
+    public function linkedAccounts(User $user): array
+    {
+        return ApiResult::success('', ['accounts' => $this->userAccounts->providersFor($user->id)]);
+    }
+
+    /** Enumeration-safe: the same answer whether or not the email exists or needs verifying. */
+    public function resendVerification(string $email): array
+    {
+        $user = $this->users->findByEmail(strtolower(trim($email)));
+
+        if ($user && ! $user->email_verified) {
+            $this->sendOtp('verify', $user);
+        }
+
+        return ApiResult::success('If the email exists, a new OTP has been sent');
     }
 }

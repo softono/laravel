@@ -2,11 +2,11 @@
 
 namespace App\Modules\Admin\Page\Controllers;
 
-use App\Helpers\General;
 use App\Helpers\Response;
 use App\Modules\Admin\Controllers\Controller;
 use App\Modules\Admin\Page\Requests\SavePageRequest;
 use App\Modules\Admin\Page\Services\PageListService;
+use App\Modules\Admin\Page\Services\PageService;
 use App\Repositories\PageRepository;
 use Illuminate\Http\Request;
 
@@ -15,6 +15,7 @@ class PageController extends Controller
     public function __construct(
         protected PageRepository $pages,
         protected PageListService $list,
+        protected PageService $service,
     ) {
         parent::__construct();
     }
@@ -26,7 +27,7 @@ class PageController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->list->datatable($request->all()));
+        return Response::sendResult($this->list->datatable($request->all()));
     }
 
     public function update(Request $request)
@@ -42,23 +43,14 @@ class PageController extends Controller
 
     public function save(SavePageRequest $request)
     {
-        $page = $this->pages->findById($request->integer('id'));
-        $this->pages->update($page, $request->safe()->except('id'));
-
-        return Response::sendMessage('Page saved successfully');
+        return Response::sendResult($this->service->save($request->validated()));
     }
 
     /** Image uploads from the rich-text editor. */
-    public function saveImage(Request $request, General $general)
+    public function saveImage(Request $request)
     {
-        $request->validate(['upload' => ['required', $general->fileRules('image')]]);
+        $request->validate(['upload' => ['required', $this->general->fileRules('image')]]);
 
-        $upload = $general->uploadFile($request->file('upload'), 'content');
-
-        if (! $upload['status']) {
-            return Response::sendMessage($upload['message'], 0);
-        }
-
-        return Response::sendData(['file_name' => $upload['file_name'], 'file_url' => $general->getFileUrl($upload['file_name'], 'content')]);
+        return Response::sendResult($this->service->uploadImage($request->file('upload')));
     }
 }

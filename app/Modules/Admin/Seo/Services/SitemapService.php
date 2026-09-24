@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Seo\Services;
 
+use App\Helpers\ApiResult;
 use App\Modules\Admin\Seo\Requests\SaveSeoRequest;
 use App\Repositories\SeoMetaRepository;
 
@@ -10,7 +11,8 @@ class SitemapService
 {
     public function __construct(protected SeoMetaRepository $seo) {}
 
-    public function generate(): int
+    /** `data.count`: how many URLs were written. */
+    public function generate(): array
     {
         $entries = $this->seo->sitemapEntries()
             ->reject(fn ($entry) => str_contains($entry->url, '*'))
@@ -23,6 +25,6 @@ class SitemapService
 
         file_put_contents(public_path('sitemap.xml'), view('modules.admin.seo.sitemap', ['entries' => $entries])->render());
 
-        return $entries->count();
+        return ApiResult::success("Sitemap updated with {$entries->count()} URLs", ['count' => $entries->count()]);
     }
 }

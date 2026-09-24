@@ -2,11 +2,11 @@
 
 namespace App\Modules\Admin\EmailTemplate\Controllers;
 
-use App\Helpers\General;
 use App\Helpers\Response;
 use App\Modules\Admin\Controllers\Controller;
 use App\Modules\Admin\EmailTemplate\Requests\SaveEmailTemplateRequest;
 use App\Modules\Admin\EmailTemplate\Services\EmailTemplateListService;
+use App\Modules\Admin\EmailTemplate\Services\EmailTemplateManagementService;
 use App\Repositories\EmailTemplateRepository;
 use App\Services\EmailTemplateService;
 use Illuminate\Http\Request;
@@ -16,6 +16,7 @@ class EmailTemplateController extends Controller
     public function __construct(
         protected EmailTemplateRepository $templates,
         protected EmailTemplateListService $list,
+        protected EmailTemplateManagementService $service,
     ) {
         parent::__construct();
     }
@@ -27,7 +28,7 @@ class EmailTemplateController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->list->datatable($request->all()));
+        return Response::sendResult($this->list->datatable($request->all()));
     }
 
     public function update(Request $request)
@@ -43,10 +44,7 @@ class EmailTemplateController extends Controller
 
     public function save(SaveEmailTemplateRequest $request)
     {
-        $template = $this->templates->findById($request->integer('id'));
-        $this->templates->update($template, $request->safe()->except('id'));
-
-        return Response::sendMessage('Email template saved successfully');
+        return Response::sendResult($this->service->save($request->validated()));
     }
 
     /** The template wrapped in the shared email layout, as recipients see it (placeholders unfilled). */
@@ -60,16 +58,10 @@ class EmailTemplateController extends Controller
     }
 
     /** Image uploads from the rich-text editor. */
-    public function saveImage(Request $request, General $general)
+    public function saveImage(Request $request)
     {
-        $request->validate(['upload' => ['required', $general->fileRules('image')]]);
+        $request->validate(['upload' => ['required', $this->general->fileRules('image')]]);
 
-        $upload = $general->uploadFile($request->file('upload'), 'email');
-
-        if (! $upload['status']) {
-            return Response::sendMessage($upload['message'], 0);
-        }
-
-        return Response::sendData(['file_name' => $upload['file_name'], 'file_url' => $general->getFileUrl($upload['file_name'], 'email')]);
+        return Response::sendResult($this->service->uploadImage($request->file('upload')));
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Modules\Admin\Blog\Controllers;
 
 use App\Constants\BlogCategory;
-use App\Helpers\General;
 use App\Helpers\Response;
 use App\Modules\Admin\Blog\Requests\SaveBlogRequest;
 use App\Modules\Admin\Blog\Services\BlogListService;
@@ -29,7 +28,7 @@ class BlogController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->list->datatable($request->all()));
+        return Response::sendResult($this->list->datatable($request->all()));
     }
 
     public function create()
@@ -50,35 +49,19 @@ class BlogController extends Controller
 
     public function save(SaveBlogRequest $request)
     {
-        $this->service->save($request->validated());
-
-        return Response::sendMessage('Blog saved successfully');
+        return Response::sendResult($this->service->save($request->validated()));
     }
 
     public function delete(Request $request)
     {
-        $blog = $this->blogs->findById((string) $request->input('id'));
-
-        if (! $blog) {
-            return Response::sendMessage('No data found', 0);
-        }
-
-        $this->service->delete($blog);
-
-        return Response::sendMessage('Blog deleted successfully');
+        return Response::sendResult($this->service->delete((string) $request->input('id')));
     }
 
     /** Image uploads from the rich-text editor. */
-    public function saveImage(Request $request, General $general)
+    public function saveImage(Request $request)
     {
-        $request->validate(['upload' => ['required', $general->fileRules('image')]]);
+        $request->validate(['upload' => ['required', $this->general->fileRules('image')]]);
 
-        $upload = $general->uploadFile($request->file('upload'), 'blog');
-
-        if (! $upload['status']) {
-            return Response::sendMessage($upload['message'], 0);
-        }
-
-        return Response::sendData(['file_name' => $upload['file_name'], 'file_url' => $general->getFileUrl($upload['file_name'], 'blog')]);
+        return Response::sendResult($this->service->uploadImage($request->file('upload')));
     }
 }

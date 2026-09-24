@@ -47,16 +47,16 @@ class LoginController extends Controller
             requireAdmin: true,
         );
 
-        if (! $result['ok']) {
-            return Response::sendMessage($result['message'], 0, $result['data']);
+        if (! $result['status']) {
+            return Response::sendResult($result);
         }
 
         /** @var User $user */
-        $user = $result['user'];
+        $user = $result['data']['user'];
         $remember = $request->boolean('remember');
 
-        if ($result['requiresTfa'] && ! app(DeviceService::class)->isTrusted($request, $user->id)) {
-            return app(TfaService::class)->startLoginChallenge($request, $user, $remember);
+        if ($result['data']['requires_tfa'] && ! app(DeviceService::class)->isTrusted($request, $user->id)) {
+            return Response::sendResult(app(TfaService::class)->startLoginChallenge($request, $user, $remember));
         }
 
         $session = $this->sessions->issue($request, $user->id, $remember);

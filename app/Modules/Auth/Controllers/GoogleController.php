@@ -26,11 +26,11 @@ class GoogleController extends Controller
     {
         $result = $this->oauth->handleCallback($request);
 
-        if (! $result['ok']) {
+        if (! $result['status']) {
             return redirect('/login?error='.urlencode($result['message']));
         }
 
-        $session = $this->sessions->issue($request, $result['user']->id, true);
+        $session = $this->sessions->issue($request, $result['data']['user']->id, true);
 
         SignedCookie::queueRaw('session_token', $session->token, config('auth_next.session_ttl_days.remember') * 86400);
 

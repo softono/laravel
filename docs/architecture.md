@@ -112,7 +112,7 @@ Rules:
 
 ### Services
 
-All business logic, in the owning module's `Services/` (or `app/Services/` when shared). Return either a **result array** — `['ok' => bool, 'message' => ?string, ...extra]` — that `Response::sendResult()` maps to the envelope, or a **`Response`** when the service must also attach cookies (`TfaService::verifyLoginChallenge()` issues a session cookie).
+All business logic, in the owning module's `Services/` (or `app/Services/` when shared). Every method returns the **`ApiResult` array** — `['http_status' => 200, 'status' => 1, 'message' => '', 'data' => [...]]`, built with `ApiResult::success()` / `ApiResult::failure()` — which the controller passes to `Response::sendResult()`. A service that must attach cookies queues them (`SignedCookie::queueRaw()`) and still returns the array (`TfaService::verifyLoginChallenge()`).
 
 Dependencies are constructor-injected, and services never call Eloquent directly:
 

@@ -24,9 +24,10 @@ class PrivateFileTest extends TestCase
 
     public function test_resolves_a_file_inside_the_private_disk(): void
     {
-        $path = (new PrivateFileService)->resolve(base64_encode($this->file));
+        $result = (new PrivateFileService)->resolve(base64_encode($this->file));
 
-        $this->assertSame(realpath(Storage::disk('local')->path($this->file)), $path);
+        $this->assertSame(1, $result['status']);
+        $this->assertSame(realpath(Storage::disk('local')->path($this->file)), $result['data']['path']);
     }
 
     public function test_refuses_traversal_and_bad_input(): void
@@ -34,11 +35,11 @@ class PrivateFileTest extends TestCase
         $service = new PrivateFileService;
 
         foreach (['../.env', 'phpunit-private/../../.env', '/etc/passwd', 'phpunit-private', 'missing.txt'] as $bad) {
-            $this->assertNull($service->resolve(base64_encode($bad)), $bad);
+            $this->assertSame(404, $service->resolve(base64_encode($bad))['http_status'], $bad);
         }
 
-        $this->assertNull($service->resolve('%%%'));
-        $this->assertNull($service->resolve(''));
+        $this->assertSame(0, $service->resolve('%%%')['status']);
+        $this->assertSame(0, $service->resolve('')['status']);
     }
 
     public function test_the_route_needs_a_session(): void

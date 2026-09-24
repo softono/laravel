@@ -18,31 +18,21 @@ class PasskeyController extends Controller
 
     public function loginOptions(Request $request)
     {
-        return Response::sendData($this->passkeys->loginOptions());
+        return Response::sendResult($this->passkeys->loginOptions());
     }
 
     public function loginVerify(Request $request)
     {
         $request->validate(['credential' => ['required', 'array']]);
 
-        $result = $this->passkeys->loginVerify($request, $request->input('credential'));
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendMessage($result['message']);
+        return Response::sendResult($this->passkeys->loginVerify($request, $request->input('credential')));
     }
 
     // --- Authenticated (account management) ---
 
     public function index(Request $request)
     {
-        $passkeys = $this->passkeys->list($request->user())
-            ->map(fn ($passkey) => $passkey->only(['id', 'name', 'device_type', 'backed_up', 'created_at']))
-            ->values();
-
-        return Response::sendData(['passkeys' => $passkeys]);
+        return Response::sendResult($this->passkeys->list($request->user()));
     }
 
     public function registerOptions(Request $request)
@@ -54,22 +44,18 @@ class PasskeyController extends Controller
     {
         $request->validate(['credential' => ['required', 'array']]);
 
-        $result = $this->passkeys->registerVerify(
+        return Response::sendResult($this->passkeys->registerVerify(
             $request,
             $request->user(),
             $request->input('credential'),
             $request->input('name'),
-        );
-
-        return Response::sendResult($result);
+        ));
     }
 
     public function destroy(Request $request)
     {
         $request->validate(['id' => ['required', 'string']]);
 
-        $result = $this->passkeys->delete($request, $request->user(), $request->string('id'));
-
-        return Response::sendResult($result);
+        return Response::sendResult($this->passkeys->delete($request, $request->user(), $request->string('id')));
     }
 }

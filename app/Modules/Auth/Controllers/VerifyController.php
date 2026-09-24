@@ -5,7 +5,6 @@ namespace App\Modules\Auth\Controllers;
 use App\Helpers\Response;
 use App\Helpers\SafeRedirect;
 use App\Http\Controllers\Controller;
-use App\Models\Auth\User;
 use App\Modules\Auth\Requests\VerifyAccountRequest;
 use App\Modules\Auth\Services\AccountService;
 use Illuminate\Http\Request;
@@ -33,17 +32,11 @@ class VerifyController extends Controller
 
     public function verifyAccount(VerifyAccountRequest $request)
     {
-        $result = $this->account->verifyAccount(
+        return Response::sendResult($this->account->verifyAccount(
             $request,
             $request->string('email'),
             $request->string('otp'),
-        );
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendMessage($result['message']);
+        ));
     }
 
     /**
@@ -59,12 +52,6 @@ class VerifyController extends Controller
             'purpose' => ['nullable', 'in:verify'],
         ]);
 
-        $user = User::where('email', strtolower(trim($request->string('email'))))->first();
-
-        if ($user && ! $user->email_verified) {
-            $this->account->sendOtp('verify', $user);
-        }
-
-        return Response::sendMessage('If the email exists, a new OTP has been sent');
+        return Response::sendResult($this->account->resendVerification($request->string('email')));
     }
 }

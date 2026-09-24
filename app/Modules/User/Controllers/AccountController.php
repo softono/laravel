@@ -84,7 +84,7 @@ class AccountController extends Controller
 
     public function sessionList(Request $request)
     {
-        return response()->json($this->sessionList->forUser($request, auth()->user(), $request->all(), $this->prefix.'account/session-logout'));
+        return Response::sendResult($this->sessionList->forUser($request, auth()->user(), $request->all(), $this->prefix.'account/session-logout'));
     }
 
     public function sessionLogout(Request $request)
@@ -108,7 +108,7 @@ class AccountController extends Controller
 
     public function userActivityList(Request $request)
     {
-        return response()->json($this->activityList->forUser(auth()->user(), $request->all()));
+        return Response::sendResult($this->activityList->forUser(auth()->user(), $request->all()));
     }
 
     public function deactivate(Request $request)

@@ -18,14 +18,12 @@ class TfaController extends Controller
 
     public function methods(Request $request)
     {
-        return Response::sendData(['methods' => $this->tfa->getChallengeMethods($request)]);
+        return Response::sendResult($this->tfa->getChallengeMethods($request));
     }
 
     public function sendOtp(Request $request)
     {
-        $this->tfa->sendLoginChallengeOtp($request);
-
-        return Response::sendMessage('A verification code has been sent to your email');
+        return Response::sendResult($this->tfa->sendLoginChallengeOtp($request));
     }
 
     public function verify(Request $request)
@@ -36,31 +34,26 @@ class TfaController extends Controller
             'trust_device' => ['nullable', 'boolean'],
         ]);
 
-        return $this->tfa->verifyLoginChallenge(
+        return Response::sendResult($this->tfa->verifyLoginChallenge(
             $request,
             $request->string('method'),
             $request->string('code'),
             $request->boolean('trust_device'),
-        );
+        ));
     }
 
     // --- Authenticated account-management endpoints ---
 
     public function status(Request $request)
     {
-        return Response::sendData($this->tfa->getStatus($request->user()));
+        return Response::sendResult($this->tfa->getStatus($request->user()));
     }
 
     public function enable(Request $request)
     {
         $request->validate(['password' => ['required', 'string']]);
-        $result = $this->tfa->enable($request, $request->user(), $request->string('password'));
 
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
+        return Response::sendResult($this->tfa->enable($request, $request->user(), $request->string('password')));
     }
 
     public function verifySetup(Request $request)
@@ -70,47 +63,23 @@ class TfaController extends Controller
             'code' => ['required', 'string'],
         ]);
 
-        $result = $this->tfa->verifySetup($request, $request->user(), $request->string('method'), $request->string('code'));
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
+        return Response::sendResult($this->tfa->verifySetup($request, $request->user(), $request->string('method'), $request->string('code')));
     }
 
     public function disable(Request $request)
     {
         $request->validate(['password' => ['required', 'string']]);
 
-        $result = $this->tfa->disable($request, $request->user(), $request->string('password'));
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
+        return Response::sendResult($this->tfa->disable($request, $request->user(), $request->string('password')));
     }
 
     public function removeAuthenticator(Request $request)
     {
-        $result = $this->tfa->removeAuthenticator($request, $request->user());
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
+        return Response::sendResult($this->tfa->removeAuthenticator($request, $request->user()));
     }
 
     public function regenerateBackupCodes(Request $request)
     {
-        $result = $this->tfa->regenerateBackupCodes($request, $request->user());
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendData(collect($result)->except(['ok', 'message'])->all(), $result['message']);
+        return Response::sendResult($this->tfa->regenerateBackupCodes($request, $request->user()));
     }
 }

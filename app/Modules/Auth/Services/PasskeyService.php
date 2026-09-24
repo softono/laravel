@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Services;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
 use App\Helpers\SignedCookie;
 use App\Models\Auth\User;
 use App\Models\Auth\UserPasskey;
@@ -13,6 +14,7 @@ use Cose\Algorithm\Manager as AlgorithmManager;
 use Cose\Algorithm\Signature\ECDSA\ES256;
 use Cose\Algorithm\Signature\RSA\RS256;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\Uid\Uuid;
 use Webauthn\AttestationStatement\AttestationStatementSupportManager;
 use Webauthn\AttestationStatement\NoneAttestationStatementSupport;
@@ -107,14 +109,11 @@ class PasskeyService
         $handle = app(ChallengeService::class)->createWebAuthn(SignedCookie::base64UrlEncode($challenge), $user->id);
         SignedCookie::queue('wac', $handle, (int) config('auth_next.webauthn_ttl'));
 
-        return [
+        return ApiResult::success('', [
             'options' => json_decode($this->serializer()->serialize($options, 'json'), true),
-        ];
+        ]);
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function registerVerify(Request $request, User $user, array $credentialJson, ?string $name = null): array
     {
         $challengeHandle = $request->cookie(SignedCookie::name('wac'));
@@ -122,13 +121,13 @@ class PasskeyService
         $challengeData = $signed ? app(ChallengeService::class)->consumeWebAuthn($signed) : null;
 
         if (! $challengeData || $challengeData['user_id'] !== $user->id) {
-            return ['ok' => false, 'message' => 'Registration session expired. Please try again.'];
+            return ApiResult::failure('Registration session expired. Please try again.', [], 422);
         }
 
         $credential = $this->serializer()->deserialize(json_encode($credentialJson), PublicKeyCredential::class, 'json');
 
         if (! $credential->response instanceof AuthenticatorAttestationResponse) {
-            return ['ok' => false, 'message' => 'Invalid registration response.'];
+            return ApiResult::failure('Invalid registration response.', [], 422);
         }
 
         $options = PublicKeyCredentialCreationOptions::create(
@@ -146,7 +145,9 @@ class PasskeyService
                 $this->rpId(),
             );
         } catch (\Throwable $e) {
-            return ['ok' => false, 'message' => 'Passkey registration failed: '.$e->getMessage()];
+            Log::warning('Passkey ceremony failed', ['error' => $e->getMessage()]);
+
+            return ApiResult::failure('Passkey registration failed', [], 422);
         }
 
         $this->userPasskeys->create([
@@ -164,12 +165,17 @@ class PasskeyService
 
         $this->activity->log($request, $user->id, UserActivity::PASSKEY_ADDED);
 
-        return ['ok' => true, 'message' => 'Passkey added successfully'];
+        return ApiResult::success('Passkey added successfully');
     }
 
-    public function list(User $user)
+    public function list(User $user): array
     {
-        return $this->userPasskeys->getByUserId($user->id);
+        $passkeys = $this->userPasskeys->getByUserId($user->id)
+            ->map(fn (UserPasskey $passkey) => $passkey->only(['id', 'name', 'device_type', 'backed_up', 'created_at']))
+            ->values()
+            ->all();
+
+        return ApiResult::success('', ['passkeys' => $passkeys]);
     }
 
     public function delete(Request $request, User $user, string $id): array
@@ -177,18 +183,17 @@ class PasskeyService
         $passkey = UserPasskey::where('user_id', $user->id)->where('id', $id)->first();
 
         if (! $passkey) {
-            return ['ok' => false, 'message' => 'Passkey not found'];
+            return ApiResult::failure('Passkey not found');
         }
 
         $this->userPasskeys->delete($passkey);
         $this->activity->log($request, $user->id, UserActivity::PASSKEY_DELETED);
 
-        return ['ok' => true, 'message' => 'Passkey removed'];
+        return ApiResult::success('Passkey removed');
     }
 
     // --- Login (public - discoverable credentials, no email needed) -------------------
 
-    /** @return array{options: array} */
     public function loginOptions(): array
     {
         $challenge = random_bytes(32);
@@ -203,12 +208,9 @@ class PasskeyService
         $handle = app(ChallengeService::class)->createWebAuthn(SignedCookie::base64UrlEncode($challenge), null);
         SignedCookie::queue('wac', $handle, (int) config('auth_next.webauthn_ttl'));
 
-        return ['options' => json_decode($this->serializer()->serialize($options, 'json'), true)];
+        return ApiResult::success('', ['options' => json_decode($this->serializer()->serialize($options, 'json'), true)]);
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function loginVerify(Request $request, array $credentialJson): array
     {
         $challengeHandle = $request->cookie(SignedCookie::name('wac'));
@@ -216,26 +218,26 @@ class PasskeyService
         $challengeData = $signed ? app(ChallengeService::class)->consumeWebAuthn($signed) : null;
 
         if (! $challengeData) {
-            return ['ok' => false, 'message' => 'Login session expired. Please try again.'];
+            return ApiResult::failure('Login session expired. Please try again.', [], 422);
         }
 
         $credential = $this->serializer()->deserialize(json_encode($credentialJson), PublicKeyCredential::class, 'json');
 
         if (! $credential->response instanceof AuthenticatorAssertionResponse) {
-            return ['ok' => false, 'message' => 'Invalid passkey response.'];
+            return ApiResult::failure('Invalid passkey response.', [], 422);
         }
 
         $credentialId = SignedCookie::base64UrlEncode($credential->rawId);
         $passkey = $this->userPasskeys->findByCredentialId($credentialId);
 
         if (! $passkey) {
-            return ['ok' => false, 'message' => 'This passkey is not registered.'];
+            return ApiResult::failure('This passkey is not registered.', [], 422);
         }
 
         $user = $this->users->findById($passkey->user_id);
 
         if (! $user || ! $user->isActive()) {
-            return ['ok' => false, 'message' => 'Account is disabled'];
+            return ApiResult::failure('Account is disabled');
         }
 
         $record = new CredentialRecord(
@@ -268,7 +270,9 @@ class PasskeyService
                 $user->id,
             );
         } catch (\Throwable $e) {
-            return ['ok' => false, 'message' => 'Passkey verification failed: '.$e->getMessage()];
+            Log::warning('Passkey ceremony failed', ['error' => $e->getMessage()]);
+
+            return ApiResult::failure('Passkey verification failed', [], 422);
         }
 
         $passkey->update(['counter' => $updated->counter]);
@@ -279,6 +283,6 @@ class PasskeyService
         SignedCookie::queueRaw('session_token', $session->token, config('auth_next.session_ttl_days.remember') * 86400);
         SignedCookie::forget('wac');
 
-        return ['ok' => true, 'message' => 'Logged in successfully'];
+        return ApiResult::success('Logged in successfully');
     }
 }

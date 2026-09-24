@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\EmailTemplate\Services;
 
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Repositories\EmailTemplateRepository;
 
@@ -24,6 +25,6 @@ class EmailTemplateListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 }

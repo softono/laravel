@@ -3,6 +3,7 @@
 namespace App\Modules\User\Services;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
 use App\Helpers\ClientInfo;
 use App\Helpers\General;
 use App\Models\Auth\User;
@@ -39,6 +40,6 @@ class ActivityListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 }

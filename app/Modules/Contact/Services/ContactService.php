@@ -2,6 +2,7 @@
 
 namespace App\Modules\Contact\Services;
 
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Repositories\ContactMessageRepository;
@@ -17,16 +18,15 @@ class ContactService
      * Stores the message and notifies the admin.
      *
      * @param  array{name: string, email: string, subject: string, message: string}  $data
-     * @return array{ok: bool, message: string}
      */
     public function submit(array $data, ?User $user): array
     {
         if ($this->general->recaptchaFails()) {
-            return ['ok' => false, 'message' => 'reCAPTCHA verification failed'];
+            return ApiResult::failure('reCAPTCHA verification failed');
         }
 
         if ($this->messages->duplicateExists($data['email'], $data['subject'], $data['message'])) {
-            return ['ok' => false, 'message' => 'You have already submitted this message'];
+            return ApiResult::failure('You have already submitted this message');
         }
 
         $this->messages->create([
@@ -38,6 +38,6 @@ class ContactService
 
         $this->general->sendEmail((string) config('setting.admin_email'), 'admin_contact', $data);
 
-        return ['ok' => true, 'message' => 'Thank you for contacting us. We will get back to you soon.'];
+        return ApiResult::success('Thank you for contacting us. We will get back to you soon.');
     }
 }

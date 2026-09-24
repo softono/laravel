@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Services;
 
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Repositories\Auth\UserRepository;
@@ -38,6 +39,6 @@ class AccountListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 }

@@ -22,7 +22,7 @@ class DeviceController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->sessions->all($request->all()));
+        return Response::sendResult($this->sessions->all($request->all()));
     }
 
     public function logout(Request $request)

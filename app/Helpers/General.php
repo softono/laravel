@@ -385,7 +385,7 @@ class General
      * @param  int  $type  The file type identifier.
      * @param  string|null  $subDir  Optional subdirectory under the type's path.
      * @param  string  $name  Optional name for the uploaded file.
-     * @return array
+     * @return array{http_status: int, status: int, message: string, data: array<string, mixed>} `data`: file_name, file_type, size, name, extension
      */
     public function uploadFile($file, $type = 'profile', $subDir = '', $name = '')
     {
@@ -404,12 +404,12 @@ class General
             }
             $fileResult = Storage::putFileAs($fileDir.$subDir, $file, $name);
             if ($fileResult) {
-                return ['status' => 1, 'message' => 'File uploaded successfully', 'file_name' => trim(str_replace($fileDir, '', $fileResult), '/'), 'file_type' => $file->getClientMimeType(), 'size' => $file->getSize(), 'name' => $file->getClientOriginalName(), 'extension' => $file->getClientOriginalExtension()];
+                return ApiResult::success('File uploaded successfully', ['file_name' => trim(str_replace($fileDir, '', $fileResult), '/'), 'file_type' => $file->getClientMimeType(), 'size' => $file->getSize(), 'name' => $file->getClientOriginalName(), 'extension' => $file->getClientOriginalExtension()]);
             } else {
-                return ['status' => 0, 'message' => 'File upload failed'];
+                return ApiResult::failure('File upload failed');
             }
         } catch (\Exception $e) {
-            return ['status' => 0, 'message' => $e->getMessage()];
+            return ApiResult::failure($e->getMessage());
         }
     }
 

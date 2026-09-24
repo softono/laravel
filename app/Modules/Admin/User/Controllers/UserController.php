@@ -40,7 +40,7 @@ class UserController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->list->datatable(auth()->user(), $request->all(), UserRole::USER, 'admin/user'));
+        return Response::sendResult($this->list->datatable(auth()->user(), $request->all(), UserRole::USER, 'admin/user'));
     }
 
     public function create()
@@ -103,14 +103,10 @@ class UserController extends Controller
 
     public function sendMail(SendMailRequest $request)
     {
-        $recipient = $this->users->findByIdAndRole($request->string('user_id'), UserRole::USER);
-
-        if (! $recipient) {
-            return Response::sendMessage('No data found', 0);
-        }
-
-        $this->mail->send($recipient, $request->string('subject'), $request->string('message'));
-
-        return Response::sendMessage('Email sent successfully');
+        return Response::sendResult($this->mail->send(
+            $request->string('user_id'),
+            $request->string('subject'),
+            $request->string('message'),
+        ));
     }
 }

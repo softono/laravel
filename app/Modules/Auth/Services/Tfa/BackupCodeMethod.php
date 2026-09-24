@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Services\Tfa;
 
+use App\Helpers\ApiResult;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -30,7 +31,7 @@ class BackupCodeMethod
 
     /**
      * @param  string  $hashedJson  JSON array of hashed codes
-     * @return array{valid: bool, remaining: ?string} remaining is the updated JSON to persist
+     *                              `data.remaining` is the updated JSON of hashed codes to persist.
      */
     public function verify(string $hashedJson, string $code): array
     {
@@ -41,10 +42,10 @@ class BackupCodeMethod
             if (Hash::check($code, $hash)) {
                 unset($hashes[$i]);
 
-                return ['valid' => true, 'remaining' => json_encode(array_values($hashes))];
+                return ApiResult::success('', ['remaining' => json_encode(array_values($hashes))]);
             }
         }
 
-        return ['valid' => false, 'remaining' => null];
+        return ApiResult::failure('Invalid backup code', [], 422);
     }
 }

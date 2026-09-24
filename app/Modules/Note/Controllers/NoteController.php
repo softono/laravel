@@ -22,7 +22,7 @@ class NoteController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->notes->datatable(auth()->user(), $request->all()));
+        return Response::sendResult($this->notes->datatable(auth()->user(), $request->all()));
     }
 
     public function save(SaveNoteRequest $request)

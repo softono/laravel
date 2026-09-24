@@ -25,16 +25,14 @@ class Response
     }
 
     /**
-     * Maps a service result to the envelope. Accepts both shapes in use:
-     *  - Next-style `['status' => 1|0, 'message', 'data', 'http_status']`
-     *  - this app's service style `['ok' => bool, 'message', ...extra]`, where
-     *    `ok` becomes `status` and every extra key is merged into `data`.
+     * Sends a service result (see ApiResult): `http_status` becomes the HTTP code,
+     * `status`, `message` and `data` the body.
      *
-     * @param  array<string, mixed>  $result
+     * @param  array{http_status?: int, status?: int, message?: string, data?: mixed}  $result
      */
     public static function sendResult(array $result = [])
     {
-        return self::sendResponse($result['http_status'] ?? 200, self::toEnvelope($result));
+        return self::sendResponse($result['http_status'] ?? 200, $result);
     }
 
     public static function sendMessage(string $message = 'Ok', int $status = 1, array $data = [])
@@ -66,22 +64,5 @@ class Response
     public static function sendData(array $data, string $message = '')
     {
         return self::sendResponse(200, ['status' => 1, 'message' => $message, 'data' => $data]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $result
-     * @return array{status: int, message: string, data: mixed}
-     */
-    protected static function toEnvelope(array $result): array
-    {
-        $status = $result['status'] ?? (array_key_exists('ok', $result) ? (int) (bool) $result['ok'] : 1);
-
-        $extra = array_diff_key($result, array_flip(['ok', 'status', 'message', 'data', 'http_status']));
-        $data = $result['data'] ?? [];
-        if ($extra !== []) {
-            $data = array_merge(is_array($data) ? $data : [], $extra);
-        }
-
-        return ['status' => (int) $status, 'message' => (string) ($result['message'] ?? ''), 'data' => $data];
     }
 }

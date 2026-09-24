@@ -2,6 +2,7 @@
 
 namespace App\Modules\Note\Services;
 
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Repositories\NoteRepository;
@@ -25,14 +26,13 @@ class NoteService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 
     /**
      * Creates the note, or updates it when an id is given.
      *
      * @param  array{id?: ?int, title: string, note?: ?string}  $data
-     * @return array{ok: bool, message: string}
      */
     public function save(User $user, array $data): array
     {
@@ -41,33 +41,30 @@ class NoteService
         if (empty($data['id'])) {
             $this->notes->create($fields + ['user_id' => $user->id]);
 
-            return ['ok' => true, 'message' => 'Note created successfully'];
+            return ApiResult::success('Note created successfully');
         }
 
         $note = $this->notes->findForUser($user->id, $data['id']);
 
         if (! $note) {
-            return ['ok' => false, 'message' => 'Note not found'];
+            return ApiResult::failure('Note not found');
         }
 
         $this->notes->update($note, $fields);
 
-        return ['ok' => true, 'message' => 'Note updated successfully'];
+        return ApiResult::success('Note updated successfully');
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function delete(User $user, int|string $id): array
     {
         $note = $this->notes->findForUser($user->id, $id);
 
         if (! $note) {
-            return ['ok' => false, 'message' => 'Note not found'];
+            return ApiResult::failure('Note not found');
         }
 
         $this->notes->delete($note);
 
-        return ['ok' => true, 'message' => 'Note deleted successfully'];
+        return ApiResult::success('Note deleted successfully');
     }
 }

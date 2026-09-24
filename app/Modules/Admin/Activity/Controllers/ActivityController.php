@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Activity\Controllers;
 
+use App\Helpers\Response;
 use App\Modules\Admin\Controllers\Controller;
 use App\Modules\User\Services\ActivityListService;
 use Illuminate\Http\Request;
@@ -21,6 +22,6 @@ class ActivityController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->activities->all($request->all()));
+        return Response::sendResult($this->activities->all($request->all()));
     }
 }

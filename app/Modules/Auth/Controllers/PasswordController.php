@@ -29,29 +29,17 @@ class PasswordController extends Controller
 
     public function forgot(ForgotPasswordRequest $request)
     {
-        $result = $this->account->forgotPassword($request->string('email'));
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendMessage($result['message']);
+        return Response::sendResult($this->account->forgotPassword($request->string('email')));
     }
 
     public function reset(ResetPasswordRequest $request)
     {
-        $result = $this->account->resetPassword(
+        return Response::sendResult($this->account->resetPassword(
             $request,
             $request->string('email'),
             $request->string('otp'),
             (string) $request->input('password'),
-        );
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendMessage($result['message']);
+        ));
     }
 
     public function setPassword(Request $request)
@@ -61,9 +49,7 @@ class PasswordController extends Controller
             'confirm_password' => ['required', 'same:password'],
         ]);
 
-        $result = app(AuthService::class)->setPassword($request, $request->user(), (string) $request->input('password'));
-
-        return Response::sendResult($result);
+        return Response::sendResult(app(AuthService::class)->setPassword($request, $request->user(), (string) $request->input('password')));
     }
 
     public function changePassword(Request $request)
@@ -74,19 +60,11 @@ class PasswordController extends Controller
             'confirm_password' => ['required', 'same:password'],
         ]);
 
-        $user = $request->user();
-
-        $result = app(AuthService::class)->changePassword(
+        return Response::sendResult(app(AuthService::class)->changePassword(
             $request,
-            $user,
+            $request->user(),
             (string) $request->input('current_password'),
             (string) $request->input('password'),
-        );
-
-        if (! $result['ok']) {
-            return Response::sendError(422, $result['message']);
-        }
-
-        return Response::sendMessage($result['message']);
+        ));
     }
 }

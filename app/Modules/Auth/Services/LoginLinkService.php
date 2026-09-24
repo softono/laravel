@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Services;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
 use App\Helpers\ClientInfo;
 use App\Helpers\General;
 use App\Models\Auth\User;
@@ -31,7 +32,9 @@ class LoginLinkService
     ) {}
 
     /**
-     * @return array{request_id: string, expires_at: string}
+     * `data`: request_id, expires_at, poll_token, code.
+     *
+     * @return array{http_status: int, status: int, message: string, data: array<string, string>}
      */
     public function start(Request $request, string $email, bool $remember, bool $trustDevice): array
     {
@@ -44,24 +47,25 @@ class LoginLinkService
         // response shape must not reveal whether the email exists, so even
         // the code field must be populated).
         if (! $user) {
-            return [
+            return ApiResult::success('Login link sent', [
                 'request_id' => (string) Str::uuid(),
                 'expires_at' => $expiresAt->toIso8601String(),
+                'poll_token' => bin2hex(random_bytes(32)),
                 'code' => str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT),
-            ];
+            ]);
         }
 
-        return $this->createLink($request, $user, [
+        return ApiResult::success('Login link sent', $this->createLink($request, $user, [
             'purpose' => 'signin',
             'remember' => $remember,
             'trust_device' => $trustDevice,
-        ]);
+        ]));
     }
 
     /**
      * Sends a login link as the second factor of a pending 2FA challenge.
      *
-     * @return array{ok: bool, message?: string, request_id?: string, expires_at?: string, poll_token?: string, code?: string}
+     * @return array{http_status: int, status: int, message: string, data: array<string, string>}
      */
     public function startTfa(Request $request, string $tfaHandle, bool $trustDevice): array
     {
@@ -69,15 +73,15 @@ class LoginLinkService
         $user = $pending ? $this->users->findById($pending['user_id']) : null;
 
         if (! $user) {
-            return ['ok' => false, 'message' => 'Challenge expired'];
+            return ApiResult::failure('Challenge expired', [], 401);
         }
 
-        return ['ok' => true] + $this->createLink($request, $user, [
+        return ApiResult::success('Login link sent', $this->createLink($request, $user, [
             'purpose' => 'tfa',
             'remember' => $pending['remember'],
             'trust_device' => $trustDevice,
             'tfa_handle' => $tfaHandle,
-        ]);
+        ]));
     }
 
     /**
@@ -122,14 +126,17 @@ class LoginLinkService
     }
 
     /**
-     * @return array{state: string, session_token?: string, remember?: bool, tfa?: bool}
+     * `data.state` is what the page sees. On approval `data` also carries `session_token`, `remember`
+     * and `tfa` for the controller, which sets the cookie and must strip them before responding.
+     *
+     * @return array{http_status: int, status: int, message: string, data: array<string, mixed>}
      */
     public function poll(Request $request, string $requestId, string $pollToken): array
     {
         $link = $this->userLoginLinks->findById($requestId);
 
         if (! $link || ! Hash::check($pollToken, $link->poll_token_hash)) {
-            return ['state' => 'pending'];
+            return ApiResult::success('', ['state' => 'pending']);
         }
 
         if ($link->expires_at->isPast() && $link->status === 'pending') {
@@ -137,15 +144,15 @@ class LoginLinkService
         }
 
         if ($link->status === 'pending') {
-            return ['state' => 'pending'];
+            return ApiResult::success('', ['state' => 'pending']);
         }
 
         if ($link->status === 'rejected') {
-            return ['state' => 'rejected'];
+            return ApiResult::success('', ['state' => 'rejected']);
         }
 
         if ($link->status === 'expired') {
-            return ['state' => 'expired'];
+            return ApiResult::success('', ['state' => 'expired']);
         }
 
         if ($link->status === 'approved') {
@@ -155,21 +162,21 @@ class LoginLinkService
 
             if ($claimed === 0) {
                 // Someone else's poll already claimed it in this same instant.
-                return ['state' => 'pending'];
+                return ApiResult::success('', ['state' => 'pending']);
             }
 
             $result = $this->finalizeApprovedLogin($request, $link->fresh());
 
             // The 2FA challenge this link was answering has expired or was already used.
             if (! $result) {
-                return ['state' => 'expired'];
+                return ApiResult::success('', ['state' => 'expired']);
             }
 
-            return ['state' => 'approved'] + $result;
+            return ApiResult::success('', ['state' => 'approved'] + $result);
         }
 
         // 'consumed' - already claimed by an earlier poll from this same browser.
-        return ['state' => 'pending'];
+        return ApiResult::success('', ['state' => 'pending']);
     }
 
     /** @return array{session_token: string, remember: bool, tfa: bool}|null null when a 2FA challenge is no longer pending */
@@ -193,15 +200,12 @@ class LoginLinkService
         return ['session_token' => $session->token, 'remember' => (bool) $link->remember, 'tfa' => $isTfa];
     }
 
-    /**
-     * @return array{ok: bool, device_name: ?string, code: ?string, email: ?string}
-     */
     public function approvalInfo(string $id, string $token): array
     {
         $link = $this->userLoginLinks->findById($id);
 
         if (! $link || ! Hash::check($token, $link->link_token_hash)) {
-            return ['ok' => false];
+            return ApiResult::failure('This login request is no longer valid', [], 400);
         }
 
         if ($link->expires_at->isPast() && $link->status === 'pending') {
@@ -209,46 +213,42 @@ class LoginLinkService
         }
 
         if ($link->status !== 'pending') {
-            return ['ok' => false, 'status' => $link->status];
+            return ApiResult::failure('This login request is no longer valid', [], 400);
         }
 
-        return [
-            'ok' => true,
+        return ApiResult::success('', [
             'device_name' => $link->device_name,
             'code' => $link->code,
             'email' => $link->email,
-        ];
+        ]);
     }
 
-    /**
-     * @return array{ok: bool, message: string}
-     */
     public function respond(string $id, string $token, string $action): array
     {
         $link = $this->userLoginLinks->findById($id);
 
         if (! $link || ! Hash::check($token, $link->link_token_hash)) {
-            return ['ok' => false, 'message' => 'This login request is no longer valid'];
+            return ApiResult::failure('This login request is no longer valid');
         }
 
         if ($link->expires_at->isPast()) {
             $link->update(['status' => 'expired']);
 
-            return ['ok' => false, 'message' => 'This login request has expired'];
+            return ApiResult::failure('This login request has expired');
         }
 
         if ($link->status !== 'pending') {
-            return ['ok' => false, 'message' => 'This login request has already been handled'];
+            return ApiResult::failure('This login request has already been handled');
         }
 
         if ($action === 'approve') {
             $link->update(['status' => 'approved', 'approved_at' => now()]);
 
-            return ['ok' => true, 'message' => 'Login approved'];
+            return ApiResult::success('Login approved');
         }
 
         $link->update(['status' => 'rejected']);
 
-        return ['ok' => true, 'message' => 'Login rejected'];
+        return ApiResult::success('Login rejected');
     }
 }

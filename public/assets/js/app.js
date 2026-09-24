@@ -203,13 +203,9 @@ const app = {
             dataType: "json",
             success: (response) => {
                 this.hideLoading();
-                this.resetCaptcha();
                 cb(response);
             },
-            error: (xhr, status, error) => {
-                this.resetCaptcha();
-                this.ajaxError(xhr, status, error);
-            },
+            error: this.ajaxError,
         });
     },
 
@@ -272,9 +268,13 @@ const app = {
             dataType: "json",
             success: (response) => {
                 this.hideLoading();
+                this.resetCaptcha();
                 cb(response);
             },
-            error: this.ajaxError,
+            error: (xhr, status, error) => {
+                this.resetCaptcha();
+                this.ajaxError(xhr, status, error);
+            },
         });
     },
 
@@ -1335,7 +1335,9 @@ function dataTableAjax(params) {
             url: params.url,
             type: params.method,
             data: data,
-            success: function (newData) {
+            success: function (response) {
+                // The endpoint answers with the {status, message, data} envelope; `data` is the DataTables payload.
+                const newData = response.data;
                 if (cachedData) {
                     delete newData.draw;
                     delete cachedData.draw;

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Seo\Services;
 
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Repositories\SeoMetaRepository;
 
@@ -27,6 +28,6 @@ class SeoListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 }

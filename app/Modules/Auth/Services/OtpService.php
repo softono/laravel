@@ -2,6 +2,7 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Helpers\ApiResult;
 use App\Models\Auth\UserVerification;
 use App\Repositories\Auth\UserVerificationRepository;
 use Illuminate\Support\Facades\DB;
@@ -38,9 +39,6 @@ class OtpService
         return $otp;
     }
 
-    /**
-     * @return array{valid: bool, message: ?string}
-     */
     public function verify(string $purpose, string $email, string $otp): array
     {
         $identifier = $this->identifier($purpose, $email);
@@ -49,13 +47,13 @@ class OtpService
             $row = UserVerification::where('identifier', $identifier)->lockForUpdate()->first();
 
             if (! $row) {
-                return ['valid' => false, 'message' => 'Invalid or expired OTP'];
+                return ApiResult::failure('Invalid or expired OTP', [], 422);
             }
 
             if ($row->expires_at->isPast()) {
                 $row->delete();
 
-                return ['valid' => false, 'message' => 'Invalid or expired OTP'];
+                return ApiResult::failure('Invalid or expired OTP', [], 422);
             }
 
             // Atomic increment BEFORE compare - a bad guess always costs an attempt.
@@ -65,17 +63,17 @@ class OtpService
             if ($row->attempts > (int) config('auth_next.otp_max_attempts')) {
                 $row->delete();
 
-                return ['valid' => false, 'message' => 'Too many failed attempts'];
+                return ApiResult::failure('Too many failed attempts', [], 422);
             }
 
             if (! Hash::check($otp, $row->value)) {
-                return ['valid' => false, 'message' => 'Invalid or expired OTP'];
+                return ApiResult::failure('Invalid or expired OTP', [], 422);
             }
 
             // Success - single use.
             $row->delete();
 
-            return ['valid' => true, 'message' => null];
+            return ApiResult::success();
         });
     }
 

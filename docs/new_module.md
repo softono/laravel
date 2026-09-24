@@ -60,7 +60,7 @@ Public write endpoints need a throttle (`auth.throttle:{tier}` or `throttle:5,15
 
 - The **FormRequest** validates; it does not override `failedValidation()`.
 - The **controller** is thin: call one service method, return `Response::sendResult($result)` (or a view).
-- The **service** returns `['ok' => bool, 'message' => string, …extras]` and talks to repositories. Log security-relevant actions with `ActivityService::log()`.
+- The **service** returns `ApiResult::success($message, $data)` / `ApiResult::failure($message)` (Next's `{http_status, status, message, data}`) and talks to repositories. Log security-relevant actions with `ActivityService::log()`.
 - Always call `parent::__construct()` in a controller that declares its own constructor.
 
 ## 6. Views

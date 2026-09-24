@@ -3,7 +3,7 @@
 namespace App\Modules\Auth\Services;
 
 use App\Constants\UserActivity;
-use App\Helpers\Response;
+use App\Helpers\ApiResult;
 use App\Helpers\SignedCookie;
 use App\Models\Auth\User;
 use App\Models\Auth\UserTwoFactor;
@@ -40,18 +40,18 @@ class TfaService
 
     /**
      * Starts a 2FA challenge for a login that has already passed the
-     * password check. Sets the signed {uid}_tfa cookie and returns the
-     * {requires_tfa: true} envelope response.
+     * password check. Sets the signed {uid}_tfa cookie and returns
+     * `data.requires_tfa = true`.
      */
-    public function startLoginChallenge(Request $request, User $user, bool $remember)
+    public function startLoginChallenge(Request $request, User $user, bool $remember): array
     {
         $handle = $this->challenges->createTfa($user->id, $remember);
         SignedCookie::queue('tfa', $handle, (int) config('auth_next.tfa_ttl'));
 
-        return Response::sendData(['requires_tfa' => true]);
+        return ApiResult::success('', ['requires_tfa' => true]);
     }
 
-    /** @return string[] available challenge methods for the current handle's user */
+    /** `data.methods`: the challenge methods available to the current handle's user. */
     public function getChallengeMethods(Request $request): array
     {
         $handle = $request->cookie(SignedCookie::name('tfa'));
@@ -59,7 +59,7 @@ class TfaService
         $data = $signed ? $this->challenges->peekTfa($signed) : null;
 
         if (! $data) {
-            return [];
+            return ApiResult::success('', ['methods' => []]);
         }
 
         $methods = ['otp', 'link'];
@@ -73,31 +73,31 @@ class TfaService
             $methods[] = 'backup';
         }
 
-        return $methods;
+        return ApiResult::success('', ['methods' => $methods]);
     }
 
     /**
      * Verifies a 2FA login challenge and, on success, issues the session.
      */
-    public function verifyLoginChallenge(Request $request, string $method, string $code, bool $trustDevice)
+    public function verifyLoginChallenge(Request $request, string $method, string $code, bool $trustDevice): array
     {
         $cookieValue = $request->cookie(SignedCookie::name('tfa'));
         $handle = $cookieValue ? SignedCookie::verify($cookieValue) : null;
 
         if (! $handle) {
-            return Response::sendError(422, 'Verification session expired. Please log in again.');
+            return ApiResult::failure('Verification session expired. Please log in again.', [], 422);
         }
 
         if ($this->challenges->tfaAttemptsExceeded($handle)) {
             $this->challenges->consumeTfa($handle);
 
-            return Response::sendError(409, 'Too many failed attempts. Please log in again.');
+            return ApiResult::failure('Too many failed attempts. Please log in again.', [], 409);
         }
 
         $pending = $this->challenges->peekTfa($handle);
 
         if (! $pending) {
-            return Response::sendError(401, 'Verification session expired. Please log in again.');
+            return ApiResult::failure('Verification session expired. Please log in again.', [], 401);
         }
 
         $user = $this->users->findById($pending['user_id']);
@@ -105,15 +105,15 @@ class TfaService
         if (! $user) {
             $this->challenges->consumeTfa($handle);
 
-            return Response::sendError(401, 'Verification session expired. Please log in again.');
+            return ApiResult::failure('Verification session expired. Please log in again.', [], 401);
         }
 
         $result = $this->verifyByMethod($user, $method, $code);
 
-        if (! $result['valid']) {
+        if (! $result['status']) {
             $this->challenges->bumpTfaAttempts($handle);
 
-            return Response::sendError(422, $result['message'] ?? 'Invalid code');
+            return $result;
         }
 
         $this->challenges->consumeTfa($handle);
@@ -132,21 +132,17 @@ class TfaService
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendMessage('Logged in successfully');
+        return ApiResult::success('Logged in successfully');
     }
 
-    /**
-     * Checks a TOTP, email-OTP or backup code for the user (a used backup code is consumed).
-     *
-     * @return array{valid: bool, message: ?string}
-     */
+    /** Checks a TOTP, email-OTP or backup code for the user (a used backup code is consumed). */
     public function verifyByMethod(User $user, string $method, string $code): array
     {
         return match ($method) {
             'totp' => $this->verifyTotp($user, $code),
             'otp' => $this->emailOtp->verify($user->email, $code),
             'backup' => $this->verifyBackup($user, $code),
-            default => ['valid' => false, 'message' => 'Unknown verification method'],
+            default => ApiResult::failure('Unknown verification method', [], 422),
         };
     }
 
@@ -155,10 +151,10 @@ class TfaService
         $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf || ! $tf->verified) {
-            return ['valid' => false, 'message' => 'Authenticator app is not set up'];
+            return ApiResult::failure('Authenticator app is not set up', [], 422);
         }
 
-        return ['valid' => $this->totp->verify($tf->secret, $code), 'message' => 'Invalid code'];
+        return $this->totp->verify($tf->secret, $code) ? ApiResult::success() : ApiResult::failure('Invalid code', [], 422);
     }
 
     protected function verifyBackup(User $user, string $code): array
@@ -166,55 +162,52 @@ class TfaService
         $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
-            return ['valid' => false, 'message' => 'No backup codes available'];
+            return ApiResult::failure('No backup codes available', [], 422);
         }
 
         $result = $this->backupCodes->verify($tf->backup_codes, $code);
 
-        if ($result['valid']) {
-            $tf->update(['backup_codes' => $result['remaining']]);
+        if ($result['status']) {
+            $tf->update(['backup_codes' => $result['data']['remaining']]);
         }
 
-        return ['valid' => $result['valid'], 'message' => 'Invalid backup code'];
+        return $result;
     }
 
     // --- Account-side setup/management -------------------------------------------------
 
-    public function sendLoginChallengeOtp(Request $request): void
+    public function sendLoginChallengeOtp(Request $request): array
     {
         $handle = $request->cookie(SignedCookie::name('tfa'));
         $signed = $handle ? SignedCookie::verify($handle) : null;
         $data = $signed ? $this->challenges->peekTfa($signed) : null;
 
-        if (! $data) {
-            return;
-        }
-
-        $user = $this->users->findById($data['user_id']);
+        $user = $data ? $this->users->findById($data['user_id']) : null;
 
         if ($user) {
             $this->emailOtp->send($user);
         }
+
+        return ApiResult::success('A verification code has been sent to your email');
     }
 
     public function getStatus(User $user): array
     {
         $tf = $this->userTwoFactors->findByUserId($user->id);
 
-        return [
+        return ApiResult::success('', [
             'enabled' => (bool) $user->two_factor_enabled,
             'totp_verified' => $tf ? (bool) $tf->verified : false,
             'backup_codes_remaining' => $tf ? count(json_decode($tf->backup_codes, true) ?: []) : 0,
-        ];
+        ]);
     }
 
-    /** @return array{ok: bool, message: string, data: array} */
     public function enable(Request $request, User $user, string $password): array
     {
         $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password || ! Hash::check($password, $account->password)) {
-            return ['ok' => false, 'message' => 'Current password is incorrect', 'data' => []];
+            return ApiResult::failure('Current password is incorrect', [], 422);
         }
 
         $secret = $this->totp->generateSecret();
@@ -232,35 +225,30 @@ class TfaService
         $issuer = config('setting.app_name') ?: config('app.name');
         $uri = $this->totp->otpAuthUri($secret, $user->email, $issuer);
 
-        return [
-            'ok' => true,
-            'message' => null,
-            'data' => [
-                'secret' => $secret,
-                'totp_uri' => $uri,
-                'qr_svg' => $this->totp->qrCodeSvg($uri),
-                'backup_codes' => $codes,
-            ],
-        ];
+        return ApiResult::success('', [
+            'secret' => $secret,
+            'totp_uri' => $uri,
+            'qr_svg' => $this->totp->qrCodeSvg($uri),
+            'backup_codes' => $codes,
+        ]);
     }
 
-    /** @return array{ok: bool, message: string} */
     public function verifySetup(Request $request, User $user, string $method, string $code): array
     {
         $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
-            return ['ok' => false, 'message' => 'Two-factor setup not started'];
+            return ApiResult::failure('Two-factor setup not started', [], 422);
         }
 
         $valid = match ($method) {
             'totp' => $this->totp->verify($tf->secret, $code),
-            'otp' => $this->emailOtp->verify($user->email, $code)['valid'],
+            'otp' => (bool) $this->emailOtp->verify($user->email, $code)['status'],
             default => false,
         };
 
         if (! $valid) {
-            return ['ok' => false, 'message' => 'Invalid code'];
+            return ApiResult::failure('Invalid code', [], 422);
         }
 
         $tf->update(['verified' => true]);
@@ -268,16 +256,15 @@ class TfaService
         $this->sessions->invalidateUserCache($user->id);
         $this->activity->log($request, $user->id, UserActivity::TFA_ENABLED);
 
-        return ['ok' => true, 'message' => 'Two-factor authentication enabled'];
+        return ApiResult::success('Two-factor authentication enabled');
     }
 
-    /** @return array{ok: bool, message: string} */
     public function disable(Request $request, User $user, string $password): array
     {
         $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password || ! Hash::check($password, $account->password)) {
-            return ['ok' => false, 'message' => 'Current password is incorrect'];
+            return ApiResult::failure('Current password is incorrect', [], 422);
         }
 
         $tf = $this->userTwoFactors->findByUserId($user->id);
@@ -289,7 +276,7 @@ class TfaService
         $this->devices->revokeAll($user->id);
         $this->activity->log($request, $user->id, UserActivity::TFA_DISABLED);
 
-        return ['ok' => true, 'message' => 'Two-factor authentication disabled'];
+        return ApiResult::success('Two-factor authentication disabled');
     }
 
     /** Removes only the authenticator app, keeping email-OTP/backup-code 2FA available. */
@@ -298,28 +285,27 @@ class TfaService
         $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
-            return ['ok' => false, 'message' => 'Authenticator app is not set up'];
+            return ApiResult::failure('Authenticator app is not set up', [], 422);
         }
 
         $tf->update(['verified' => false]);
         $this->activity->log($request, $user->id, UserActivity::TFA_AUTHENTICATOR_REMOVED);
 
-        return ['ok' => true, 'message' => 'Authenticator app removed'];
+        return ApiResult::success('Authenticator app removed');
     }
 
-    /** @return array{ok: bool, message: string, codes: string[]} */
     public function regenerateBackupCodes(Request $request, User $user): array
     {
         $tf = $this->userTwoFactors->findByUserId($user->id);
 
         if (! $tf) {
-            return ['ok' => false, 'message' => 'Two-factor authentication is not enabled', 'codes' => []];
+            return ApiResult::failure('Two-factor authentication is not enabled', [], 422);
         }
 
         $codes = $this->backupCodes->generate();
         $tf->update(['backup_codes' => json_encode($this->backupCodes->hash($codes))]);
         $this->activity->log($request, $user->id, UserActivity::BACKUP_CODES_REGENERATED);
 
-        return ['ok' => true, 'message' => 'Backup codes regenerated', 'codes' => $codes];
+        return ApiResult::success('Backup codes regenerated', ['codes' => $codes]);
     }
 }

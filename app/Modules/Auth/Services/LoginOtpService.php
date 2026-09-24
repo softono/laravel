@@ -2,6 +2,8 @@
 
 namespace App\Modules\Auth\Services;
 
+use App\Helpers\ApiResult;
+use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Repositories\Auth\UserRepository;
 use Illuminate\Http\Request;
@@ -21,6 +23,7 @@ class LoginOtpService
         protected AuthService $auth,
         protected LoginAttemptService $attempts,
         protected UserRepository $users,
+        protected General $general,
     ) {}
 
     public function enabled(): bool
@@ -28,49 +31,65 @@ class LoginOtpService
         return config('setting.user_login_with_otp') == 1;
     }
 
-    public function send(string $email): void
+    /**
+     * Step 1. Only this step carries a captcha: a token is single-use.
+     *
+     * @return array{http_status: int, status: int, message: string, data: array{requires_captcha?: bool}}
+     */
+    public function send(string $email): array
     {
+        if (! $this->enabled()) {
+            return ApiResult::failure('Login with OTP is not available');
+        }
+
+        if ($this->general->recaptchaFails()) {
+            return ApiResult::failure('Please complete the captcha verification', ['requires_captcha' => true]);
+        }
+
         $user = $this->users->findByEmail(strtolower(trim($email)));
 
         if ($user && $user->isActive()) {
             $this->account->sendOtp(self::PURPOSE, $user);
         }
+
+        return ApiResult::success('OTP sent');
     }
 
     /**
-     * @return array{ok: bool, message: ?string, user: ?User, data: array}
+     * `data` carries the verified `user` model for the controller; it is never sent as is.
+     *
+     * @return array{http_status: int, status: int, message: string, data: array{user?: User, requires_verification?: bool, email?: string}}
      */
     public function verify(Request $request, string $email, string $code): array
     {
+        if (! $this->enabled()) {
+            return ApiResult::failure('Login with OTP is not available');
+        }
+
         $email = strtolower(trim($email));
         $user = $this->users->findByEmail($email);
 
         if (! $user) {
             $this->auth->dummyPasswordCheck();
 
-            return $this->failure('Invalid email or OTP');
+            return ApiResult::failure('Invalid email or OTP');
         }
 
         $result = $this->otp->verify(self::PURPOSE, $email, $code);
 
-        if (! $result['valid']) {
-            return $this->failure($result['message'] ?? 'Invalid email or OTP');
+        if (! $result['status']) {
+            return $result;
         }
 
         // Both checks come after the code is proven, so neither message reveals whether an email is registered.
         if (! $user->isActive()) {
-            return $this->failure('Account is disabled');
+            return ApiResult::failure('Account is disabled');
         }
 
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
-            return $this->failure('Please verify your email first', ['requires_verification' => true, 'email' => $user->email]);
+            return ApiResult::failure('Please verify your email first', ['requires_verification' => true, 'email' => $user->email]);
         }
 
-        return ['ok' => true, 'message' => null, 'user' => $user, 'data' => []];
-    }
-
-    protected function failure(string $message, array $data = []): array
-    {
-        return ['ok' => false, 'message' => $message, 'user' => null, 'data' => $data];
+        return ApiResult::success('', ['user' => $user]);
     }
 }

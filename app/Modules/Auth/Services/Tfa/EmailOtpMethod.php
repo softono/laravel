@@ -22,7 +22,6 @@ class EmailOtpMethod
         $this->account->sendOtp('tfa', $user);
     }
 
-    /** @return array{valid: bool, message: ?string} */
     public function verify(string $email, string $code): array
     {
         return $this->otp->verify('tfa', $email, $code);

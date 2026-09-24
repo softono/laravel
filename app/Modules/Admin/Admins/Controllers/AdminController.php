@@ -35,7 +35,7 @@ class AdminController extends Controller
 
     public function list(Request $request)
     {
-        return response()->json($this->list->datatable(auth()->user(), $request->all(), UserRole::ADMIN, 'admin/admin'));
+        return Response::sendResult($this->list->datatable(auth()->user(), $request->all(), UserRole::ADMIN, 'admin/admin'));
     }
 
     public function create()

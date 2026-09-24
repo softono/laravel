@@ -3,6 +3,7 @@
 namespace App\Modules\Admin\Blog\Services;
 
 use App\Constants\BlogCategory;
+use App\Helpers\ApiResult;
 use App\Helpers\General;
 use App\Repositories\BlogRepository;
 
@@ -27,6 +28,6 @@ class BlogListService
             return $row;
         })->all();
 
-        return $result;
+        return ApiResult::success('', $result);
     }
 }

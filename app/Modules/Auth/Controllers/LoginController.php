@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Controllers;
 
 use App\Constants\UserActivity;
+use App\Helpers\ApiResult;
 use App\Helpers\Response;
 use App\Helpers\SafeRedirect;
 use App\Helpers\SignedCookie;
@@ -38,29 +39,25 @@ class LoginController extends Controller
             (string) $request->input('password'),
         );
 
-        if (! $result['ok']) {
-            return Response::sendMessage($result['message'], 0, $result['data']);
+        if (! $result['status']) {
+            return Response::sendResult($result);
         }
 
         /** @var User $user */
-        $user = $result['user'];
+        $user = $result['data']['user'];
 
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
             app(AccountService::class)->sendOtp('verify', $user);
 
             // 200, not 403: the login page reads data.requires_verification on this failure
             // path and jQuery only runs the caller's callback for 2xx responses.
-            return Response::sendResponse(200, [
-                'status' => 0,
-                'message' => 'Please verify your account',
-                'data' => [
-                    'requires_verification' => true,
-                    'email' => $user->email,
-                ],
-            ]);
+            return Response::sendResult(ApiResult::failure('Please verify your account', [
+                'requires_verification' => true,
+                'email' => $user->email,
+            ]));
         }
 
-        return $this->completeLogin($request, $user, $request->boolean('remember'), $result['requiresTfa']);
+        return $this->completeLogin($request, $user, $request->boolean('remember'), $result['data']['requires_tfa']);
     }
 
     /**
@@ -71,7 +68,7 @@ class LoginController extends Controller
     public function completeLogin(Request $request, User $user, bool $remember, bool $requiresTfa, string $activity = UserActivity::LOGIN_SUCCESS)
     {
         if ($requiresTfa && ! $this->deviceIsTrusted($request, $user)) {
-            return app(TfaService::class)->startLoginChallenge($request, $user, $remember);
+            return Response::sendResult(app(TfaService::class)->startLoginChallenge($request, $user, $remember));
         }
 
         return $this->issueSessionResponse($request, $user, $remember, $activity);
