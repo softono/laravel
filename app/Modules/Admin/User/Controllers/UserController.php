@@ -10,6 +10,7 @@ use App\Modules\Admin\Services\AccountManagementService;
 use App\Modules\Admin\User\Requests\SaveUserRequest;
 use App\Modules\Admin\User\Requests\SendMailRequest;
 use App\Modules\Admin\User\Services\UserMailService;
+use App\Modules\Auth\Services\LoginAttemptService;
 use App\Repositories\Auth\UserActivityRepository;
 use App\Repositories\Auth\UserRepository;
 use App\Repositories\Auth\UserSessionRepository;
@@ -26,6 +27,7 @@ class UserController extends Controller
         protected UserRepository $users,
         protected UserSessionRepository $sessions,
         protected UserActivityRepository $activities,
+        protected LoginAttemptService $attempts,
         protected ContactMessageRepository $messages,
     ) {
         parent::__construct();
@@ -78,6 +80,7 @@ class UserController extends Controller
 
         return view('modules.admin.user.view', [
             'model' => $model,
+            'loginLocked' => $this->attempts->isLocked($model->email),
             'sessions' => $this->sessions->latestForUser($model->id),
             'activities' => $this->activities->getByUserId($model->id, 10),
             'mails' => $this->messages->forUser($model->id),

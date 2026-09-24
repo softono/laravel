@@ -50,6 +50,11 @@
                         </div>
                     </div>
 
+                    {{-- Shown by the script once the server asks for it after repeated failures. --}}
+                    <div id="login-captcha" style="display:none;">
+                        @include('common.recaptcha')
+                    </div>
+
                     <div class="mb-6">
                         <button class="btn-primary w-full" type="submit" id="login-submit">Login</button>
                     </div>
@@ -138,6 +143,9 @@
                     window.location.href = '{{ url('/dashboard') }}';
                 } else {
                     var data = response.data || {};
+                    if (data.requires_captcha) {
+                        document.getElementById('login-captcha').style.display = 'block';
+                    }
                     if (data.requires_verification) {
                         window.location.href = '{{ url('/verify-account') }}?code=' + btoa(data.email || email.value);
                         return;

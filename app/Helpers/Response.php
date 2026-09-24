@@ -37,9 +37,9 @@ class Response
         return self::sendResponse($result['http_status'] ?? 200, self::toEnvelope($result));
     }
 
-    public static function sendMessage(string $message = 'Ok', int $status = 1)
+    public static function sendMessage(string $message = 'Ok', int $status = 1, array $data = [])
     {
-        return self::sendResponse(200, ['status' => $status, 'message' => $message, 'data' => []]);
+        return self::sendResponse(200, ['status' => $status, 'message' => $message, 'data' => $data]);
     }
 
     public static function sendError(int $http_status = 500, string $message = 'Internal Server Error')

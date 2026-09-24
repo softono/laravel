@@ -8,6 +8,7 @@ use App\Modules\Admin\Admins\Requests\SaveAdminRequest;
 use App\Modules\Admin\Controllers\Controller;
 use App\Modules\Admin\Services\AccountListService;
 use App\Modules\Admin\Services\AccountManagementService;
+use App\Modules\Auth\Services\LoginAttemptService;
 use App\Repositories\Auth\UserActivityRepository;
 use App\Repositories\Auth\UserRepository;
 use App\Repositories\Auth\UserSessionRepository;
@@ -22,6 +23,7 @@ class AdminController extends Controller
         protected UserRepository $users,
         protected UserSessionRepository $sessions,
         protected UserActivityRepository $activities,
+        protected LoginAttemptService $attempts,
     ) {
         parent::__construct();
     }
@@ -73,6 +75,7 @@ class AdminController extends Controller
 
         return view('modules.admin.admins.view', [
             'model' => $model,
+            'loginLocked' => $this->attempts->isLocked($model->email),
             'sessions' => $this->sessions->latestForUser($model->id),
             'activities' => $this->activities->getByUserId($model->id, 10),
         ]);

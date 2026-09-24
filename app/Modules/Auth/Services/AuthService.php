@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Services;
 
 use App\Constants\UserActivity;
+use App\Helpers\General;
 use App\Models\Auth\User;
 use App\Repositories\Auth\UserAccountRepository;
 use App\Repositories\Auth\UserRepository;
@@ -31,6 +32,8 @@ class AuthService
         protected ActivityService $activity,
         protected UserRepository $users,
         protected UserAccountRepository $userAccounts,
+        protected LoginAttemptService $attempts,
+        protected General $general,
     ) {}
 
     public function dummyPasswordCheck(): void
@@ -39,43 +42,63 @@ class AuthService
     }
 
     /**
-     * @return array{ok: bool, message: ?string, user: ?User, requiresTfa: bool}
+     * @return array{ok: bool, message: ?string, user: ?User, requiresTfa: bool, data: array}
      */
     public function authenticate(Request $request, string $email, string $password, bool $requireAdmin = false): array
     {
         $email = strtolower(trim($email));
+
+        if ($this->attempts->isLocked($email)) {
+            return $this->failure('Too many failed login attempts. Please try again in a few minutes.');
+        }
+
+        if ($this->attempts->needsCaptcha($email) && $this->general->recaptchaFails()) {
+            return $this->failure('Please complete the captcha verification', ['requires_captcha' => true]);
+        }
+
         $user = $this->users->findByEmail($email);
-        // dd($user);
+
         if (! $user || ($requireAdmin && ! $user->isAdmin())) {
             $this->dummyPasswordCheck();
+            $this->attempts->recordFailure($email);
 
-            return ['ok' => false, 'message' => 'Invalid email or password', 'user' => null, 'requiresTfa' => false];
+            return $this->failure('Invalid email or password');
         }
 
         if (! $user->isActive()) {
-            return ['ok' => false, 'message' => 'Account is disabled', 'user' => null, 'requiresTfa' => false];
+            return $this->failure('Account is disabled');
         }
 
         $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password) {
             $this->dummyPasswordCheck();
+            $this->attempts->recordFailure($email);
 
-            return ['ok' => false, 'message' => 'Invalid email or password', 'user' => null, 'requiresTfa' => false];
+            return $this->failure('Invalid email or password');
         }
 
         if (! Hash::check($password, $account->password)) {
+            $this->attempts->recordFailure($email);
             $this->activity->log($request, $user->id, UserActivity::LOGIN_FAILED);
 
-            return ['ok' => false, 'message' => 'Invalid email or password', 'user' => null, 'requiresTfa' => false];
+            return $this->failure('Invalid email or password');
         }
+
+        $this->attempts->clear($email);
 
         // Transparent bcrypt -> argon2id upgrade for anyone migrated from the legacy app.
         if (Hash::needsRehash($account->password)) {
             $account->update(['password' => Hash::make($password)]);
         }
 
-        return ['ok' => true, 'message' => null, 'user' => $user, 'requiresTfa' => (bool) $user->two_factor_enabled];
+        return ['ok' => true, 'message' => null, 'user' => $user, 'requiresTfa' => (bool) $user->two_factor_enabled, 'data' => []];
+    }
+
+    /** @return array{ok: false, message: string, user: null, requiresTfa: false, data: array} */
+    protected function failure(string $message, array $data = []): array
+    {
+        return ['ok' => false, 'message' => $message, 'user' => null, 'requiresTfa' => false, 'data' => $data];
     }
 
     public function logSuccess(Request $request, User $user, string $type = UserActivity::LOGIN_SUCCESS): void

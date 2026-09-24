@@ -70,6 +70,7 @@
                         </div>
                     </div>
 
+                    @include('common.recaptcha')
                     <button class="btn-primary w-full" type="submit">Sign up</button>
                 </form>
 

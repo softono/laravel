@@ -38,7 +38,7 @@ class LoginController extends Controller
         );
 
         if (! $result['ok']) {
-            return Response::sendMessage($result['message'], 0);
+            return Response::sendMessage($result['message'], 0, $result['data']);
         }
 
         /** @var User $user */

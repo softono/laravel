@@ -7,6 +7,7 @@ use App\Http\Middleware\AuthRateLimit;
 use App\Http\Middleware\EnsureDeviceUid;
 use App\Http\Middleware\RedirectIfAdminAuthenticated;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\VerifyRecaptcha;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -53,6 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth.redirect' => RedirectIfAuthenticated::class,
             'auth.throttle' => AuthRateLimit::class,
             'auth.admin' => AuthenticateAdminSession::class,
+            'recaptcha' => VerifyRecaptcha::class,
             'admin.guest.redirect' => RedirectIfAdminAuthenticated::class,
         ]);
     })

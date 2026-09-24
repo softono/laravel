@@ -28,6 +28,12 @@
                 <dt class="text-muted-foreground">Status</dt>
                 <dd>@include('modules.admin.partials.status-badge', ['status' => $model->status])</dd>
             </div>
+            @if ($loginLocked ?? false)
+                <div class="flex justify-between gap-4">
+                    <dt class="text-muted-foreground">Login</dt>
+                    <dd><x-ui.badge variant="destructive">Locked</x-ui.badge></dd>
+                </div>
+            @endif
         </dl>
 
         <div class="flex flex-wrap justify-center gap-2">

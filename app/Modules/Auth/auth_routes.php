@@ -32,10 +32,10 @@ Route::get('/login/approve', [LoginLinkController::class, 'showApprove'])
 // --- Public endpoints ---
 Route::middleware('device.uid')->prefix('auth')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->middleware('auth.throttle:login');
-    Route::post('/register', [RegisterController::class, 'register'])->middleware('auth.throttle:register');
+    Route::post('/register', [RegisterController::class, 'register'])->middleware(['auth.throttle:register', 'recaptcha']);
     Route::post('/logout', [LoginController::class, 'apiLogout']);
     Route::get('/session', [SessionController::class, 'show']);
-    Route::post('/forgot-password', [PasswordController::class, 'forgot'])->middleware('auth.throttle:forgot_password');
+    Route::post('/forgot-password', [PasswordController::class, 'forgot'])->middleware(['auth.throttle:forgot_password', 'recaptcha']);
     Route::post('/reset-password', [PasswordController::class, 'reset'])->middleware('auth.throttle:reset_password');
     Route::post('/verify-account', [VerifyController::class, 'verifyAccount'])->middleware('auth.throttle:verify_account');
     Route::post('/otp', [VerifyController::class, 'resend'])->middleware('auth.throttle:otp');

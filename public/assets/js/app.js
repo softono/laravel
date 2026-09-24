@@ -203,10 +203,23 @@ const app = {
             dataType: "json",
             success: (response) => {
                 this.hideLoading();
+                this.resetCaptcha();
                 cb(response);
             },
-            error: this.ajaxError,
+            error: (xhr, status, error) => {
+                this.resetCaptcha();
+                this.ajaxError(xhr, status, error);
+            },
         });
+    },
+
+    /** A reCAPTCHA token is single-use, so every form request needs a fresh one. */
+    resetCaptcha: function () {
+        try {
+            if (window.grecaptcha && document.querySelector(".g-recaptcha")) {
+                grecaptcha.reset();
+            }
+        } catch (e) {}
     },
 
     /**

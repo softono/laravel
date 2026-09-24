@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use App\Jobs\SendEmail;
-use App\Models\Setting;
 use App\Repositories\SeoMetaRepository;
 use App\Repositories\SettingRepository;
 use App\Services\EmailTemplateService;
@@ -118,16 +117,6 @@ class General
     }
 
     /**
-     * Retrieves all settings from the cache or database.
-     *
-     * @return array
-     */
-    public function getAllSettings()
-    {
-        return (new SettingRepository)->getAllSettings();
-    }
-
-    /**
      * Retrieves the settings from the cache or database and updates the application configuration.
      *
      * @return void
@@ -156,9 +145,11 @@ class General
      */
     public function recaptchaFails(): bool
     {
-        $secret = config('setting.google_recaptcha_secret_key');
+        // Read the settings directly: route middleware runs before controllers load them into config.
+        $settings = (new SettingRepository)->all();
+        $secret = $settings['google_recaptcha_secret_key'] ?? '';
 
-        if (! config('setting.google_recaptcha') || ! $secret) {
+        if (empty($settings['google_recaptcha']) || ! $secret) {
             return false;
         }
 

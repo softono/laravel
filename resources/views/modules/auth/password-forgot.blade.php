@@ -23,6 +23,7 @@
                         <input type="email" class="form-input" id="email" name="email"
                             placeholder="Enter your email" autofocus />
                     </div>
+                    @include('common.recaptcha')
                     <button class="btn-primary w-full mb-4" type="submit" id="forgot-submit">Send OTP</button>
                 </form>
 
