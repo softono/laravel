@@ -33,28 +33,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['web', 'auth.admin']], funct
     Route::get('dashboard', '\App\Http\Controllers\Admin\SiteController@dashboard')->name('admin/dashboard');
     Route::post('site/get-chart-user', '\App\Http\Controllers\Admin\SiteController@getChartUser')->name('admin/site/get-chart-user');
 
-    Route::get('user', '\App\Http\Controllers\Admin\UserController@index')->name('admin/user');
-    Route::any('user/list', '\App\Http\Controllers\Admin\UserController@list')->name('admin/user/list');
-    Route::get('user/create', '\App\Http\Controllers\Admin\UserController@create')->name('admin/user/create');
-    Route::get('user/update', '\App\Http\Controllers\Admin\UserController@update')->name('admin/user/update');
-    Route::post('user/save', '\App\Http\Controllers\Admin\UserController@save')->name('admin/user/save');
-    Route::get('user/view', '\App\Http\Controllers\Admin\UserController@view')->name('admin/user/view');
-    Route::post('user/mail', '\App\Http\Controllers\Admin\UserController@sendMail')->name('admin/user/mail');
-    Route::post('user/delete', '\App\Http\Controllers\Admin\UserController@delete')->name('admin/user/delete');
-    Route::post('user/change_status', '\App\Http\Controllers\Admin\UserController@changeStatus')->name('admin/user/change_status');
-    Route::get('user/autologin', '\App\Http\Controllers\Admin\UserController@autoLogin')->name('admin/user/autologin');
     // user/autologin removed - impersonation called Auth::guard('web')->login($user),
     // which App\Helpers\SessionTokenGuard doesn't implement (no StatefulGuard support).
-    Route::get('user/send-tfa-mail', '\App\Http\Controllers\Admin\UserController@sendTfaMail')->name('admin/user/send-tfa-mail');
-
-    Route::get('admin', '\App\Http\Controllers\Admin\AdminController@index')->name('admin/admin');
-    Route::post('admin/list', '\App\Http\Controllers\Admin\AdminController@list')->name('admin/admin/list');
-    Route::get('admin/create', '\App\Http\Controllers\Admin\AdminController@create')->name('admin/admin/create');
-    Route::get('admin/update', '\App\Http\Controllers\Admin\AdminController@update')->name('admin/admin/update');
-    Route::post('admin/save', '\App\Http\Controllers\Admin\AdminController@save')->name('admin/admin/save');
-    Route::get('admin/view', '\App\Http\Controllers\Admin\AdminController@view')->name('admin/admin/view');
-    Route::post('admin/delete', '\App\Http\Controllers\Admin\AdminController@delete')->name('admin/admin/delete');
-    Route::post('admin/status-save', '\App\Http\Controllers\Admin\AdminController@statusSave')->name('admin/admin/status-save');
 
     Route::get('seo/meta', '\App\Http\Controllers\Admin\SeoController@index')->name('admin/seo/meta');
     Route::post('seo/list', '\App\Http\Controllers\Admin\SeoController@list')->name('admin/seo/list');

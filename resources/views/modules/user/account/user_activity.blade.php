@@ -31,47 +31,16 @@
 @push('scripts')
     <script>
         documentReady(function() {
-            app.addCSS([
-                'https://cdn.datatables.net/2.1.8/css/dataTables.tailwindcss.css',
-                'https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.css'
-            ])
-            app.addJS([
-                'https://cdn.datatables.net/2.1.8/js/dataTables.js',
-                'https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js',
-                'https://cdn.datatables.net/2.1.8/js/dataTables.tailwindcss.js'
-            ]);
-            datatableObj = $('#data-table').DataTable({
-                ajax: dataTableAjax({
-                    url: '{{ route($prefix.'account/user-activity-list') }}',
-                    method: 'post',
-                }),
+            app.dataTable('#data-table', {
+                url: '{{ route($prefix.'account/user-activity-list') }}',
                 columns: [
-
-                    {
-                        data: "created_at",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "client",
-                        responsivePriority: 6
-                    },
-                    {
-                        data: "location",
-                        orderable: false,
-                        responsivePriority: 4
-                    },
-
-                    {
-                        data: "type",
-                        responsivePriority: 4
-                    },
-
+                    {data: "created_at"},
+                    {data: "client", orderable: false},
+                    {data: "location", orderable: false},
+                    {data: "ip"},
+                    {data: "type"}
                 ],
-                responsive: true,
-                serverSide: true,
-                "order": [
-                    [0, "desc"]
-                ]
+                order: [0, "desc"],
             });
         });
     </script>

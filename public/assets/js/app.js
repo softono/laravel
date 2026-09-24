@@ -140,6 +140,23 @@ const app = {
      * @param {Object} postData - Data to send
      * @param {Function} cb - Callback function
      */
+    /**
+     * Server-side DataTable with the Tailwind styling integration. Sets the global
+     * `datatableObj` that the `table_refresh` next-action reloads.
+     * @param {string} selector - Table element
+     * @param {{url: string, columns: Object[], method?: string, order?: Array}} options
+     */
+    dataTable: function (selector, { url, columns, method = "post", order = [[0, "desc"]] }) {
+        datatableObj = $(selector).DataTable({
+            ajax: dataTableAjax({ url, method }),
+            columns,
+            order,
+            responsive: true,
+            serverSide: true,
+        });
+        return datatableObj;
+    },
+
     ajaxConfirm: function (url, postData, cb) {
         app
             .showConfirmationPopup({

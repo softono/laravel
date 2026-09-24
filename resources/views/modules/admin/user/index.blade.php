@@ -3,7 +3,7 @@
     Users
 @endsection
 @section('content')
-    <?php $sessionUser = auth()->user(); ?>
+    @php($sessionUser = auth()->user())
 
     <!-- Content -->
     <div class="breadcrumb-box">
@@ -49,50 +49,19 @@
 @push('scripts')
     <script>
         documentReady(function() {
-            datatableObj = $('#data-table').DataTable({
-                ajax: dataTableAjax({
-                    url: '{{ route('admin/user/list') }}',
-                    method: 'post',
-                }),
-                columns: [{
-                        data: "id",
-                        responsivePriority: 4
-                    }, //,visible:false
-                    {
-                        data: "first_name",
-                        responsivePriority: 4
-                    }, //,visible:false
-                    {
-                        data: "email",
-                        responsivePriority: 2
-                    },
-                    {
-                        data: "phone",
-                        responsivePriority: 3
-                    },
-                    {
-                        data: "country",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "status",
-                        responsivePriority: 5
-                    },
-                    {
-                        data: "created_at",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "action",
-                        bSortable: false,
-                        responsivePriority: 1
-                    }
+            app.dataTable('#data-table', {
+                url: '{{ route('admin/user/list') }}',
+                columns: [
+                    {data: "id", visible: false},
+                    {data: "first_name"},
+                    {data: "email"},
+                    {data: "phone"},
+                    {data: "country"},
+                    {data: "status"},
+                    {data: "created_at"},
+                    {data: "action", orderable: false}
                 ],
-                responsive: true,
-                serverSide: true,
-                "order": [
-                    [0, "desc"]
-                ]
+                order: [6, "desc"],
             });
         });
     </script>

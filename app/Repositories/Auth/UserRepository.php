@@ -23,6 +23,12 @@ class UserRepository
         return User::where('email', strtolower(trim($email)))->first();
     }
 
+    /** A user only if it has the given role, so an admin screen cannot reach accounts of another kind. */
+    public function findByIdAndRole(string $id, string $role): ?User
+    {
+        return User::where('id', $id)->where('role', $role)->first();
+    }
+
     public function findByPhone(string $phone): ?User
     {
         return User::where('phone', $phone)->first();
@@ -51,7 +57,9 @@ class UserRepository
      */
     public function datatable(array $post, array $roles, ?string $exceptId = null): array
     {
-        $query = DB::table('users')->whereIn('role', $roles);
+        $query = DB::table('users')
+            ->select('id', 'first_name', 'last_name', 'email', 'phone', 'country', 'status', 'image', 'created_at')
+            ->whereIn('role', $roles);
 
         if ($exceptId) {
             $query->where('id', '!=', $exceptId);

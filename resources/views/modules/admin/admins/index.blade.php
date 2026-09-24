@@ -3,7 +3,7 @@
     Admin
 @endsection
 @section('content')
-    <?php $sessionUser = auth()->user(); ?>
+    @php($sessionUser = auth()->user())
     <!-- Content -->
 
     <div class="breadcrumb-box">
@@ -50,46 +50,18 @@
 @push('scripts')
     <script>
         documentReady(function() {
-            datatableObj = $('#data-table').DataTable({
-                ajax: dataTableAjax({
-                    url: '{{ route("admin/admin/list") }}',
-                    method: 'post'
-                }),
-                columns: [{
-                        data: "id",
-                        responsivePriority: 6
-                    }, //,visible:false
-                    {
-                        data: "first_name",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "email",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "country",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "phone",
-                        responsivePriority: 3
-                    },
-                    {
-                        data: "status",
-                        responsivePriority: 4
-                    },
-                    {
-                        data: "action",
-                        bSortable: false,
-                        responsivePriority: 2
-                    }
+            app.dataTable('#data-table', {
+                url: '{{ route('admin/admin/list') }}',
+                columns: [
+                    {data: "id", visible: false},
+                    {data: "first_name"},
+                    {data: "email"},
+                    {data: "country"},
+                    {data: "phone"},
+                    {data: "status"},
+                    {data: "action", orderable: false}
                 ],
-                responsive: true,
-                serverSide: true,
-                "order": [
-                    [0, "desc"]
-                ]
+                order: [1, "asc"],
             });
         });
     </script>
