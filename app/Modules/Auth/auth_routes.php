@@ -45,6 +45,7 @@ Route::middleware('device.uid')->prefix('auth')->group(function () {
     // 2FA login-time challenge - gated by the signed tfa cookie, not a session.
     Route::get('/tfa/methods', [TfaController::class, 'methods'])->middleware('auth.throttle:tfa');
     Route::post('/tfa/send-otp', [TfaController::class, 'sendOtp'])->middleware('auth.throttle:tfa');
+    Route::post('/tfa/send-login-link', [LoginLinkController::class, 'startTfa'])->middleware('auth.throttle:tfa_link');
     Route::post('/tfa/verify', [TfaController::class, 'verify'])->middleware('auth.throttle:tfa');
 
     // Magic login link - enumeration-safe by design (see LoginLinkService::start).

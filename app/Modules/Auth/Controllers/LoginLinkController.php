@@ -39,6 +39,30 @@ class LoginLinkController extends Controller
         ]);
     }
 
+    /** POST /auth/tfa/send-login-link - a magic link as the second factor of the pending 2FA challenge. */
+    public function startTfa(Request $request)
+    {
+        $cookie = $request->cookie(SignedCookie::name('tfa'));
+        $handle = $cookie ? SignedCookie::verify($cookie) : null;
+
+        if (! $handle) {
+            return Response::sendMessage('No 2FA challenge found', 0);
+        }
+
+        $result = $this->loginLinks->startTfa($request, $handle, $request->boolean('trust_device'));
+
+        if (! $result['ok']) {
+            return Response::sendMessage($result['message'], 0);
+        }
+
+        return Response::sendData([
+            'request_id' => $result['request_id'],
+            'expires_at' => $result['expires_at'],
+            'poll_token' => $result['poll_token'],
+            'code' => $result['code'],
+        ], 'Login link sent');
+    }
+
     public function poll(Request $request)
     {
         $request->validate([
@@ -49,12 +73,15 @@ class LoginLinkController extends Controller
         $result = $this->loginLinks->poll($request, $request->string('request_id'), $request->string('poll_token'));
 
         if ($result['state'] === 'approved') {
-            $remember = $request->boolean('remember');
-            $ttlSeconds = $remember
+            $ttlSeconds = $result['remember']
                 ? config('auth_next.session_ttl_days.remember') * 86400
                 : config('auth_next.session_ttl_days.default') * 86400;
 
             SignedCookie::queueRaw('session_token', $result['session_token'], $ttlSeconds);
+
+            if ($result['tfa']) {
+                SignedCookie::forget('tfa');
+            }
         }
 
         return Response::sendData(['state' => $result['state']]);

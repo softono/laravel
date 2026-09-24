@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Services;
 use App\Constants\UserActivity;
 use App\Helpers\ClientInfo;
 use App\Helpers\General;
+use App\Models\Auth\User;
 use App\Models\Auth\UserLoginLink;
 use App\Repositories\Auth\UserLoginLinkRepository;
 use App\Repositories\Auth\UserRepository;
@@ -14,9 +15,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Magic login link with second-device (or same-device) approval. Only
- * purpose='signin' is wired to routes; the tfa-via-magic-link variant is
- * a documented simplification.
+ * Magic login link with second-device (or same-device) approval. Used for
+ * sign-in (purpose 'signin') and as a 2FA method (purpose 'tfa': approving
+ * consumes the pending 2FA challenge and issues the session).
  */
 class LoginLinkService
 {
@@ -24,6 +25,7 @@ class LoginLinkService
         protected SessionService $sessions,
         protected ActivityService $activity,
         protected DeviceService $devices,
+        protected ChallengeService $challenges,
         protected UserRepository $users,
         protected UserLoginLinkRepository $userLoginLinks,
     ) {}
@@ -49,13 +51,48 @@ class LoginLinkService
             ];
         }
 
+        return $this->createLink($request, $user, [
+            'purpose' => 'signin',
+            'remember' => $remember,
+            'trust_device' => $trustDevice,
+        ]);
+    }
+
+    /**
+     * Sends a login link as the second factor of a pending 2FA challenge.
+     *
+     * @return array{ok: bool, message?: string, request_id?: string, expires_at?: string, poll_token?: string, code?: string}
+     */
+    public function startTfa(Request $request, string $tfaHandle, bool $trustDevice): array
+    {
+        $pending = $this->challenges->peekTfa($tfaHandle);
+        $user = $pending ? $this->users->findById($pending['user_id']) : null;
+
+        if (! $user) {
+            return ['ok' => false, 'message' => 'Challenge expired'];
+        }
+
+        return ['ok' => true] + $this->createLink($request, $user, [
+            'purpose' => 'tfa',
+            'remember' => $pending['remember'],
+            'trust_device' => $trustDevice,
+            'tfa_handle' => $tfaHandle,
+        ]);
+    }
+
+    /**
+     * @param  array{purpose: string, remember: bool, trust_device: bool, tfa_handle?: string}  $attributes
+     * @return array{request_id: string, expires_at: string, poll_token: string, code: string}
+     */
+    protected function createLink(Request $request, User $user, array $attributes): array
+    {
+        $expiresAt = now()->addSeconds((int) config('auth_next.login_link_expire_sec'));
         $pollToken = bin2hex(random_bytes(32));
         $linkToken = bin2hex(random_bytes(32));
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        $link = $this->userLoginLinks->create([
-            'purpose' => 'signin',
-            'email' => $email,
+        $link = $this->userLoginLinks->create($attributes + [
+            'email' => $user->email,
             'user_id' => $user->id,
             'poll_token_hash' => Hash::make($pollToken),
             'link_token_hash' => Hash::make($linkToken),
@@ -63,14 +100,12 @@ class LoginLinkService
             'status' => 'pending',
             'device_name' => ClientInfo::deviceName($request),
             'ip' => ClientInfo::ip($request),
-            'remember' => $remember,
-            'trust_device' => $trustDevice,
             'expires_at' => $expiresAt,
         ]);
 
         $approveUrl = rtrim(config('app.url'), '/').'/login/approve?id='.$link->id.'&token='.$linkToken;
 
-        (new General)->sendEmail($email, 'login-link', [
+        (new General)->sendEmail($user->email, 'login-link', [
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
             'link' => $approveUrl,
@@ -86,7 +121,7 @@ class LoginLinkService
     }
 
     /**
-     * @return array{state: string, session_token?: string}
+     * @return array{state: string, session_token?: string, remember?: bool, tfa?: bool}
      */
     public function poll(Request $request, string $requestId, string $pollToken): array
     {
@@ -124,15 +159,27 @@ class LoginLinkService
 
             $result = $this->finalizeApprovedLogin($request, $link->fresh());
 
-            return ['state' => 'approved', 'session_token' => $result['token']];
+            // The 2FA challenge this link was answering has expired or was already used.
+            if (! $result) {
+                return ['state' => 'expired'];
+            }
+
+            return ['state' => 'approved'] + $result;
         }
 
         // 'consumed' - already claimed by an earlier poll from this same browser.
         return ['state' => 'pending'];
     }
 
-    protected function finalizeApprovedLogin(Request $request, UserLoginLink $link): array
+    /** @return array{session_token: string, remember: bool, tfa: bool}|null null when a 2FA challenge is no longer pending */
+    protected function finalizeApprovedLogin(Request $request, UserLoginLink $link): ?array
     {
+        $isTfa = $link->purpose === 'tfa';
+
+        if ($isTfa && ! ($link->tfa_handle && $this->challenges->consumeTfa($link->tfa_handle))) {
+            return null;
+        }
+
         $user = $link->user;
 
         if ($link->trust_device) {
@@ -140,9 +187,9 @@ class LoginLinkService
         }
 
         $session = $this->sessions->issue($request, $user->id, $link->remember);
-        $this->activity->log($request, $user->id, UserActivity::LOGIN_WITH_LINK);
+        $this->activity->log($request, $user->id, $isTfa ? UserActivity::LOGIN_SUCCESS : UserActivity::LOGIN_WITH_LINK);
 
-        return ['token' => $session->token, 'remember' => $link->remember];
+        return ['session_token' => $session->token, 'remember' => (bool) $link->remember, 'tfa' => $isTfa];
     }
 
     /**

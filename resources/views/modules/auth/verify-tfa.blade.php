@@ -37,6 +37,17 @@
                     </button>
                 </form>
 
+                <div id="tfa-link-panel" style="display:none;" class="mb-4 text-center">
+                    <div class="mb-3 flex justify-center">
+                        <span class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600"></span>
+                    </div>
+                    <p class="mb-2">We sent a login link to your email. Open it on any device to continue.</p>
+                    <p class="mb-1">Confirm this code matches:</p>
+                    <p class="mb-3"><span id="tfa-link-code" class="inline-block rounded-full bg-slate-100 px-5 py-1 font-mono text-2xl tracking-widest"></span></p>
+                    <p id="tfa-link-status" class="mb-3 text-rose-600" style="display:none;"></p>
+                    <button class="btn-outline w-full" type="button" onclick="$('#tfa-back').click()">Choose another method</button>
+                </div>
+
                 <p class="mb-0 text-center text-sm">
                     <a href="{{ url('/logout') }}" class="text-primary-600 hover:underline">Cancel and log out</a>
                 </p>
@@ -51,6 +62,8 @@
             methodsUrl: '{{ url('/auth/tfa/methods') }}',
             sendOtpUrl: '{{ url('/auth/tfa/send-otp') }}',
             verifyUrl: '{{ url('/auth/tfa/verify') }}',
+            sendLinkUrl: '{{ url('/auth/tfa/send-login-link') }}',
+            pollUrl: '{{ url('/auth/login-link/poll') }}',
             dashboardUrl: @json(url($redirectPath)),
         });
     </script>

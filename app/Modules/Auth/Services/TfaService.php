@@ -62,7 +62,7 @@ class TfaService
             return [];
         }
 
-        $methods = ['otp'];
+        $methods = ['otp', 'link'];
         $tf = $this->userTwoFactors->findByUserId($data['user_id']);
 
         if ($tf && $tf->verified) {
