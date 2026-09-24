@@ -80,11 +80,11 @@
             app.ajaxForm(this, function (response) {
                 if (response.status == 1) {
                     if (response.data && response.data.requires_tfa) {
-                        window.location.href = '{{ url('/admin/auth/verify') }}?type=tfa';
+                        window.location.href = '{{ url('/admin/auth/verify') }}?type=tfa&redirect=' + encodeURIComponent(@json($redirectPath));
                         return;
                     }
 
-                    window.location.href = '{{ url('/admin/dashboard') }}';
+                    window.location.href = @json(url($redirectPath));
                 } else {
                     if (response.data && response.data.requires_captcha) {
                         document.getElementById('login-captcha').style.display = 'block';

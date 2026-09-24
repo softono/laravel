@@ -2,6 +2,7 @@
 
 namespace App\Modules\Admin\Auth\Controllers;
 
+use App\Helpers\SafeRedirect;
 use App\Modules\Admin\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -24,9 +25,9 @@ class PageController extends Controller
         return view('modules.admin.auth.reset-password');
     }
 
-    public function showVerify()
+    public function showVerify(Request $request)
     {
-        return view('modules.admin.auth.verify-tfa');
+        return view('modules.admin.auth.verify-tfa', ['redirectPath' => SafeRedirect::path($request->query('redirect'), '/admin/dashboard')]);
     }
 
     public function showVerifyAccount(Request $request)

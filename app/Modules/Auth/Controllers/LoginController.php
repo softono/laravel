@@ -4,6 +4,7 @@ namespace App\Modules\Auth\Controllers;
 
 use App\Constants\UserActivity;
 use App\Helpers\Response;
+use App\Helpers\SafeRedirect;
 use App\Helpers\SignedCookie;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\User;
@@ -24,9 +25,9 @@ class LoginController extends Controller
         parent::__construct();
     }
 
-    public function show()
+    public function show(Request $request)
     {
-        return view('modules.auth.login');
+        return view('modules.auth.login', ['redirectPath' => SafeRedirect::path($request->query('redirect'), '/dashboard')]);
     }
 
     public function login(LoginRequest $request)

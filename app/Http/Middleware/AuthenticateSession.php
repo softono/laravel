@@ -22,7 +22,7 @@ class AuthenticateSession
                 return Response::sendError(401, 'Authentication required');
             }
 
-            return redirect('/login?redirect='.urlencode($request->path()));
+            return redirect('/login?redirect='.urlencode('/'.$request->path()));
         }
 
         return $next($request);

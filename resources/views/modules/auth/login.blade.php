@@ -63,14 +63,14 @@
                 <button type="button" class="btn-outline w-full mb-4" id="passkey-login-btn"
                     data-options-url="{{ url('/auth/passkey/login-options') }}"
                     data-verify-url="{{ url('/auth/passkey/login-verify') }}"
-                    data-dashboard-url="{{ url('/dashboard') }}">
+                    data-dashboard-url="{{ url($redirectPath) }}">
                     Sign in with a passkey
                 </button>
 
                 <button type="button" class="btn-outline w-full mb-4" id="magic-link-toggle"
                     data-start-url="{{ url('/auth/login-link') }}"
                     data-poll-url="{{ url('/auth/login-link/poll') }}"
-                    data-dashboard-url="{{ url('/dashboard') }}">
+                    data-dashboard-url="{{ url($redirectPath) }}">
                     Login with Magic Link
                 </button>
 
@@ -139,8 +139,8 @@
             if (!password.value) { app.showMessage('Please enter your password.', 'error'); return; }
             app.ajaxForm(this, function (response) {
                 if (response.status == 1) {
-                    if (response.data && response.data.requires_tfa) { window.location.href = '{{ url('/verify') }}?type=tfa'; return; }
-                    window.location.href = '{{ url('/dashboard') }}';
+                    if (response.data && response.data.requires_tfa) { window.location.href = '{{ url('/verify') }}?type=tfa&redirect=' + encodeURIComponent(@json($redirectPath)); return; }
+                    window.location.href = @json(url($redirectPath));
                 } else {
                     var data = response.data || {};
                     if (data.requires_captcha) {

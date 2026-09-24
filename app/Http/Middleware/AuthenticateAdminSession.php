@@ -24,7 +24,7 @@ class AuthenticateAdminSession
                 return Response::sendError(401, 'Authentication required');
             }
 
-            return redirect('/admin/auth/login?redirect='.urlencode($request->path()));
+            return redirect('/admin/auth/login?redirect='.urlencode('/'.$request->path()));
         }
 
         $user = Auth::user();

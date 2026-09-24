@@ -51,7 +51,7 @@
             methodsUrl: '{{ url('/auth/tfa/methods') }}',
             sendOtpUrl: '{{ url('/auth/tfa/send-otp') }}',
             verifyUrl: '{{ url('/auth/tfa/verify') }}',
-            dashboardUrl: '{{ url('/admin/dashboard') }}',
+            dashboardUrl: @json(url($redirectPath)),
         });
     </script>
 @endpush

@@ -3,6 +3,7 @@
 namespace App\Modules\Auth\Controllers;
 
 use App\Helpers\Response;
+use App\Helpers\SafeRedirect;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\User;
 use App\Modules\Auth\Requests\VerifyAccountRequest;
@@ -17,9 +18,9 @@ class VerifyController extends Controller
     }
 
     /** GET /verify - the 2FA method picker. */
-    public function show()
+    public function show(Request $request)
     {
-        return view('modules.auth.verify-tfa');
+        return view('modules.auth.verify-tfa', ['redirectPath' => SafeRedirect::path($request->query('redirect'), '/dashboard')]);
     }
 
     /** GET /verify-account - email verification OTP screen. */

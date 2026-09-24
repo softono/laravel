@@ -22,9 +22,9 @@ class SiteSmokeTest extends TestCase
 
     public function test_signed_out_visitors_are_redirected_to_login(): void
     {
-        $this->get('/dashboard')->assertRedirect('/login?redirect=dashboard');
-        $this->get('/notes')->assertRedirect('/login?redirect=notes');
-        $this->get('/admin/dashboard')->assertRedirect('/admin/auth/login?redirect=admin%2Fdashboard');
+        $this->get('/dashboard')->assertRedirect('/login?redirect=%2Fdashboard');
+        $this->get('/notes')->assertRedirect('/login?redirect=%2Fnotes');
+        $this->get('/admin/dashboard')->assertRedirect('/admin/auth/login?redirect=%2Fadmin%2Fdashboard');
     }
 
     public function test_ajax_endpoints_answer_with_the_envelope_when_signed_out(): void
