@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Helpers\SessionTokenGuard;
-use App\Services\Auth\SessionService;
+use App\Modules\Auth\Services\SessionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 

@@ -1,27 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\Modules\Auth\Controllers;
 
 use App\Constants\UserActivity;
 use App\Helpers\Response;
 use App\Helpers\SignedCookie;
-use App\Http\Controllers\Admin\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Auth\User;
 use App\Modules\Auth\Requests\LoginRequest;
+use App\Modules\Auth\Services\AccountService;
 use App\Modules\Auth\Services\AuthService;
 use App\Modules\Auth\Services\DeviceService;
 use App\Modules\Auth\Services\SessionService;
 use App\Modules\Auth\Services\TfaService;
 use Illuminate\Http\Request;
 
-/**
- * Admin mirror of App\Modules\Auth\Controllers\LoginController. Same
- * `users` table, same session mechanics - the only difference is
- * requireAdmin:true on the credential check (which also runs the timing-
- * safe dummyPasswordCheck() on a non-admin email, so this endpoint can't
- * be used to enumerate which accounts are admins) and the redirect
- * target.
- */
 class LoginController extends Controller
 {
     public function __construct(
@@ -33,17 +26,15 @@ class LoginController extends Controller
 
     public function show()
     {
-        return view('admin.auth.login');
+        return view('modules.auth.login');
     }
 
     public function login(LoginRequest $request)
     {
-
         $result = $this->auth->authenticate(
             $request,
             $request->string('email'),
             (string) $request->input('password'),
-            requireAdmin: true,
         );
 
         if (! $result['ok']) {
@@ -52,13 +43,35 @@ class LoginController extends Controller
 
         /** @var User $user */
         $user = $result['user'];
+
+        if (! $user->email_verified && config('setting.user_email_verify') == 1) {
+            app(AccountService::class)->sendOtp('verify', $user);
+
+            // 200, not 403: the login page reads data.next on this failure path and jQuery
+            // only runs the caller's callback for 2xx responses.
+            return Response::sendResponse(200, [
+                'status' => 0,
+                'message' => 'Please verify your account',
+                'data' => [
+                    'next' => 'verify-account',
+                    'email' => $user->email,
+                ],
+            ]);
+        }
+
         $remember = $request->boolean('remember');
 
-        if ($result['requiresTfa'] && ! app(DeviceService::class)->isTrusted($request, $user->id)) {
+        if ($result['requiresTfa'] && class_exists(TfaService::class) && ! $this->deviceIsTrusted($request, $user)) {
             return app(TfaService::class)->startLoginChallenge($request, $user, $remember);
         }
 
+        return $this->issueSessionResponse($request, $user, $remember);
+    }
+
+    public function issueSessionResponse(Request $request, User $user, bool $remember)
+    {
         $session = $this->sessions->issue($request, $user->id, $remember);
+
         $this->auth->logSuccess($request, $user, UserActivity::LOGIN_SUCCESS);
 
         $ttlSeconds = $remember
@@ -68,10 +81,25 @@ class LoginController extends Controller
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendData(['next' => 'admin-dashboard'], 'Logged in successfully');
+        return Response::sendResponse(200, [
+            'status' => 1,
+            'message' => 'Logged in successfully',
+            'data' => [
+                'next' => 'dashboard',
+            ],
+        ]);
     }
 
-    public function logout(Request $request)
+    protected function deviceIsTrusted(Request $request, User $user): bool
+    {
+        if (! class_exists(DeviceService::class)) {
+            return false;
+        }
+
+        return app(DeviceService::class)->isTrusted($request, $user->id);
+    }
+
+    public function apiLogout(Request $request)
     {
         $token = $request->cookie(SignedCookie::name('session_token'));
         $user = auth()->user();
@@ -80,6 +108,13 @@ class LoginController extends Controller
 
         SignedCookie::forget('session_token');
 
-        return redirect('/admin/auth/login');
+        return Response::sendMessage('Logged out successfully');
+    }
+
+    public function logout(Request $request)
+    {
+        $this->apiLogout($request);
+
+        return redirect('/login');
     }
 }

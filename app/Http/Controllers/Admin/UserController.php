@@ -107,7 +107,6 @@ class UserController extends Controller
     public function view(Request $request)
     {
         $id = $request->input('id');
-       
 
         $ContactMessages = ContactMessages::where('user_id', $id)
             ->orderBy('created_at', 'desc')
@@ -122,6 +121,7 @@ class UserController extends Controller
             ->limit(10)
             ->get();
         $model = User::where('id', $id)->first();
+
         // dd($model);
         return view('admin/user/view', compact('model', 'logData', 'userAuthList', 'ContactMessages'));
     }

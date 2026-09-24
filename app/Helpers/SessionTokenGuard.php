@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\Auth\User;
-use App\Services\Auth\SessionService;
+use App\Modules\Auth\Services\SessionService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Http\Request;

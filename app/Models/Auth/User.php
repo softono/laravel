@@ -139,6 +139,4 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserTwoFactor::class, 'user_id');
     }
-    
-    
 }
