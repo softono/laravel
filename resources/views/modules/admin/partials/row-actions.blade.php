@@ -1,5 +1,5 @@
 <div class="flex items-center gap-2">
-    @if ($viewer->hasPermission($base.'/view'))
+    @if (\Illuminate\Support\Facades\Route::has($base.'/view') && $viewer->hasPermission($base.'/view'))
         <a href="{{ route($base.'/view', ['id' => $id]) }}" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>
     @endif
     @if ($viewer->hasPermission($base.'/update'))

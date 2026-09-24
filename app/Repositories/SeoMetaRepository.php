@@ -7,151 +7,87 @@ use App\Models\SeoMeta;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Validator;
 
 class SeoMetaRepository
 {
-    public function findById($id): ?SeoMeta
+    public function __construct(protected Pagination $pagination) {}
+
+    public function findById(int|string $id): ?SeoMeta
     {
         return SeoMeta::find($id);
     }
 
-    public function getMetaData(): ?array
+    public function create(array $data): SeoMeta
     {
-        $currentUrl = Route::current()?->getName();
-        if (! $currentUrl) {
-            return null;
-        }
-
-        $cacheKey = 'seo_meta_'.$currentUrl;
-        $metaData = Cache::get($cacheKey);
-
-        if ($metaData) {
-            return $metaData;
-        }
-        $siteMeta = SeoMeta::where('url', $currentUrl)->first();
-        if ($siteMeta) {
-            $metaData = [
-                'title' => $siteMeta->title,
-                'keyword' => $siteMeta->keyword,
-                'description' => $siteMeta->description,
-            ];
-        } else {
-            $metaData = [
-                'title' => '',
-                'keyword' => '',
-                'description' => '',
-            ];
-        }
-        Cache::put($cacheKey, $metaData, 86400);
-
-        return $metaData;
+        return SeoMeta::create($data);
     }
 
-    public function getActiveStatus(): Collection
+    public function update(SeoMeta $seo, array $data): bool
     {
-        return DB::table('seos')->where('sitemap_enable', 1)->get();
+        $this->forget($seo->url);
+
+        return $seo->update($data);
     }
 
-    public function listAdmin(array $postData): array
+    public function delete(SeoMeta $seo): ?bool
     {
-        $query = DB::table('seos');
-        $searchText = $postData['search']['value'] ?? '';
+        $this->forget($seo->url);
 
-        if (strlen($searchText) > 2) {
-            $query->where('title', 'like', '%'.$searchText.'%');
-        }
-
-        $pagination = new Pagination;
-        $result = $pagination->getDataTable($query, $postData);
-
-        foreach ($result['data'] as $row) {
-            $row->action = sprintf(
-                '<a href="page/%s" class="text-body pjax" title="View"><i class="bx bxs-show icon-base"></i></a>&nbsp;'.
-                '<a href="admin/page/update?id=%d" class="btn btn-info pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>',
-                e($row->slug ?? ''),
-                $row->id
-            );
-        }
-
-        return $result;
+        return $seo->delete();
     }
 
-    public function Seometalist(array $postData): array
+    /**
+     * The title, keyword and description for a route, cached for a day. Rows are keyed by
+     * route name (`seos.url`), so an unknown route yields empty strings.
+     *
+     * @return array{title: string, keyword: string, description: string}
+     */
+    public function metaForRoute(string $route): array
     {
-        $query = DB::table('seos')->select('*');
-        $searchText = $postData['search']['value'] ?? '';
+        return Cache::remember($this->cacheKey($route), 86400, function () use ($route) {
+            $seo = SeoMeta::where('url', $route)->first();
 
-        if (strlen($searchText) > 2) {
-            $query->where(function ($query) use ($searchText) {
-                $searchPattern = '%'.$searchText.'%';
-                $query->where('title', 'like', $searchPattern)
-                    ->orWhere('keyword', 'like', $searchPattern)
-                    ->orWhere('url', 'like', $searchPattern)
-                    ->orWhere('description', 'like', $searchPattern)
-                    ->orWhere('sitemap_enable', 'like', $searchPattern);
-            });
-        }
-
-        $pagination = new Pagination;
-        $result = $pagination->getDataTable($query, $postData);
-        $sessionUser = auth()->user();
-        $seoMeta = new SeoMeta;
-
-        foreach ($result['data'] as $row) {
-            $row->sitemap_enable = $seoMeta->getStatusBadge((int) $row->sitemap_enable);
-            $row->action = '';
-
-            if ($sessionUser && $sessionUser->hasPermission('admin/seo/update')) {
-                $row->action .= sprintf(
-                    '<a href="admin/seo/update?id=%d" class="text-body pjax" title="Update"><i class="bx bxs-edit icon-base"></i></a>&nbsp;',
-                    $row->id
-                );
-            }
-
-            if ($sessionUser && $sessionUser->hasPermission('admin/seo/delete')) {
-                $row->action .= sprintf(
-                    '<button style="border:none; background:none;" onclick="app.confirmAction(this);" data-action="admin/seo/delete?id=%d"  class="text-body pjax" title="Delete"><i class="bx bxs-trash icon-base"></i></button>',
-                    $row->id
-                );
-            }
-        }
-
-        return $result;
-    }
-
-    public function store(array $postData): array
-    {
-        $validator = Validator::make($postData, [
-            'title' => 'required',
-            'url' => 'required',
-            'keyword' => 'required',
-            'description' => 'required',
-        ]);
-        if ($validator->fails()) {
             return [
-                'status' => 0,
-                'message' => $validator->errors()->first(),
+                'title' => $seo->title ?? '',
+                'keyword' => $seo->keyword ?? '',
+                'description' => $seo->description ?? '',
             ];
-        }
-        $id = $postData['id'] ?? null;
-        $seometa = $id ? SeoMeta::find($id) : new SeoMeta;
-        if ($id && ! $seometa) {
-            return ['status' => 0, 'message' => 'Seo meta not found.'];
+        });
+    }
+
+    /** @return Collection<int, SeoMeta> */
+    public function sitemapEntries(): Collection
+    {
+        return SeoMeta::where('sitemap_enable', 1)->get(['url', 'last_modified', 'change_frequency', 'priority']);
+    }
+
+    /**
+     * @return array{recordsTotal: int, recordsFiltered: int, draw: int|string, data: Collection}
+     */
+    public function datatable(array $post): array
+    {
+        $query = DB::table('seos')->select('id', 'type', 'url', 'title', 'keyword', 'sitemap_enable', 'updated_at');
+
+        $search = trim($post['search']['value'] ?? '');
+        if (strlen($search) > 2) {
+            $like = '%'.$search.'%';
+            $query->where(fn ($q) => $q
+                ->where('title', 'like', $like)
+                ->orWhere('keyword', 'like', $like)
+                ->orWhere('url', 'like', $like)
+                ->orWhere('description', 'like', $like));
         }
 
-        $seometa->url = $postData['url'];
-        $seometa->title = $postData['title'];
-        $seometa->keyword = $postData['keyword'];
-        $seometa->description = $postData['description'];
-        $seometa->sitemap_enable = $postData['site_map'];
-        $seometa->last_modified = $postData['last_modified'];
-        $seometa->change_frequency = $postData['frequency'];
-        $seometa->priority = $postData['priority'];
+        return $this->pagination->getDataTable($query, $post);
+    }
 
-        return $seometa->save()
-            ? ['status' => 1, 'message' => 'Seo Saved successfully', 'next' => 'load', 'url' => 'admin/seo/meta']
-            : ['status' => 0, 'message' => 'Failed to save the Seo Meta.'];
+    protected function forget(string $route): void
+    {
+        Cache::forget($this->cacheKey($route));
+    }
+
+    protected function cacheKey(string $route): string
+    {
+        return 'seo_meta_'.$route;
     }
 }

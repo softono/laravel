@@ -17,7 +17,6 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
@@ -67,8 +66,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
-            if ($e->getStatusCode() === 419 && ($request->expectsJson() || $request->ajax())) {
-                return Response::sendError(419, 'Your session has expired. Please refresh the page and try again.');
+            $messages = [
+                419 => 'Your session has expired. Please refresh the page and try again.',
+                429 => 'Too many requests. Please try again later.',
+            ];
+
+            if (isset($messages[$e->getStatusCode()]) && ($request->expectsJson() || $request->ajax())) {
+                return Response::sendError($e->getStatusCode(), $messages[$e->getStatusCode()]);
             }
         });
     })->create();

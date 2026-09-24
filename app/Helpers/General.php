@@ -3,14 +3,15 @@
 namespace App\Helpers;
 
 use App\Jobs\SendEmail;
-use App\Models\EmailTemplate;
-use App\Models\SeoMeta;
 use App\Models\Setting;
+use App\Repositories\SeoMetaRepository;
 use App\Repositories\SettingRepository;
+use App\Services\EmailTemplateService;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Mail\Mailer;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -111,7 +112,9 @@ class General
      */
     public function getMetaData()
     {
-        return (new SeoMeta)->getMetaData();
+        $route = Route::current()?->getName();
+
+        return $route ? app(SeoMetaRepository::class)->metaForRoute($route) : null;
     }
 
     /**
@@ -148,24 +151,26 @@ class General
     }
 
     /**
-     * Checks if Google reCAPTCHA verification fails.
-     *
-     * @return bool
+     * Whether the Google reCAPTCHA check on the current request fails. Passes when the
+     * captcha is switched off or has no secret key configured; a failed lookup fails closed.
      */
-    public function recaptchaFails()
+    public function recaptchaFails(): bool
     {
-        if (! config('setting.google_recaptcha')) {
-            return true;
-        }
-        try {
-            $recaptcha = request('g-recaptcha-response');
-            $url = 'https://www.google.com/recaptcha/api/siteverify?secret='.config('setting.google_recaptcha_secret_key').'&response='.$recaptcha;
-            $response = @file_get_contents($url);
-            $response = @json_decode($response);
+        $secret = config('setting.google_recaptcha_secret_key');
 
-            return ! $response->success;
-        } catch (\Exception $e) {
+        if (! config('setting.google_recaptcha') || ! $secret) {
             return false;
+        }
+
+        try {
+            $response = Http::asForm()->timeout(5)->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => $secret,
+                'response' => request('g-recaptcha-response'),
+            ]);
+
+            return ! $response->json('success', false);
+        } catch (\Throwable) {
+            return true;
         }
     }
 
@@ -318,6 +323,7 @@ class General
             'profile' => 'profile/',
             'email' => 'email/',
             'logo' => 'logo/',
+            'content' => 'content/',
             default => 'temp/',
         };
     }
@@ -425,7 +431,7 @@ class General
      */
     public function sendEmail(string $to, string $template, array $data, $queue = false)
     {
-        $templateData = (new EmailTemplate)->getEmailTemplate($template, $data);
+        $templateData = app(EmailTemplateService::class)->render($template, $data);
         if ($queue && function_exists('proc_open')) {
             // Dispatch email job (queue must be running)
             SendEmail::dispatchAfterResponse($to, $templateData['subject'], $templateData['body']);
