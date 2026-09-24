@@ -2,7 +2,7 @@
 @section('title', 'Passkeys')
 @section('content')
     <div>
-        {{ view('account/component/account_block', compact('model')) }}
+        {{ view('modules.user.account.component.account_block', compact('model')) }}
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-2">Passkeys</h5>

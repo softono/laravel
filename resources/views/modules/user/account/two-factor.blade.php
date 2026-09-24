@@ -2,7 +2,7 @@
 @section('title', 'Two-Factor Authentication')
 @section('content')
     <div>
-        {{ view('account/component/account_block', compact('model')) }}
+        {{ view('modules.user.account.component.account_block', compact('model')) }}
         <div class="space-y-4">
             <div class="card">
                 <div class="card-header">

@@ -5,7 +5,7 @@
 @section('content')
     <!-- Content -->
     <div>
-        {{ view('account/component/account_block', compact('model')) }}
+        {{ view('modules.user.account.component.account_block', compact('model')) }}
         <!-- Ajax Sourced Server-side -->
         <div class="card">
             <div class="card-header">

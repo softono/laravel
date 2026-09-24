@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\Auth\User;
+use App\Models\Auth\UserSession;
 use App\Modules\Auth\Services\SessionService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
@@ -17,6 +18,8 @@ use Illuminate\Http\Request;
 class SessionTokenGuard implements Guard
 {
     protected ?User $user = null;
+
+    protected ?UserSession $session = null;
 
     protected bool $resolved = false;
 
@@ -47,8 +50,17 @@ class SessionTokenGuard implements Guard
         $result = $this->sessions->validate($token);
 
         $this->user = $result['user'] ?? null;
+        $this->session = $result['session'] ?? null;
 
         return $this->user;
+    }
+
+    /** The session row behind the current request (for marking "this device" in session lists). */
+    public function session(): ?UserSession
+    {
+        $this->user();
+
+        return $this->session;
     }
 
     public function id(): int|string|null

@@ -5,7 +5,7 @@
 @section('content')
 
     <div>
-        {{ view('account/component/account_block', compact('model')) }}
+        {{ view('modules.user.account.component.account_block', compact('model')) }}
         <div class="space-y-4">
             <div class="card">
                 <div class="card-body">
@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div class="card-body pt-4">
-                    <form action="account/update-process" method="post" id="ajax-form">
+                    <form action="{{ route('account/update-process') }}" method="post" id="ajax-form">
                         {{ csrf_field() }}
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
@@ -44,16 +44,34 @@
                             </div>
 
                             <div>
-                                <label for="email" class="form-label">E-mail <span class="text-rose-600">*</span></label>
-                                <input type="email" value="{{ $model->email }}" name="email" class="form-input"
-                                    id="email" placeholder="Enter Email" required="required">
+                                <label for="email" class="form-label">E-mail</label>
+                                <input type="email" value="{{ $model->email }}" class="form-input" id="email"
+                                    readonly disabled>
                             </div>
 
                             <div>
-                                <label class="form-label" for="phoneNumber">Phone Number <span
-                                        class="text-rose-600">*</span></label>
-                                <input type="number" value="{{ $model->phone }}" name="phone" class="form-input"
-                                    id="phone" placeholder="Enter Phone" required="required">
+                                <label class="form-label" for="phone">Phone Number</label>
+                                <input type="tel" value="{{ $model->phone }}" name="phone" class="form-input"
+                                    id="phone" placeholder="Enter Phone">
+                            </div>
+
+                            <div>
+                                <label class="form-label" for="country">Country</label>
+                                <select name="country" id="country" class="form-select">
+                                    <option value="">Select country</option>
+                                    @foreach ($countries as $code => $name)
+                                        <option value="{{ $code }}" @selected($model->country === $code)>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label" for="timezone">Timezone</label>
+                                <select name="timezone" id="timezone" class="form-select">
+                                    @foreach ($timezones as $timezone)
+                                        <option value="{{ $timezone }}" @selected($model->timezone === $timezone)>{{ $timezone }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="mt-6">
@@ -65,19 +83,19 @@
             </div>
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title">Delete Account</h5>
+                    <h5 class="card-title">Deactivate Account</h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-6">
                         <div class="alert-warning">
-                            <h5 class="mb-1 font-semibold">Are you sure you want to delete your account?</h5>
-                            <p>Once you delete your account, there is no going back. Please be certain.</p>
+                            <h5 class="mb-1 font-semibold">Are you sure you want to deactivate your account?</h5>
+                            <p>Your account will be deactivated and you will be signed out on every device.</p>
                         </div>
                     </div>
                     <form action="{{ route('account/deactivate') }}" id="formAccountDeactivation" method="POST">
                         @csrf
                         <div class="my-8 ml-2 flex items-center gap-2">
-                            <input type="checkbox" class="form-check-input" name="accountActivation" id="accountActivation">
+                            <input type="checkbox" class="form-check-input" name="accountActivation" id="accountActivation" required>
                             <label for="accountActivation" class="form-check-label">I confirm my account
                                 deactivation</label>
                         </div>
@@ -90,25 +108,8 @@
 @endsection
 @push('scripts')
     <script type="text/javascript">
-        jQuery.validator.addMethod("noDisposableEmail", v => !["mailinator.com", "tempmail.com", "10minutemail.com",
-            "guerrillamail.com", "fakeinbox.com"
-        ].includes((v.split('@')[1] || "").toLowerCase()), "Disposable email addresses are not allowed.");
         documentReady(function() {
             $('#ajax-form').validate({
-                rules: {
-                    email: {
-                        required: true,
-                        email: true,
-                        noDisposableEmail: true
-                    },
-                },
-                messages: {
-                    email: {
-                        required: "Please enter the email",
-                        email: "Please enter a valid email address",
-                        noDisposableEmail: "Please enter a valid Email domain"
-                    },
-                },
                 submitHandler: function(form) {
                     app.ajaxForm(form);
                 }

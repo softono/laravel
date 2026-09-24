@@ -54,7 +54,7 @@ $(document).ready(function() {
                 $.post($(this).attr('action'), $(this).serialize(), function(response) {
                     if (response.status === 1) {
                         Swal.fire('Success', response.message, 'success').then(() => {
-                            if (response.next === 'refresh') {
+                            if (response.data && response.data.next === 'refresh') {
                                 location.reload();
                             }
                         });

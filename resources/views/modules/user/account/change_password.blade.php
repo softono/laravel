@@ -4,11 +4,11 @@
 @endsection
 @section('content')
     <div>
-        {{ view('account/component/account_block', compact('model')) }}
+        {{ view('modules.user.account.component.account_block', compact('model')) }}
         <div class="card">
             <h5 class="card-header">Change Password</h5>
             <div class="card-body">
-                <form action="account/password-change-process" method="post" id="ajax-form">
+                <form action="{{ url('auth/change-password') }}" method="post" id="ajax-form">
                     {{ csrf_field() }}
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>

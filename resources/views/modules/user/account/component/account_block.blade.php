@@ -11,8 +11,8 @@
                 href="{{ route('account/password-change') }}"><i class="bx bx-key"></i> Password Change</a>
         </li>
         <li>
-            <a class="pjax inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-primary-600 {{ $general->routeMatchClass('account/tfa') }}"
-                href="{{ route('account/tfa') }}"><i class="bx bx-lock-alt"></i> Two Factor Authentication</a>
+            <a class="pjax inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-primary-600 {{ $general->routeMatchClass('account/two-factor') }}"
+                href="{{ route('account/two-factor') }}"><i class="bx bx-lock-alt"></i> Two Factor Authentication</a>
         </li>
         <li>
             <a class="pjax inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-primary-600 {{ $general->routeMatchClass('account/passkeys') }}"

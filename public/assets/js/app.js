@@ -255,17 +255,18 @@ const app = {
         });
     },
 
+    /**
+     * Runs the follow-up action the server asked for. Like every other extra it
+     * travels inside the envelope: {status, message, data: {next, url}}.
+     */
     nextAction: function (response) {
-        if (response.next === undefined) {
+        const data = response.data || {};
+        if (data.next === undefined) {
             return false;
         }
-        if (response.next.match(",")) {
-            response.next.split(",").forEach(function (next) {
-                app.runNextAction(next, response);
-            });
-        } else {
-            app.runNextAction(response.next, response);
-        }
+        data.next.split(",").forEach(function (next) {
+            app.runNextAction(next.trim(), data);
+        });
     },
 
     /**
@@ -284,7 +285,7 @@ const app = {
                 app.nextAction(response);
             }
         } else if (response.message) {
-            app.showMessage(response.message, "error");
+            app.showMessage(rresponse.message, "error");
         }
     },
 
@@ -1226,9 +1227,9 @@ function initEditorFull(editorElement, fileUploadUrl) {
                 formData.append("upload", files[0]);
                 app.ajaxFilePost(fileUploadUrl, formData, function (response) {
                     if (response.status) {
-                        seditor.summernote("insertImage", response.url);
+                        seditor.summernote("insertImage", response.data.url);
                     } else {
-                        app.showMessage(esponse.message, "error");
+                        app.showMessage(response.message, "error");
                     }
                 });
             },

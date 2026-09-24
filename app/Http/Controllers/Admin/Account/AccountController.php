@@ -20,7 +20,7 @@ class AccountController extends Controller
      */
     public function dashboard()
     {
-        return view('site/dashboard');
+        return view('modules.user.dashboard');
     }
 
     /**

@@ -25,29 +25,6 @@ Route::group(['middleware' => ['web']], function () {
     // read columns that don't exist on the current `users` model.
 });
 
-Route::group(['middleware' => ['web', 'auth.user']], function () {
-    Route::get('dashboard', '\App\Http\Controllers\SiteController@dashboard')->name('dashboard');
-
-    Route::get('account/update', '\App\Http\Controllers\Account\AccountController@update')->name('account/update');
-    Route::post('account/update-process', '\App\Http\Controllers\Account\AccountController@updateProcess')->name('account/update-process');
-    Route::get('account/password-change', '\App\Http\Controllers\Account\AccountController@passwordChange')->name('account/password-change');
-    Route::post('account/password-change-process', '\App\Http\Controllers\Account\AccountController@passwordChangeProcess')->name('account/password-change-process');
-    Route::get('account/image', '\App\Http\Controllers\Account\AccountController@image')->name('account/image');
-    Route::post('account/image-save', '\App\Http\Controllers\Account\AccountController@imagesave')->name('account/image-save');
-    Route::post('account/delete-image', '\App\Http\Controllers\Account\AccountController@deleteImage')->name('account/delete-image');
-    Route::get('account/tfa', '\App\Http\Controllers\Account\AccountController@tfa')->name('account/tfa');
-    Route::get('account/passkeys', '\App\Http\Controllers\Account\AccountSecurityController@passkeys')->name('account/passkeys');
-    Route::post('account/tfa-status-change', '\App\Http\Controllers\Account\AccountController@tfaStatusChange')->name('account/tfa-status-change');
-    Route::post('account/revoke-all', '\App\Http\Controllers\Account\AccountController@revokeAll')->name('account/revoke-all');
-    Route::get('account/device', '\App\Http\Controllers\Account\AccountController@device')->name('account/device');
-    Route::get('account/session', '\App\Http\Controllers\Account\AccountController@device')->name('account/session');
-    Route::post('account/device-list', '\App\Http\Controllers\Account\AccountController@deviceList')->name('account/device-list');
-    Route::post('account/device-logout', '\App\Http\Controllers\Account\AccountController@deviceLogout')->name('account/device-logout');
-    Route::get('account/user-activity', '\App\Http\Controllers\Account\AccountController@userActivity')->name('account/user-activity');
-    Route::post('account/user-activity-list', '\App\Http\Controllers\Account\AccountController@userActivityList')->name('account/user-activity-list');
-    Route::post('account/deactivate', '\App\Http\Controllers\Account\AccountController@accountDeactivate')->name('account/deactivate');
-});
-
 /* Admin routes =========================================================================== */
 // admin/auth/*, admin/site/password-forgot(-process) removed here - admin
 // auth lives in routes/auth.php (Admin\Auth\{LoginController,PageController}).

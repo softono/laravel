@@ -21,11 +21,6 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            // Kept in its own file so the "replace the old auth" diff
-            // against routes/web.php stays obvious.
-            Route::middleware('web')
-                ->group(__DIR__.'/../routes/auth.php');
-
             // Modular routes (docs/local/module_structure.md). Each module owns a
             // <module>_routes.php next to its controllers.
             foreach (glob(app_path('Modules/*/*_routes.php')) as $file) {

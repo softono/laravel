@@ -93,8 +93,6 @@ class UserSessionRepository
             ->join('users', 'users.id', '=', 'user_sessions.user_id')
             ->select([
                 'user_sessions.id as id',
-                'user_sessions.user_id',
-                'user_sessions.device_uid',
                 'user_sessions.user_agent as client',
                 'user_sessions.ip_address as ip',
                 'user_sessions.updated_at as last_activity',
