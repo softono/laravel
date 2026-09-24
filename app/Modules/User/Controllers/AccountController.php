@@ -96,6 +96,11 @@ class AccountController extends Controller
         return Response::sendResult($result);
     }
 
+    public function sessionLogoutOthers(Request $request)
+    {
+        return Response::sendResult($this->sessionList->logoutOthers($request, auth()->user()));
+    }
+
     public function userActivity()
     {
         return $this->page('user_activity');

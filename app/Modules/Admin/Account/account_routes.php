@@ -17,6 +17,7 @@ Route::prefix('account')->group(function () {
     Route::get('session', [AccountController::class, 'session'])->name('admin/account/session');
     Route::post('session-list', [AccountController::class, 'sessionList'])->name('admin/account/session-list');
     Route::post('session-logout', [AccountController::class, 'sessionLogout'])->name('admin/account/session-logout');
+    Route::post('session-logout-others', [AccountController::class, 'sessionLogoutOthers'])->name('admin/account/session-logout-others');
     Route::get('user-activity', [AccountController::class, 'userActivity'])->name('admin/account/user-activity');
     Route::post('user-activity-list', [AccountController::class, 'userActivityList'])->name('admin/account/user-activity-list');
     Route::post('deactivate', [AccountController::class, 'deactivate'])->name('admin/account/deactivate');

@@ -49,6 +49,12 @@ class UserSessionRepository
         return UserSession::where('user_id', $userId)->delete();
     }
 
+    /** Deletes every session of the user except one; returns how many were removed. */
+    public function revokeOthersForUser(string $userId, string $exceptId): int
+    {
+        return UserSession::where('user_id', $userId)->where('id', '!=', $exceptId)->delete();
+    }
+
     /** @return Collection<int, UserSession> */
     public function latestForUser(string $userId, int $limit = 10): Collection
     {

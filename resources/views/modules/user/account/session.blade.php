@@ -7,8 +7,12 @@
         @include('modules.user.account.component.account_block')
         <!-- Invoice List Table -->
         <div class="card">
-            <div class="card-header">
+            <div class="card-header flex items-center justify-between gap-4">
                 <h5 class="card-title"><span class="font-normal text-slate-500">Sessions /</span> List</h5>
+                <button type="button" class="btn-outline" onclick="app.confirmAction(this);"
+                    data-action="{{ route($prefix.'account/session-logout-others') }}" data-next="table_refresh">
+                    Sign out other devices
+                </button>
             </div>
             <div class="card-body overflow-x-auto">
                 <table class="w-full text-sm" id="data-table">

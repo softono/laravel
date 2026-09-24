@@ -20,6 +20,7 @@ Route::middleware(['device.uid', 'auth.user'])->group(function () {
         Route::get('session', [AccountController::class, 'session'])->name('account/session');
         Route::post('session-list', [AccountController::class, 'sessionList'])->name('account/session-list');
         Route::post('session-logout', [AccountController::class, 'sessionLogout'])->name('account/session-logout');
+        Route::post('session-logout-others', [AccountController::class, 'sessionLogoutOthers'])->name('account/session-logout-others');
         Route::get('user-activity', [AccountController::class, 'userActivity'])->name('account/user-activity');
         Route::post('user-activity-list', [AccountController::class, 'userActivityList'])->name('account/user-activity-list');
         Route::post('deactivate', [AccountController::class, 'deactivate'])->name('account/deactivate');

@@ -63,6 +63,25 @@ class SessionListService
         return ['ok' => true, 'message' => 'Device logged out successfully'];
     }
 
+    /**
+     * Ends every session of the user but the one making the request.
+     *
+     * @return array{ok: bool, message: string, sessions_terminated?: int}
+     */
+    public function logoutOthers(Request $request, User $user): array
+    {
+        $current = $this->currentSession();
+
+        if (! $current) {
+            return ['ok' => false, 'message' => 'Session not found'];
+        }
+
+        $count = $this->userSessions->revokeOthersForUser($user->id, $current->id);
+        $this->activity->log($request, $user->id, UserActivity::DEVICE_LOGGED_OUT, ['sessions_terminated' => $count]);
+
+        return ['ok' => true, 'message' => 'All other sessions terminated successfully', 'sessions_terminated' => $count];
+    }
+
     protected function present(array $result, string $logoutRoute): array
     {
         $currentId = $this->currentSession()?->id;
