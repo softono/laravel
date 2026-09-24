@@ -286,7 +286,7 @@ class General
         $rule = 'file|mimetypes:image/*|max:'.$size;
         switch ($type) {
             case 'image':
-                $rule = 'file|mimes:jpeg,jpg,png,gif,webp,bmp,svg,ico|max:'.$size;
+                $rule = 'file|mimes:jpeg,jpg,png,gif,webp,bmp,ico|max:'.$size;
                 break;
             case 'pdf':
                 $rule = 'file|mimes:pdf|max:1024';
@@ -295,7 +295,7 @@ class General
                 $rule = 'file|mimes:pdf,xlsx,doc,docx|max:1024';
                 break;
             case 'all':
-                $rule = 'file|mimes:pdf,xlsx,doc,docx,jpeg,jpg,png,gif,webp,bmp,svg,ico|max:1024';
+                $rule = 'file|mimes:pdf,xlsx,doc,docx,jpeg,jpg,png,gif,webp,bmp,ico|max:1024';
                 break;
         }
 
