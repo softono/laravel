@@ -11,12 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
  * Content-Security-Policy plus the usual clickjacking / sniffing / referrer
  * hardening.
  *
- * script-src keeps 'unsafe-inline' and 'unsafe-eval' on purpose: the layouts
- * use Alpine.js (expression evaluation), inline handlers and inline scripts
- * that PJAX re-executes from other responses, and the `footer_content`
- * setting holds admin-supplied markup. A per-request nonce would break all of
- * those. Everything else (framing, plugins, base, form targets, connections)
- * is locked down.
+ * script-src keeps 'unsafe-inline' on purpose: the pages use inline handlers
+ * and inline scripts that PJAX re-executes from other responses, and the
+ * `footer_content` setting holds admin-supplied markup. A per-request nonce
+ * would break all of those. There is no 'unsafe-eval'. Everything else
+ * (framing, plugins, base, form targets, connections) is locked down.
  */
 class SecurityHeaders
 {
@@ -56,7 +55,7 @@ class SecurityHeaders
 
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com {$cdns} {$vite}",
+            "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com {$cdns} {$vite}",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com {$cdns} {$vite}",
             "img-src 'self' data: blob: {$fileOrigin}",
             "font-src 'self' data: https://fonts.gstatic.com {$cdns}",

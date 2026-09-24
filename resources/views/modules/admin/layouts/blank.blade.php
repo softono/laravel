@@ -34,7 +34,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         integrity="sha512-Of+yU7HlIFqXQcG8Usdd67ejABz27o7CRB1tJCvzGYhTddCi4TZLVhh9tGaJCwlrBiodWCzAx+igo9oaNbUk5A=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite('resources/css/app.css')
     @stack('style')
 
     <script>

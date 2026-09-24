@@ -26,59 +26,53 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="mb-6" x-data="{ tab: 'general' }">
+            <div class="mb-6" data-tabs data-tabs-active="border-primary-600 text-primary-600" data-tabs-inactive="border-transparent text-slate-500 hover:text-slate-700">
                 <ul class="flex flex-wrap gap-1 border-b border-slate-200" role="tablist">
                     <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-                            :class="tab === 'general' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-                            @click="tab = 'general'" role="tab" aria-controls="navs-top-general"
-                            :aria-selected="tab === 'general'">
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-primary-600 text-primary-600"
+                            data-tab="general" role="tab" aria-controls="navs-top-general"
+                            aria-selected="true">
                             General
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-                            :class="tab === 'logo' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-                            @click="tab = 'logo'" role="tab" aria-controls="navs-top-logo"
-                            :aria-selected="tab === 'logo'">
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                            data-tab="logo" role="tab" aria-controls="navs-top-logo"
+                            aria-selected="false">
                             Logo
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-                            :class="tab === 'mail' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-                            @click="tab = 'mail'" role="tab" aria-controls="navs-top-mail"
-                            :aria-selected="tab === 'mail'">
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                            data-tab="mail" role="tab" aria-controls="navs-top-mail"
+                            aria-selected="false">
                             Mail
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-                            :class="tab === 'recaptcha' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-                            @click="tab = 'recaptcha'" role="tab" aria-controls="navs-top-recaptcha"
-                            :aria-selected="tab === 'recaptcha'">
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                            data-tab="recaptcha" role="tab" aria-controls="navs-top-recaptcha"
+                            aria-selected="false">
                             Google recaptcha
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-                            :class="tab === 'login' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-                            @click="tab = 'login'" role="tab" aria-controls="navs-top-login"
-                            :aria-selected="tab === 'login'">
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                            data-tab="login" role="tab" aria-controls="navs-top-login"
+                            aria-selected="false">
                             Social Login
                         </button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors"
-                            :class="tab === 'content' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'"
-                            @click="tab = 'content'" role="tab" aria-controls="navs-top-content"
-                            :aria-selected="tab === 'content'">
+                        <button type="button" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors border-transparent text-slate-500 hover:text-slate-700"
+                            data-tab="content" role="tab" aria-controls="navs-top-content"
+                            aria-selected="false">
                             Content
                         </button>
                     </li>
                 </ul>
                 <div class="mt-4" id="custom-tabs-one-tabContent">
-                    <div x-show="tab === 'general'" id="navs-top-general" role="tabpanel"
+                    <div data-tab-panel="general" id="navs-top-general" role="tabpanel"
                         aria-labelledby="navs-top-general">
                         <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                             {{ csrf_field() }}
@@ -204,7 +198,7 @@
                             </div>
                         </form>
                     </div>
-                    <div x-show="tab === 'logo'" x-cloak id="navs-top-logo" role="tabpanel">
+                    <div data-tab-panel="logo" class="hidden" id="navs-top-logo" role="tabpanel">
                         <div class="flex flex-wrap gap-4">
                             <div class="w-full md:w-1/2">
                                 <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form-logo" method="post" enctype="multipart/form-data">
@@ -264,7 +258,7 @@
                             </div>
                         </div>
                     </div>
-                    <div x-show="tab === 'mail'" x-cloak id="navs-top-mail" role="tabpanel">
+                    <div data-tab-panel="mail" class="hidden" id="navs-top-mail" role="tabpanel">
                         <form action="{{ route('admin/setting/save') }}" class="ajax-form-mail" method="post">
                             {{ csrf_field() }}
                             <input type="hidden" name="section" value="smtp">
@@ -365,7 +359,7 @@
                             </div>
                         </form>
                     </div>
-                    <div x-show="tab === 'recaptcha'" x-cloak id="navs-top-recaptcha" role="tabpanel">
+                    <div data-tab-panel="recaptcha" class="hidden" id="navs-top-recaptcha" role="tabpanel">
 
                         <form action="{{ route('admin/setting/save') }}" class="ajax-form-captcha"
                             method="post">
@@ -418,7 +412,7 @@
                             </div>
                         </form>
                     </div>
-                    <div x-show="tab === 'login'" x-cloak id="navs-top-login" role="tabpanel">
+                    <div data-tab-panel="login" class="hidden" id="navs-top-login" role="tabpanel">
                         <form action="{{ route('admin/setting/save') }}" class="ajax-form-social"
                             method="post">
                             {{ csrf_field() }}
@@ -473,7 +467,7 @@
                             </div>
                         </form>
                     </div>
-                    <div x-show="tab === 'content'" x-cloak id="navs-top-content" role="tabpanel">
+                    <div data-tab-panel="content" class="hidden" id="navs-top-content" role="tabpanel">
                         <form action="{{ route('admin/setting/save') }}" class="ajax-form-content"
                             method="post">
                             {{ csrf_field() }}

@@ -16,9 +16,9 @@ Summary in [`../AGENTS.md`](../AGENTS.md#frontend-overview).
 | Icons | Boxicons (`bx bx-…`) |
 | Tables | jQuery DataTables 2 with the Tailwind styling integration |
 | JS | `public/assets/js/*.js`, plain `<script>` tags — **not** bundled by Vite |
-| Interactivity | jQuery (`app.*` helpers, `jquery-validate`), Alpine.js in the shells, PJAX page loading |
+| Interactivity | jQuery (`app.*` helpers, `jquery-validate`), PJAX page loading. No Alpine or other framework |
 
-Vite compiles **CSS only** (`@vite(['resources/css/app.css', 'resources/js/app.js'])`); `resources/js/app.js` is not used by any view. After using a Tailwind utility class that no view used before, run `npm run build`.
+Vite compiles **CSS only** (`@vite('resources/css/app.css')`); there is no JS bundle. After using a Tailwind utility class that no view used before, run `npm run build`.
 
 ---
 
@@ -97,6 +97,20 @@ They speak the [response envelope](api.md) and read the follow-up from the trigg
 | `app.showMessage(msg, 'success' \| 'error')` | Toast |
 | `app.showModalView(url)` / `app.openModal($m)` / `app.closeModal($m)` | Modals |
 | `app.loadScript(url, cb)` / `app.addCSS([...])` | Lazy third-party assets (Chart.js, Summernote, Cropper) |
+
+### Declarative UI behaviours (`app.ui`)
+
+Dropdowns, collapsible menus, the admin sidebar, tabs and the theme picker are plain jQuery, delegated from `document` in `app.js`, so they also work on PJAX-loaded content. Markup opts in with data attributes; toggled elements start with the Tailwind `hidden` class.
+
+| Attributes | Behaviour |
+|---|---|
+| `data-dropdown` wrapper, `data-dropdown-toggle` button, `data-dropdown-menu` | Click toggles the menu; a click outside or on a link inside closes it |
+| `data-collapse-toggle="#id"` (+ `data-toggle-icon` icons) | Toggles `hidden` on `#id` and on the icons (menu/close swap) |
+| `data-sidebar-toggle="open\|close"` | Admin sidebar (`#layout-menu`) and `#sidebar-backdrop` |
+| `data-tabs` (with `data-tabs-active` / `data-tabs-inactive` class strings), `data-tab="x"`, `data-tab-panel="x"` | Tabs; render the first tab active and the other panels `hidden` |
+| `data-theme-option="light\|dark\|system"`, `data-theme-icon` | Stores the choice in `localStorage`, swaps the icon |
+
+Keep the class strings that JS applies (`!translate-x-0`, the tab classes) present in a Blade file, so Tailwind's scan generates them.
 
 ### Follow-up actions
 

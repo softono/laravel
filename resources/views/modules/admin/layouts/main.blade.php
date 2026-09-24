@@ -35,7 +35,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     @include('common.datatables-css')
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite('resources/css/app.css')
 
     @stack('style')
 
@@ -54,7 +54,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     </script>
 </head>
 
-<body class="bg-slate-50" x-data="{ sidebarOpen: false }">
+<body class="bg-slate-50">
     <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center">
         <div class="common-loader-backdrop"></div>
         <div class="common-loader-conetent">

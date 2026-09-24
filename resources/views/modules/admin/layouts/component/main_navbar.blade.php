@@ -1,27 +1,27 @@
 <nav class="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:px-8" id="layout-navbar">
-    <button type="button" class="text-slate-500 hover:text-slate-700 lg:hidden" @click="sidebarOpen = true" aria-label="Open sidebar">
+    <button type="button" class="text-slate-500 hover:text-slate-700 lg:hidden" data-sidebar-toggle="open" aria-label="Open sidebar">
         <i class="bx bx-menu text-xl"></i>
     </button>
 
     <div class="flex flex-1 items-center justify-end gap-3">
         <!-- Theme switcher -->
-        <div class="relative" x-data="{ open: false, theme: (localStorage.getItem('admin-theme') || 'light') }" @click.outside="open = false">
-            <button type="button" class="btn-icon" @click="open = !open">
-                <i class="bx text-lg" :class="theme === 'dark' ? 'bx-moon' : (theme === 'system' ? 'bx-desktop' : 'bx-sun')"></i>
+        <div class="relative" data-dropdown>
+            <button type="button" class="btn-icon" data-dropdown-toggle>
+                <i class="bx bx-sun text-lg" data-theme-icon></i>
             </button>
-            <ul x-show="open" x-cloak x-transition class="absolute end-0 z-20 mt-2 w-36 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+            <ul data-dropdown-menu class="hidden absolute end-0 z-20 mt-2 w-36 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
                 <li>
-                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" @click="theme='system'; localStorage.setItem('admin-theme','system'); open=false">
+                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" data-theme-option="system">
                         <i class="bx bx-desktop"></i> System
                     </a>
                 </li>
                 <li>
-                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" @click="theme='light'; localStorage.setItem('admin-theme','light'); open=false">
+                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" data-theme-option="light">
                         <i class="bx bx-sun"></i> Light
                     </a>
                 </li>
                 <li>
-                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" @click="theme='dark'; localStorage.setItem('admin-theme','dark'); open=false">
+                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" data-theme-option="dark">
                         <i class="bx bx-moon"></i> Dark
                     </a>
                 </li>
@@ -30,11 +30,11 @@
         <!-- / Theme switcher -->
 
         <!-- User -->
-        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-            <button type="button" class="flex items-center" @click="open = !open">
+        <div class="relative" data-dropdown>
+            <button type="button" class="flex items-center" data-dropdown-toggle>
                 <img src="{{ $general->getFileUrl($sessionUser->image, 'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
             </button>
-            <ul x-show="open" x-cloak x-transition class="absolute end-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+            <ul data-dropdown-menu class="hidden absolute end-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
                 <li>
                     <a class="pjax flex items-center gap-3 px-4 py-2 hover:bg-slate-50" href="{{ route('admin/account/update') }}">
                         <img src="{{ $general->getFileUrl($sessionUser->image, 'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />

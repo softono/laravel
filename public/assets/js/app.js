@@ -1355,3 +1355,106 @@ function dataTableAjax(params) {
         });
     };
 }
+
+/**
+ * Small declarative UI behaviours (dropdowns, collapsible menus, the admin
+ * sidebar, tabs, the theme picker). Everything is delegated from `document`,
+ * so it keeps working on content that pjax.js swaps in. Markup opts in with
+ * data attributes:
+ *
+ *   [data-dropdown] > [data-dropdown-toggle] + [data-dropdown-menu]   click toggles, outside click closes
+ *   [data-collapse-toggle="#id"]     toggles `hidden` on #id and on the button's [data-toggle-icon]s
+ *   [data-sidebar-toggle="open|close"]   admin sidebar (#layout-menu + #sidebar-backdrop)
+ *   [data-tabs] > [data-tab="x"] + [data-tab-panel="x"]   data-tabs-active / data-tabs-inactive hold the classes
+ *   [data-theme-option="light|dark|system"] + [data-theme-icon]
+ */
+app.ui = {
+    init: function () {
+        const $doc = $(document);
+
+        $doc.on("click", "[data-dropdown-toggle]", function (event) {
+            event.stopPropagation();
+            const $dropdown = $(this).closest("[data-dropdown]");
+            const $menu = $dropdown.find("[data-dropdown-menu]").first();
+            $("[data-dropdown-menu]").not($menu).addClass("hidden");
+            $menu.toggleClass("hidden");
+        });
+
+        // A click outside, or on a link/button inside a menu, closes the open dropdowns.
+        $doc.on("click", function (event) {
+            const $target = $(event.target);
+            if ($target.closest("[data-dropdown-menu]").length && !$target.closest("a, button").length) {
+                return;
+            }
+            $("[data-dropdown-menu]").addClass("hidden");
+        });
+
+        $doc.on("click", "[data-collapse-toggle]", function () {
+            const $button = $(this);
+            $($button.data("collapseToggle")).toggleClass("hidden");
+            $button.find("[data-toggle-icon]").toggleClass("hidden");
+        });
+
+        $doc.on("click", "[data-sidebar-toggle]", function () {
+            app.ui.sidebar($(this).data("sidebarToggle") === "open");
+        });
+        // Following a link inside the sidebar (pjax) should reveal the page on small screens.
+        $doc.on("click", "#layout-menu a.pjax", function () {
+            app.ui.sidebar(false);
+        });
+
+        $doc.on("click", "[data-tab]", function () {
+            const $button = $(this);
+            const $tabs = $button.closest("[data-tabs]");
+            const active = String($tabs.data("tabsActive") || "");
+            const inactive = String($tabs.data("tabsInactive") || "");
+            const name = $button.data("tab");
+
+            $tabs.find("[data-tab]").each(function () {
+                const isActive = $(this).data("tab") === name;
+                $(this)
+                    .removeClass(isActive ? inactive : active)
+                    .addClass(isActive ? active : inactive)
+                    .attr("aria-selected", isActive);
+            });
+            $tabs.find("[data-tab-panel]").each(function () {
+                $(this).toggleClass("hidden", $(this).data("tabPanel") !== name);
+            });
+        });
+
+        $doc.on("click", "[data-theme-option]", function () {
+            app.ui.setTheme($(this).data("themeOption"));
+        });
+        app.ui.setTheme(app.ui.storedTheme(), false);
+    },
+
+    sidebar: function (open) {
+        $("#layout-menu").toggleClass("!translate-x-0", open);
+        $("#sidebar-backdrop").toggleClass("hidden", !open);
+    },
+
+    storedTheme: function () {
+        try {
+            return localStorage.getItem("admin-theme") || "light";
+        } catch (e) {
+            return "light";
+        }
+    },
+
+    /** The picker only records the choice and shows its icon; nothing else is themed yet. */
+    setTheme: function (theme, persist = true) {
+        const icons = { dark: "bx-moon", system: "bx-desktop", light: "bx-sun" };
+        $("[data-theme-icon]")
+            .removeClass(Object.values(icons).join(" "))
+            .addClass(icons[theme] || icons.light);
+        if (persist) {
+            try {
+                localStorage.setItem("admin-theme", theme);
+            } catch (e) {}
+        }
+    },
+};
+
+$(function () {
+    app.ui.init();
+});

@@ -1,13 +1,13 @@
-<nav class="border-b border-slate-200 bg-white" x-data="{ mobileOpen: false }">
+<nav class="border-b border-slate-200 bg-white">
     <div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <a href="{{ route('home') }}" class="pjax flex items-center gap-2">
             <img src="{{ $general->getFileUrl(config('setting.app_logo'),'logo')}}" alt="{{ config('setting.app_name') }}" class="h-8 w-8 rounded" />
             <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
         </a>
 
-        <button type="button" class="btn-icon border border-slate-200 lg:hidden" @click="mobileOpen = !mobileOpen" aria-label="Toggle navigation">
-            <i class="bx bx-menu text-xl" x-show="!mobileOpen"></i>
-            <i class="bx bx-x text-xl" x-show="mobileOpen" x-cloak></i>
+        <button type="button" class="btn-icon border border-slate-200 lg:hidden" data-collapse-toggle="#mobile-menu" aria-label="Toggle navigation">
+            <i class="bx bx-menu text-xl" data-toggle-icon></i>
+            <i class="bx bx-x hidden text-xl" data-toggle-icon></i>
         </button>
 
         <div class="hidden items-center gap-6 lg:flex">
@@ -21,11 +21,11 @@
 
         <div class="hidden items-center gap-3 lg:flex">
             <?php if ($sessionUser) { ?>
-            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
-                <button type="button" class="flex items-center gap-2" @click="open = !open">
+            <div class="relative" data-dropdown>
+                <button type="button" class="flex items-center gap-2" data-dropdown-toggle>
                     <img src="{{ $general->getFileUrl($sessionUser->image,'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
                 </button>
-                <div x-show="open" x-cloak x-transition class="absolute end-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                <div data-dropdown-menu class="hidden absolute end-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
                     <a class="pjax flex items-center gap-3 px-4 py-2 hover:bg-slate-50" href="{{ route('account/update') }}">
                         <img src="{{ $general->getFileUrl($sessionUser->image,'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
                         <span>
@@ -54,7 +54,7 @@
         </div>
     </div>
 
-    <div class="space-y-1 border-t border-slate-200 px-4 py-3 lg:hidden" x-show="mobileOpen" x-cloak x-transition>
+    <div id="mobile-menu" class="hidden space-y-1 border-t border-slate-200 px-4 py-3 lg:hidden">
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('home') }}">Home</a>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('blog') }}">Blog</a>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('contact') }}">Contact</a>

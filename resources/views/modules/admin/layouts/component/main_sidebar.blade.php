@@ -1,15 +1,14 @@
-<div class="fixed inset-0 z-30 bg-slate-900/50 lg:hidden" x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"></div>
+<div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/50 lg:hidden" data-sidebar-toggle="close"></div>
 
 <aside id="layout-menu"
-    class="fixed inset-y-0 start-0 z-40 flex w-64 -translate-x-full flex-col bg-slate-900 transition-transform lg:translate-x-0"
-    :class="{ '!translate-x-0': sidebarOpen }">
+    class="fixed inset-y-0 start-0 z-40 flex w-64 -translate-x-full flex-col bg-slate-900 transition-transform lg:translate-x-0">
     <div class="flex items-center gap-2 px-4 py-4">
         <a href="{{ route('admin/dashboard') }}" class="pjax flex flex-1 items-center gap-2">
             <img src="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}"
                 alt="{{ config('setting.app_name') }}" class="h-8 w-8 rounded" />
             <span class="truncate font-bold text-white">{{ config('setting.app_name') }}</span>
         </a>
-        <button type="button" class="text-slate-400 hover:text-white lg:hidden" @click="sidebarOpen = false" aria-label="Close sidebar">
+        <button type="button" class="text-slate-400 hover:text-white lg:hidden" data-sidebar-toggle="close" aria-label="Close sidebar">
             <i class="bx bx-x text-xl"></i>
         </button>
     </div>

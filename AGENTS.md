@@ -30,7 +30,7 @@ The code is organised into **modules** (`app/Modules/*`). There is no legacy sta
 | OAuth | `laravel/socialite` (Google) |
 | Formatting | Laravel Pint |
 | Tests | PHPUnit 11 |
-| Response headers | `SecurityHeaders` middleware: CSP (script-src keeps `'unsafe-inline'`/`'unsafe-eval'` for Alpine, PJAX and inline handlers), X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy |
+| Response headers | `SecurityHeaders` middleware: CSP (script-src keeps `'unsafe-inline'` for PJAX and inline handlers; no `'unsafe-eval'`), X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy |
 
 ---
 
@@ -179,7 +179,7 @@ Server-rendered Blade + Tailwind.
 
 - **Layouts:** `layouts/blank` (auth pages), `layouts/main` (site shell, PJAX-aware); admin mirrors them in `modules/admin/layouts/`.
 - **New pages use Next's class vocabulary** through the `x-ui.*` components (`button`, `input`, `textarea`, `select`, `label`, `card`, `card-header`, `card-title`, `card-content`, `badge`, `alert`, `table`/`tr`/`th`/`td`, `pagination`). The design tokens (`bg-card`, `text-muted-foreground`, `border-border`, …) come from `resources/css/next-theme.css`. Run `npm run build` after using a new utility class.
-- **JS lives in `public/assets/js/`** and is included with plain `<script>`. `resources/js/app.js` is not used by any view.
+- **JS lives in `public/assets/js/`** and is included with plain `<script>`: jQuery + `app.js` (helpers and the `app.ui` data-attribute behaviours) + `pjax.js`. Vite builds CSS only; there is no JS bundle and no Alpine. Toggle/dropdown/tab behaviour is declared with `data-*` attributes (see `docs/frontend.md`).
 - Pass URLs in from Blade (`route()`, `data-*`), never hardcode paths in JS.
 
 Details → **[`docs/frontend.md`](docs/frontend.md)**
@@ -264,7 +264,7 @@ Route **names** are load-bearing: `SeoMetaRepository::metaForRoute()` looks up `
 | Trusting `Auth::login()` / `Auth::logout()` | `SessionTokenGuard` implements only `Guard`; these fatal | `SessionService::issue()` / `revoke()` |
 | Adding a column to `users` for auth state | Wrong table; the schema mirrors Next | Use the existing `user_*` table for that concern |
 | Using a utility class no view had before | Silently unstyled until the CSS is rebuilt | `npm run build` |
-| Editing `resources/js/app.js` expecting a browser change | That bundle is never loaded | Edit `public/assets/js/*.js` |
+| Using `x-data` / `@click` (Alpine) in a view | Alpine is gone; the attributes do nothing | Use the `data-*` behaviours in `app.ui`, or jQuery in `app.js` |
 | Forgetting `parent::__construct()` in a controller | `$general` / settings missing → view errors | Always call it |
 | A distinct error message on a failure path | Enables user enumeration | Keep messages generic; log the real reason |
 | Editing Blade and not seeing the change | Compiled views are cached | `php artisan view:clear` |
