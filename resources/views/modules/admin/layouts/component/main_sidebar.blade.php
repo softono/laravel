@@ -71,9 +71,9 @@
                 </li>
                 @endif
 
-                @if($sessionUser->hasPermission('admin_user_activity'))
-                <li class="menu-item active-menu" data-active_menu_links="admin/user-activity">
-                    <a href="{{ route('admin/user-activity') }}" class="menu-link pjax" data-pjax-cache="true">
+                @if($sessionUser->hasPermission('admin_activity'))
+                <li class="menu-item active-menu" data-active_menu_links="admin/activity">
+                    <a href="{{ route('admin/activity') }}" class="menu-link pjax" data-pjax-cache="true">
                         <div>Activity</div>
                     </a>
                 </li>
