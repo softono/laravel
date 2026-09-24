@@ -7,6 +7,7 @@ use App\Http\Middleware\AuthRateLimit;
 use App\Http\Middleware\EnsureDeviceUid;
 use App\Http\Middleware\RedirectIfAdminAuthenticated;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\VerifyRecaptcha;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -46,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             EnsureDeviceUid::class,
+            SecurityHeaders::class,
         ]);
 
         $middleware->alias([
