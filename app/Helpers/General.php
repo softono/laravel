@@ -324,6 +324,7 @@ class General
             'email' => 'email/',
             'logo' => 'logo/',
             'content' => 'content/',
+            'blog' => 'blog/',
             default => 'temp/',
         };
     }

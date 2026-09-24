@@ -249,3 +249,19 @@
     @apply pointer-events-none opacity-40;
   }
 }
+
+/* Rich-text content (pages, blog posts): the reset removes heading and list styling. */
+@layer components {
+  .prose h1, .prose h2, .prose h3 { @apply mt-6 mb-3 font-semibold tracking-tight; }
+  .prose h1 { @apply text-2xl; }
+  .prose h2 { @apply text-xl; }
+  .prose h3 { @apply text-lg; }
+  .prose p { @apply mb-4 leading-7; }
+  .prose ul { @apply mb-4 list-disc pl-6; }
+  .prose ol { @apply mb-4 list-decimal pl-6; }
+  .prose a { @apply text-primary underline; }
+  .prose blockquote { @apply border-border text-muted-foreground mb-4 border-l-4 pl-4 italic; }
+  .prose img { @apply my-4 h-auto max-w-full rounded-md; }
+  .prose pre, .prose code { @apply bg-muted rounded px-1 font-mono text-sm; }
+  .prose pre { @apply mb-4 overflow-x-auto p-3; }
+}

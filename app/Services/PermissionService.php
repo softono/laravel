@@ -96,10 +96,6 @@ class PermissionService
                         'title' => 'Delete',
                         'key' => 'admin/admin/delete',
                     ],
-                    [
-                        'title' => 'Autologin',
-                        'key' => 'admin/admin/autologin',
-                    ],
                 ],
             ],
             [
@@ -202,6 +198,25 @@ class PermissionService
                         'key' => 'admin/activity',
                     ],
 
+                ],
+            ],
+            [
+                'title' => 'Email Template',
+                'key' => 'admin_emailtemplate',
+                'list' => [
+                    ['title' => 'List', 'key' => 'admin/email-template'],
+                    ['title' => 'Update', 'key' => 'admin/email-template/update'],
+                    ['title' => 'View', 'key' => 'admin/email-template/view'],
+                ],
+            ],
+            [
+                'title' => 'Blog',
+                'key' => 'admin_blog',
+                'list' => [
+                    ['title' => 'List', 'key' => 'admin/blog'],
+                    ['title' => 'Create', 'key' => 'admin/blog/create'],
+                    ['title' => 'Update', 'key' => 'admin/blog/update'],
+                    ['title' => 'Delete', 'key' => 'admin/blog/delete'],
                 ],
             ],
         ];

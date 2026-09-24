@@ -31,7 +31,16 @@
         </li>
         @endif
 
-        @if($sessionUser->hasPermission(['admin_setting', 'admin_seo', 'admin_admin', 'admin_device', 'admin_user_activity', 'admin_page', 'admin_emailtemplate']))
+        @if($sessionUser->hasPermission('admin_blog'))
+        <li class="menu-item active-menu" data-active_menu_links="admin/blog,admin/blog/create,admin/blog/update">
+            <a href="{{ route('admin/blog') }}" class="menu-link pjax" data-pjax-cache="true">
+                <i class="bx bx-news text-lg"></i>
+                <div>Blog</div>
+            </a>
+        </li>
+        @endif
+
+        @if($sessionUser->hasPermission(['admin_setting', 'admin_seo', 'admin_admin', 'admin_device', 'admin_activity', 'admin_page', 'admin_emailtemplate']))
         <li class="menu-item active-menu" data-active_menu_class="open">
             <a href="javascript:void(0);" class="menu-link menu-toggle pjax">
                 <i class="bx bx-cog text-lg"></i>

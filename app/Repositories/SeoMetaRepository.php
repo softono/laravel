@@ -7,6 +7,7 @@ use App\Models\SeoMeta;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SeoMetaRepository
 {
@@ -45,7 +46,8 @@ class SeoMetaRepository
     public function metaForRoute(string $route): array
     {
         return Cache::remember($this->cacheKey($route), 86400, function () use ($route) {
-            $seo = SeoMeta::where('url', $route)->first();
+            $seo = SeoMeta::where('url', $route)->first()
+                ?? SeoMeta::where('type', 'DYNAMIC')->get()->first(fn ($row) => Str::is($row->url, $route));
 
             return [
                 'title' => $seo->title ?? '',
