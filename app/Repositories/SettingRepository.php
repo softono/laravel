@@ -2,16 +2,21 @@
 
 namespace App\Repositories;
 
+use App\Helpers\Encryption;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
 
 /**
  * `settings` rows use the same plain keys as the Next app (`smtp_host`,
- * `user_email_verify`, ...). Rows with a `type` of `private` hold secrets.
+ * `user_email_verify`, ...). The SECRET_KEYS values are encrypted at rest
+ * (see Encryption) and decrypted on read.
  */
 class SettingRepository
 {
     private const CACHE_KEY = 'setting';
+
+    /** Encrypted in the `value` column, like Next's ENCRYPTED_SETTING_KEYS. */
+    private const SECRET_KEYS = ['google_client_secret', 'smtp_password', 'google_recaptcha_secret_key'];
 
     /** Setting keys that override a non-`setting.*` Laravel config key. */
     private const CONFIG_KEYS = [
@@ -26,10 +31,23 @@ class SettingRepository
         'google_client_secret' => 'services.google.client_secret',
     ];
 
-    /** @return array<string, string> key => value, cached until a setting changes */
+    /**
+     * Decrypted key => value map. The cache holds the raw rows, so secrets are
+     * never stored in plaintext in the cache table.
+     *
+     * @return array<string, string>
+     */
     public function all(): array
     {
-        return Cache::remember(self::CACHE_KEY, now()->addDay(), fn () => Setting::pluck('value', 'key')->all());
+        $rows = Cache::remember(self::CACHE_KEY, now()->addDay(), fn () => Setting::pluck('value', 'key')->all());
+
+        foreach (self::SECRET_KEYS as $key) {
+            if (isset($rows[$key])) {
+                $rows[$key] = Encryption::decrypt($rows[$key]);
+            }
+        }
+
+        return $rows;
     }
 
     /**
@@ -40,7 +58,11 @@ class SettingRepository
     public function setMany(array $values): void
     {
         foreach ($values as $key => $value) {
-            Setting::updateOrCreate(['key' => $key], ['value' => $value ?? '']);
+            $value ??= '';
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => in_array($key, self::SECRET_KEYS, true) ? Encryption::encrypt($value) : $value],
+            );
         }
 
         $this->clearCache();
