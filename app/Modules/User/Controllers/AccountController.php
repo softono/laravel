@@ -93,10 +93,6 @@ class AccountController extends Controller
 
         $result = $this->sessionList->logout($request, auth()->user(), $request->string('id'));
 
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'table_refresh'];
-        }
-
         return Response::sendResult($result);
     }
 
@@ -125,6 +121,7 @@ class AccountController extends Controller
             'model' => auth()->user(),
             'layout' => $this->layout,
             'prefix' => $this->prefix,
+            'loginRoute' => $this->loginRoute,
         ] + $data);
     }
 }

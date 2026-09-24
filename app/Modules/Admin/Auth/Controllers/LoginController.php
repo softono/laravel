@@ -68,7 +68,7 @@ class LoginController extends Controller
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendData(['next' => 'admin-dashboard'], 'Logged in successfully');
+        return Response::sendMessage('Logged in successfully');
     }
 
     public function logout(Request $request)

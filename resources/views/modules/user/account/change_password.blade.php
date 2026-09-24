@@ -8,7 +8,9 @@
         <div class="card">
             <h5 class="card-header">Change Password</h5>
             <div class="card-body">
-                <form action="{{ url('auth/change-password') }}" method="post" id="ajax-form">
+                <p class="mb-4 text-sm text-slate-500">Changing your password signs you out of every device, including this one.</p>
+                <form action="{{ url('auth/change-password') }}" method="post" id="ajax-form"
+                    data-next="redirect" data-next-url="{{ route($loginRoute) }}">
                     {{ csrf_field() }}
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>

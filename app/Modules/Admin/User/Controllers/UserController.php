@@ -65,10 +65,6 @@ class UserController extends Controller
             ? $this->accounts->update($request, auth()->user(), UserRole::USER, $request->string('id'), $data)
             : $this->accounts->create($request, auth()->user(), UserRole::USER, $data);
 
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'load', 'url' => route('admin/user')];
-        }
-
         return Response::sendResult($result);
     }
 
@@ -92,20 +88,12 @@ class UserController extends Controller
     {
         $result = $this->accounts->delete($request, auth()->user(), UserRole::USER, (string) $request->input('id'));
 
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'table_refresh'];
-        }
-
         return Response::sendResult($result);
     }
 
     public function changeStatus(Request $request)
     {
         $result = $this->accounts->toggleStatus($request, auth()->user(), UserRole::USER, (string) $request->input('id'));
-
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'refresh'];
-        }
 
         return Response::sendResult($result);
     }
@@ -120,6 +108,6 @@ class UserController extends Controller
 
         $this->mail->send($recipient, $request->string('subject'), $request->string('message'));
 
-        return Response::sendData(['next' => 'refresh'], 'Email sent successfully');
+        return Response::sendMessage('Email sent successfully');
     }
 }

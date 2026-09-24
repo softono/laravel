@@ -41,14 +41,14 @@ class TfaService
     /**
      * Starts a 2FA challenge for a login that has already passed the
      * password check. Sets the signed {uid}_tfa cookie and returns the
-     * {next:'tfa'} envelope response.
+     * {requires_tfa: true} envelope response.
      */
     public function startLoginChallenge(Request $request, User $user, bool $remember)
     {
         $handle = $this->challenges->createTfa($user->id, $remember);
         SignedCookie::queue('tfa', $handle, (int) config('auth_next.tfa_ttl'));
 
-        return Response::sendData(['next' => 'tfa']);
+        return Response::sendData(['requires_tfa' => true]);
     }
 
     /** @return string[] available challenge methods for the current handle's user */
@@ -132,7 +132,7 @@ class TfaService
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendData(['next' => 'dashboard'], 'Logged in successfully');
+        return Response::sendMessage('Logged in successfully');
     }
 
     /** @return array{valid: bool, message: ?string} */

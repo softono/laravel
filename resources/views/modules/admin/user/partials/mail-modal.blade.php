@@ -6,7 +6,7 @@
                 <x-ui.card-title class="text-lg">Send Mail</x-ui.card-title>
             </x-ui.card-header>
             <x-ui.card-content>
-                <form method="POST" action="{{ route('admin/user/mail') }}" id="mail-form" class="space-y-4">
+                <form method="POST" action="{{ route('admin/user/mail') }}" id="mail-form" class="space-y-4" data-next="refresh">
                     @csrf
                     <input type="hidden" name="user_id" value="{{ $model->id }}">
                     <div class="space-y-2">

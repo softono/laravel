@@ -28,14 +28,14 @@ class AccountService
     ) {}
 
     /**
-     * @return array{ok: bool, message: ?string, next: ?string, user: ?User}
+     * @return array{ok: bool, message: ?string, requires_verification: bool, user: ?User}
      */
     public function register(Request $request, array $data): array
     {
         $email = strtolower(trim($data['email']));
 
         if ($this->users->findByEmail($email)) {
-            return ['ok' => false, 'message' => 'Email already registered', 'next' => null, 'user' => null];
+            return ['ok' => false, 'message' => 'Email already registered', 'requires_verification' => false, 'user' => null];
         }
 
         $user = $this->users->create([
@@ -63,10 +63,10 @@ class AccountService
         if (config('setting.user_email_verify') == 1) {
             $this->sendOtp('verify', $user);
 
-            return ['ok' => true, 'message' => null, 'next' => 'verify-account', 'user' => $user];
+            return ['ok' => true, 'message' => null, 'requires_verification' => true, 'user' => $user];
         }
 
-        return ['ok' => true, 'message' => 'Registered successfully', 'next' => null, 'user' => $user];
+        return ['ok' => true, 'message' => 'Registered successfully', 'requires_verification' => false, 'user' => $user];
     }
 
     public function sendOtp(string $purpose, User $user): void

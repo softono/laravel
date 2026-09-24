@@ -60,10 +60,6 @@ class AdminController extends Controller
             ? $this->accounts->update($request, auth()->user(), UserRole::ADMIN, $request->string('id'), $data)
             : $this->accounts->create($request, auth()->user(), UserRole::ADMIN, $data);
 
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'load', 'url' => route('admin/admin')];
-        }
-
         return Response::sendResult($result);
     }
 
@@ -86,20 +82,12 @@ class AdminController extends Controller
     {
         $result = $this->accounts->delete($request, auth()->user(), UserRole::ADMIN, (string) $request->input('id'));
 
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'table_refresh'];
-        }
-
         return Response::sendResult($result);
     }
 
     public function changeStatus(Request $request)
     {
         $result = $this->accounts->toggleStatus($request, auth()->user(), UserRole::ADMIN, (string) $request->input('id'));
-
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'table_refresh'];
-        }
 
         return Response::sendResult($result);
     }

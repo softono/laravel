@@ -7,7 +7,8 @@
     @endif
     @if ($viewer->hasPermission($base.'/delete'))
         <button type="button" class="text-body cursor-pointer border-0 bg-transparent" title="Delete"
-            onclick="app.confirmAction(this);" data-action="{{ route($base.'/delete') }}" data-id="{{ $id }}">
+            onclick="app.confirmAction(this);" data-action="{{ route($base.'/delete') }}" data-id="{{ $id }}"
+            data-next="table_refresh">
             <i class="bx bxs-trash icon-base"></i>
         </button>
     @endif

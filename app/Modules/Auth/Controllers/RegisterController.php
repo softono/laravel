@@ -23,16 +23,14 @@ class RegisterController extends Controller
 
     public function register(RegisterRequest $request)
     {
-
         $result = $this->account->register($request, $request->validated());
-        if (! $result['status']) {
-            return Response::sendResult($result);
+
+        if (! $result['ok']) {
+            return Response::sendMessage($result['message'], 0);
         }
-        if ($result['next'] === 'verify-account') {
-            return Response::sendData([
-                'next' => 'verify-account',
-                'email' => $result['user']->email,
-            ]);
+
+        if ($result['requires_verification']) {
+            return Response::sendData(['requires_verification' => true, 'email' => $result['user']->email]);
         }
 
         // No email verification required - sign the new user straight in.

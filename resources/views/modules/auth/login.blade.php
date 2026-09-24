@@ -134,12 +134,11 @@
             if (!password.value) { app.showMessage('Please enter your password.', 'error'); return; }
             app.ajaxForm(this, function (response) {
                 if (response.status == 1) {
-                    var next = response.data && response.data.next;
-                    if (next === 'tfa') { window.location.href = '{{ url('/verify') }}?type=tfa'; return; }
+                    if (response.data && response.data.requires_tfa) { window.location.href = '{{ url('/verify') }}?type=tfa'; return; }
                     window.location.href = '{{ url('/dashboard') }}';
                 } else {
                     var data = response.data || {};
-                    if (data.next === 'verify-account') {
+                    if (data.requires_verification) {
                         window.location.href = '{{ url('/verify-account') }}?code=' + btoa(data.email || email.value);
                         return;
                     }

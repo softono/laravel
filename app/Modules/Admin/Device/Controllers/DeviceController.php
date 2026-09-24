@@ -31,10 +31,6 @@ class DeviceController extends Controller
 
         $result = $this->sessions->logout($request, auth()->user(), $request->string('id'), anyUser: true);
 
-        if ($result['ok']) {
-            $result['data'] = ['next' => 'table_refresh'];
-        }
-
         return Response::sendResult($result);
     }
 }

@@ -22,7 +22,7 @@
 <div class="modal-footer justify-between">
     @if ($model->image)
         <button type="button" class="btn-danger" onclick="app.confirmAction(this);"
-            data-action="{{ route($prefix.'account/delete-image') }}" data-id="{{ $model->image }}">Delete Image</button>
+            data-action="{{ route($prefix.'account/delete-image') }}" data-id="{{ $model->image }}" data-next="reload">Delete Image</button>
     @endif
     <button type="button" class="btn-success" onclick="imageCrop.uploadImage();">Save</button>
 </div>
@@ -32,7 +32,7 @@
         app.addCSS(['https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css'])
         app.loadScript('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js', function() {
             imageCrop = new ImageCrop();
-            imageCrop.init('image-crop', '{{ route($prefix.'account/image-save') }}');
+            imageCrop.init('image-crop', '{{ route($prefix.'account/image-save') }}', {next: 'reload'});
         });
     })
 </script>

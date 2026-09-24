@@ -12,12 +12,15 @@ String.prototype.replaceAll = function (search, replacement) {
  */
 const app = {
     /**
-     * Handles the next action based on AJAX response
-     * @param {Object} response - Server response object
+     * Runs a follow-up action. The view decides what happens after a successful request
+     * with `data-next` (and `data-next-url`) on the element that triggered it; the
+     * server response never carries navigation.
+     * @param {string} next - load | refresh | list_refresh | table_refresh | redirect | reload | hide_modal | show_modal_view
+     * @param {string} [url] - Target for load, redirect and show_modal_view
      */
-    runNextAction: function (next, response) {
+    runNextAction: function (next, url) {
         if (next === "load") {
-            pjax.loadPage(response.url);
+            pjax.loadPage(url);
         } else if (next === "refresh") {
             pjax.loadPage(window.location.href);
         } else if (next === "list_refresh") {
@@ -25,14 +28,19 @@ const app = {
         } else if (next === "table_refresh") {
             datatableObj.ajax.reload();
         } else if (next === "redirect") {
-            window.location.href = response.url;
+            window.location.href = url;
         } else if (next === "reload") {
             window.location.reload();
         } else if (next === "hide_modal") {
             this.hideModal();
         } else if (next === "show_modal_view") {
-            this.showModalView(response.url);
+            this.showModalView(url);
         }
+    },
+
+    /** The follow-up declared on an element: data-next="load" data-next-url="...". */
+    followUpOf: function ($el) {
+        return { next: $el.data("next"), url: $el.data("next-url") };
     },
 
     /**
@@ -131,7 +139,8 @@ const app = {
     confirmAction: function (obj, cb) {
         const $obj = $(obj);
         const postData = $obj.data("id") ? { id: $obj.data("id") } : {};
-        this.ajaxConfirm($obj.data("action"), postData, cb);
+        const followUp = this.followUpOf($obj);
+        this.ajaxConfirm($obj.data("action"), postData, cb ?? ((response) => app.ajaxSuccess(response, followUp)));
     },
 
     /**
@@ -140,23 +149,6 @@ const app = {
      * @param {Object} postData - Data to send
      * @param {Function} cb - Callback function
      */
-    /**
-     * Server-side DataTable with the Tailwind styling integration. Sets the global
-     * `datatableObj` that the `table_refresh` next-action reloads.
-     * @param {string} selector - Table element
-     * @param {{url: string, columns: Object[], method?: string, order?: Array}} options
-     */
-    dataTable: function (selector, { url, columns, method = "post", order = [[0, "desc"]] }) {
-        datatableObj = $(selector).DataTable({
-            ajax: dataTableAjax({ url, method }),
-            columns,
-            order,
-            responsive: true,
-            serverSide: true,
-        });
-        return datatableObj;
-    },
-
     ajaxConfirm: function (url, postData, cb) {
         app
             .showConfirmationPopup({
@@ -176,6 +168,23 @@ const app = {
                     this.ajaxPost(url, postData, cb);
                 }
             });
+    },
+
+    /**
+     * Server-side DataTable with the Tailwind styling integration. Sets the global
+     * `datatableObj` that the `table_refresh` follow-up reloads.
+     * @param {string} selector - Table element
+     * @param {{url: string, columns: Object[], method?: string, order?: Array}} options
+     */
+    dataTable: function (selector, { url, columns, method = "post", order = [[0, "desc"]] }) {
+        datatableObj = $(selector).DataTable({
+            ajax: dataTableAjax({ url, method }),
+            columns,
+            order,
+            responsive: true,
+            serverSide: true,
+        });
+        return datatableObj;
     },
 
     /**
@@ -208,7 +217,12 @@ const app = {
     currentAjaxForm:false,
     ajaxForm: function (form, cb) {
         this.currentAjaxForm = $(form);
-        this.ajaxRequest(this.currentAjaxForm.attr("action"), this.currentAjaxForm.serialize(), cb);
+        const followUp = this.followUpOf(this.currentAjaxForm);
+        this.ajaxRequest(
+            this.currentAjaxForm.attr("action"),
+            this.currentAjaxForm.serialize(),
+            cb ?? ((response) => app.ajaxSuccess(response, followUp))
+        );
     },
 
     /**
@@ -218,7 +232,12 @@ const app = {
      */
     ajaxFileForm: function (form, cb) {
         const $form = $(form);
-        this.ajaxFileRequest($form.attr("action"), new FormData($form[0]), cb);
+        const followUp = this.followUpOf($form);
+        this.ajaxFileRequest(
+            $form.attr("action"),
+            new FormData($form[0]),
+            cb ?? ((response) => app.ajaxSuccess(response, followUp))
+        );
     },
     ajaxFilePost: function (url, postData, cb) {
         postData.append(CSRF_NAME, CSRF_TOKEN);
@@ -272,37 +291,36 @@ const app = {
         });
     },
 
-    /**
-     * Runs the follow-up action the server asked for. Like every other extra it
-     * travels inside the envelope: {status, message, data: {next, url}}.
-     */
-    nextAction: function (response) {
-        const data = response.data || {};
-        if (data.next === undefined) {
-            return false;
+    nextAction: function (followUp) {
+        if (!followUp || typeof followUp !== "object" || !followUp.next) {
+            return;
         }
-        data.next.split(",").forEach(function (next) {
-            app.runNextAction(next.trim(), data);
-        });
+        String(followUp.next)
+            .split(",")
+            .forEach(function (next) {
+                app.runNextAction(next.trim(), followUp.url);
+            });
     },
 
     /**
-     * Default AJAX success handler
-     * @param {Object} response - Server response
+     * Default AJAX success handler: shows the message, then runs the follow-up the
+     * view declared for the request (see followUpOf).
+     * @param {Object} response - {status, message, data}
+     * @param {{next?: string, url?: string}} [followUp]
      */
-    ajaxSuccess: function (response) {
+    ajaxSuccess: function (response, followUp) {
         app.hideLoading();
         if (response.status) {
             if (response.message) {
                 app.showMessage(response.message, "success");
                 setTimeout(function () {
-                    app.nextAction(response);
+                    app.nextAction(followUp);
                 }, 2000);
             } else {
-                app.nextAction(response);
+                app.nextAction(followUp);
             }
         } else if (response.message) {
-            app.showMessage(rresponse.message, "error");
+            app.showMessage(response.message, "error");
         }
     },
 
@@ -927,9 +945,10 @@ class ImageCrop {
      * @param {string} id - The ID of the HTML element for the cropper.
      * @param {string} uploadPath - The server upload URL.
      */
-    init(id, uploadPath) {
+    init(id, uploadPath, followUp = {}) {
         this.cropTarget = document.getElementById(id);
         this.uploadPath = uploadPath;
+        this.followUp = followUp;
     }
     /**
      * Sets the configuration for the cropper.
@@ -981,6 +1000,7 @@ class ImageCrop {
         }
         app.showLoading();
         var _uploadPath = this.uploadPath;
+        var _followUp = this.followUp;
         this.urltoFile(
             this.cropperObj.getCroppedCanvas().toDataURL(),
             "image.png",
@@ -996,7 +1016,7 @@ class ImageCrop {
                 dataType: "json",
                 processData: false,
                 contentType: false,
-                success: app.ajaxSuccess,
+                success: (response) => app.ajaxSuccess(response, _followUp),
                 error: app.ajaxError,
             });
         });
@@ -1244,7 +1264,7 @@ function initEditorFull(editorElement, fileUploadUrl) {
                 formData.append("upload", files[0]);
                 app.ajaxFilePost(fileUploadUrl, formData, function (response) {
                     if (response.status) {
-                        seditor.summernote("insertImage", response.data.url);
+                        seditor.summernote("insertImage", response.data.file_url);
                     } else {
                         app.showMessage(response.message, "error");
                     }

@@ -36,7 +36,8 @@
             @endif
             @if ($viewer->hasPermission($base.'/delete'))
                 <x-ui.button variant="destructive" onclick="app.confirmAction(this);"
-                    data-action="{{ route($base.'/delete') }}" data-id="{{ $model->id }}">Delete</x-ui.button>
+                    data-action="{{ route($base.'/delete') }}" data-id="{{ $model->id }}"
+                    data-next="load" data-next-url="{{ route($base) }}">Delete</x-ui.button>
             @endif
             {{ $actions ?? '' }}
         </div>

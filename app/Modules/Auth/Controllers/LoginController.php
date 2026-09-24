@@ -47,13 +47,13 @@ class LoginController extends Controller
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
             app(AccountService::class)->sendOtp('verify', $user);
 
-            // 200, not 403: the login page reads data.next on this failure path and jQuery
-            // only runs the caller's callback for 2xx responses.
+            // 200, not 403: the login page reads data.requires_verification on this failure
+            // path and jQuery only runs the caller's callback for 2xx responses.
             return Response::sendResponse(200, [
                 'status' => 0,
                 'message' => 'Please verify your account',
                 'data' => [
-                    'next' => 'verify-account',
+                    'requires_verification' => true,
                     'email' => $user->email,
                 ],
             ]);
@@ -81,13 +81,7 @@ class LoginController extends Controller
         SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
         SignedCookie::forget('tfa');
 
-        return Response::sendResponse(200, [
-            'status' => 1,
-            'message' => 'Logged in successfully',
-            'data' => [
-                'next' => 'dashboard',
-            ],
-        ]);
+        return Response::sendMessage('Logged in successfully');
     }
 
     protected function deviceIsTrusted(Request $request, User $user): bool

@@ -74,9 +74,7 @@
 
             app.ajaxForm(this, function (response) {
                 if (response.status == 1) {
-                    var next = response.data && response.data.next;
-
-                    if (next === 'tfa') {
+                    if (response.data && response.data.requires_tfa) {
                         window.location.href = '{{ url('/admin/auth/verify') }}?type=tfa';
                         return;
                     }

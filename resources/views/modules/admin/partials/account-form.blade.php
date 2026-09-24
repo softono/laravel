@@ -1,5 +1,6 @@
 {{-- Shared create/update form for end users and admin accounts. $action is the save route, $back the list route. --}}
-<form method="post" action="{{ route($action) }}" enctype="multipart/form-data" id="ajax-form" class="space-y-6">
+<form method="post" action="{{ route($action) }}" enctype="multipart/form-data" id="ajax-form" class="space-y-6"
+    data-next="load" data-next-url="{{ route($back) }}">
     @csrf
     <input type="hidden" name="id" value="{{ $model->id ?? '' }}">
 

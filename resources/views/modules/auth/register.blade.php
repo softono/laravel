@@ -108,7 +108,7 @@
                 if (response.status == 1) {
                     var data = response.data || {};
 
-                    if (data.next === 'verify-account') {
+                    if (data.requires_verification) {
                         window.location.href = '{{ url('/verify-account') }}?code=' + btoa(data.email);
                         return;
                     }
