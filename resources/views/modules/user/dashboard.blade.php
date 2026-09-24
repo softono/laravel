@@ -7,7 +7,8 @@
         $quickLinks = [
             ['icon' => 'bx-user', 'title' => 'My Profile', 'desc' => 'View and update your account details', 'href' => route('account/update')],
             ['icon' => 'bx-cog', 'title' => 'Settings', 'desc' => 'Manage your preferences and security', 'href' => route('account/two-factor')],
-            ['icon' => 'bx-file', 'title' => 'Blog', 'desc' => 'Read the latest posts and articles', 'href' => url('blog')],
+            ['icon' => 'bx-note', 'title' => 'Notes', 'desc' => 'Keep your own notes', 'href' => route('notes')],
+            ['icon' => 'bx-file', 'title' => 'Blog', 'desc' => 'Read the latest posts and articles', 'href' => route('blog')],
             ['icon' => 'bx-envelope', 'title' => 'Contact Us', 'desc' => 'Get in touch with our support team', 'href' => route('contact')],
         ];
     @endphp

@@ -12,7 +12,11 @@
 
         <div class="hidden items-center gap-6 lg:flex">
             <a class="pjax text-sm font-medium text-slate-600 hover:text-primary-600" href="{{ route('home') }}">Home</a>
+            <a class="pjax text-sm font-medium text-slate-600 hover:text-primary-600" href="{{ route('blog') }}">Blog</a>
             <a class="pjax text-sm font-medium text-slate-600 hover:text-primary-600" href="{{ route('contact') }}">Contact</a>
+            <?php if ($sessionUser) { ?>
+            <a class="pjax text-sm font-medium text-slate-600 hover:text-primary-600" href="{{ route('notes') }}">Notes</a>
+            <?php } ?>
         </div>
 
         <div class="hidden items-center gap-3 lg:flex">
@@ -52,7 +56,11 @@
 
     <div class="space-y-1 border-t border-slate-200 px-4 py-3 lg:hidden" x-show="mobileOpen" x-cloak x-transition>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('home') }}">Home</a>
+        <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('blog') }}">Blog</a>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('contact') }}">Contact</a>
+        <?php if ($sessionUser) { ?>
+        <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('notes') }}">Notes</a>
+        <?php } ?>
         <?php if ($sessionUser) { ?>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('account/update') }}">My Account</a>
         <a class="block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('logout') }}">Log Out</a>
