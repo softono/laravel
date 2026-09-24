@@ -27,7 +27,7 @@ var loginApprove = (function () {
 
             var data = response.data;
             document.getElementById('approve-email').textContent = data.email;
-            document.getElementById('approve-device').textContent = data.device_name || 'Unknown device';
+            document.getElementById('approve-device').textContent = [data.device_name || 'Unknown device', data.location].filter(Boolean).join(' · ');
             document.getElementById('approve-code').textContent = data.code;
             show('approve-content');
 

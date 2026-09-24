@@ -30,6 +30,7 @@ The code is organised into **modules** (`app/Modules/*`). There is no legacy sta
 | OAuth | `laravel/socialite` (Google) |
 | Formatting | Laravel Pint |
 | Tests | PHPUnit 11 |
+| Files | `FileStorageService`: public/private disks (local or S3, presigned URLs), imgproxy signed image URLs; see `docs/files.md` |
 | Response headers | `SecurityHeaders` middleware: CSP (script-src keeps `'unsafe-inline'` for PJAX and inline handlers; no `'unsafe-eval'`), X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy |
 
 ---
@@ -151,7 +152,7 @@ Every AJAX endpoint returns the Next envelope, built with `App\Helpers\Response`
 - `status` is `1`/`0`, **not** the HTTP status. `data` defaults to `[]`; extras live *inside* `data`.
 - **Responses never carry navigation** (`next`, `url`). The view decides what happens after success with `data-next` (`load`, `refresh`, `table_refresh`, `reload`, `redirect`, `hide_modal`, `show_modal_view`) and `data-next-url` on the form or button that triggers the request; `app.js` runs it. Flags such as `requires_tfa` / `requires_verification` are data, not navigation.
 - Use **HTTP 200** for any failure the page handles itself (it reads `data`, or shows the message inline): jQuery only calls the caller's callback for 2xx. Validation (422), auth (401), CSRF (419) and rate limit (429) use their real codes and are rendered as the envelope for AJAX requests (`bootstrap/app.php`).
-- **DataTables endpoints** are the one exception: they return DataTables' own JSON (`recordsTotal`, `data`, `draw`) from `Helpers\Pagination::getDataTable()`. Build rows in a service and render HTML cells with Blade partials, not string concatenation.
+- **DataTables endpoints** use the same envelope: `data` holds DataTables' payload (`recordsTotal`, `data`, `draw`) from `Helpers\Pagination::getDataTable()`, which `app.dataTable` unwraps. Build rows in a service and render HTML cells with Blade partials, not string concatenation.
 - Use the existing helpers — `app.ajaxForm`, `app.ajaxFileForm`, `app.ajaxPost`, `app.confirmAction`, `app.dataTable`, `app.showMessage` — never raw `$.ajax` for forms.
 
 Details and examples → **[`docs/api.md`](docs/api.md)**.
@@ -291,5 +292,6 @@ Route **names** are load-bearing: `SeoMetaRepository::metaForRoute()` looks up `
 | [`docs/authentication.md`](docs/authentication.md) | Cookies, sessions, every auth flow, 2FA, passkeys, OAuth, middleware |
 | [`docs/api.md`](docs/api.md) | Envelope, HTTP status rules, validation, rate limits, endpoint list |
 | [`docs/new_module.md`](docs/new_module.md) | Step-by-step checklist for adding a module |
+| [`docs/files.md`](docs/files.md) | Upload types, public/private disks, S3, imgproxy, upload validation |
 | [`docs/frontend.md`](docs/frontend.md) | Layouts, x-ui components, JS helpers, DataTables, PJAX |
 | `docs/local/*` | Gitignored working notes (missing features, module plan) |

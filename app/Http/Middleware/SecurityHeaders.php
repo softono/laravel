@@ -51,7 +51,7 @@ class SecurityHeaders
     {
         $vite = $this->viteDevOrigin();
         $cdns = self::CDNS;
-        $fileOrigin = $this->originOf((string) config('filesystems.disks.s3.url'));
+        $fileOrigin = trim($this->originOf((string) config('filesystems.disks.s3.url')).' '.$this->originOf((string) config('files.imgproxy.url')));
 
         return implode('; ', [
             "default-src 'self'",

@@ -11,6 +11,7 @@ use App\Models\Auth\UserLoginLink;
 use App\Repositories\Auth\UserLoginLinkRepository;
 use App\Repositories\Auth\UserRepository;
 use App\Services\ActivityService;
+use App\Services\IpLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -104,6 +105,7 @@ class LoginLinkService
             'status' => 'pending',
             'device_name' => ClientInfo::deviceName($request),
             'ip' => ClientInfo::ip($request),
+            'location' => app(IpLocationService::class)->lookup(ClientInfo::ip($request)),
             'expires_at' => $expiresAt,
         ]);
 
@@ -218,6 +220,7 @@ class LoginLinkService
 
         return ApiResult::success('', [
             'device_name' => $link->device_name,
+            'location' => $link->location,
             'code' => $link->code,
             'email' => $link->email,
         ]);

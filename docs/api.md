@@ -118,7 +118,7 @@ app.ajaxForm(this, function (response) {
 });
 ```
 
-DataTables endpoints return DataTables' own JSON (`recordsTotal`, `recordsFiltered`, `draw`, `data`), not the envelope.
+DataTables endpoints return the envelope too: `data` holds DataTables' own payload (`recordsTotal`, `recordsFiltered`, `draw`, `data`), which `app.dataTable` unwraps.
 
 ---
 

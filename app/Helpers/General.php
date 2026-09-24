@@ -6,15 +6,13 @@ use App\Jobs\SendEmail;
 use App\Repositories\SeoMetaRepository;
 use App\Repositories\SettingRepository;
 use App\Services\EmailTemplateService;
+use App\Services\FileStorageService;
 use Carbon\Carbon;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Mail\Mailer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
@@ -176,81 +174,6 @@ class General
     }
 
     /**
-     * Fetches information about an IP address using a third-party API and caches the result.
-     *
-     * @param  string  $ip  The IP address to look up. Defaults to the client's IP if empty.
-     * @param  int  $decode  Whether to decode the response (1: JSON, 2: location string).
-     * @return mixed
-     */
-    public function getIpData($ip = '')
-    {
-        if ($ip == '') {
-            $ip = $this->getClientIp();
-        }
-        $key = 'ip_info:'.$ip;
-        $data = Cache::get($key);
-        if ($data) {
-            return $data;
-        }
-        $result = @file_get_contents('https://api.tribital.com/ipinfo/index.php?ip='.$ip);
-        Cache::add($key, $result, 86400);
-
-        return $result; // Return raw data without decoding
-    }
-
-    public function getIpLocation()
-    {
-        $ipData = $this->getIpInfo(); // Get raw data
-        if ($ipData) {
-            return $ipData->city.', '.$ipData->region.', '.$ipData->country;
-        } else {
-            return '';
-        }
-    }
-
-    public function getIpInfo($ip = '')
-    {
-        $ipInfo = $this->getIpData($ip); // Get raw data
-        if ($ipInfo) {
-            $ipInfo = @json_decode($ipInfo); // Decode the raw data here
-            if (is_object($ipInfo)) {
-                $ipData = new \stdClass;
-                $ipData->city = $ipInfo->city ?? null;
-                $ipData->region = $ipInfo->region ?? null;
-                $ipData->country = $ipInfo->country_name ?? null;
-                $ipData->latitude = $ipInfo->latitude ?? null;
-                $ipData->longitude = $ipInfo->longitude ?? null;
-
-                return $ipData;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Fetches only the country information for a given IP address.
-     *
-     * @param  string  $ip  The IP address to look up. Defaults to the client's IP if empty.
-     * @return string
-     */
-    public function getIpInfoCountry($ip = '')
-    {
-        if (empty($ip)) {
-            $ip = $this->getClientIp();
-        }
-        $key = 'ip_info_country:'.$ip;
-        $data = Cache::get($key);
-        if ($data) {
-            return $data;
-        }
-        $result = @file_get_contents('https://api.tribital.com/ipinfo_country/index.php?ip='.$ip);
-        Cache::add($key, $result, 86400);
-
-        return $result;
-    }
-
-    /**
      * Retrieves the device name and operating system from the user agent string.
      *
      * @param  string  $userAgent  User agent string to parse.
@@ -276,77 +199,49 @@ class General
     }
 
     /**
-     * Returns the file url for a given type.
+     * Validation rule for an upload. Laravel's `mimes` checks the file's content,
+     * not the client's extension (SVG is left out on purpose: it can carry scripts).
      *
-     * @param  string  $type  The type of file (profile, setting, blog, etc.).
-     * @return string
+     * @param  string  $type  image | pdf | doc | all
+     * @param  int  $size  Maximum size in KB.
      */
     public function fileRules($type = 'image', $size = 1024)
     {
-        $rule = 'file|mimetypes:image/*|max:'.$size;
-        switch ($type) {
-            case 'image':
-                $rule = 'file|mimes:jpeg,jpg,png,gif,webp,bmp,ico|max:'.$size;
-                break;
-            case 'pdf':
-                $rule = 'file|mimes:pdf|max:1024';
-                break;
-            case 'doc':
-                $rule = 'file|mimes:pdf,xlsx,doc,docx|max:1024';
-                break;
-            case 'all':
-                $rule = 'file|mimes:pdf,xlsx,doc,docx,jpeg,jpg,png,gif,webp,bmp,ico|max:1024';
-                break;
-        }
+        $mimes = match ($type) {
+            'pdf' => 'pdf',
+            'doc' => 'pdf,xlsx,doc,docx',
+            'all' => 'pdf,xlsx,doc,docx,jpeg,jpg,png,gif,webp,bmp,ico',
+            default => 'jpeg,jpg,png,gif,webp,bmp,ico',
+        };
 
-        return $rule;
+        return 'file|mimes:'.$mimes.'|max:'.$size;
     }
 
-    /**
-     * Returns the file path for a given type.
-     *
-     * @param  string  $type  The type of file (profile, setting, blog, etc.).
-     * @return string
-     */
+    /** Folder (with trailing slash) a file type is stored in. */
     public function getfilePath($type = 'profile')
     {
-        return match ($type) {
-            'profile' => 'profile/',
-            'email' => 'email/',
-            'logo' => 'logo/',
-            'content' => 'content/',
-            'blog' => 'blog/',
-            default => 'temp/',
-        };
+        return $this->files()->directory($type);
     }
 
-    /**
-     * Retrieves the URL of a stored file, or returns the default "no file" URL if it doesn't exist.
-     *
-     * @param  string  $type  The type of file (profile, setting, etc.).
-     * @return string
-     */
+    /** URL of the "no image" placeholder on the public disk. */
     public function getNoFile($type = 'setting')
     {
-        return Storage::url('no-image.jpg');
+        return $this->files()->disk('profile')->url('no-image.jpg');
     }
 
     /**
-     * Retrieves the URL of a stored file, or returns the default "no file" URL if it doesn't exist.
+     * URL of a stored file (imgproxy-signed for public images when enabled, a
+     * presigned or /file URL for private types), or the placeholder when the
+     * file name is empty or missing on a local disk.
      *
      * @param  string|null  $file  The file name.
-     * @param  string  $type  The type of file (profile, setting, etc.).
-     * @param  string|null  $subDir  Subdirectory under the type's path.
-     * @return string
+     * @param  string  $type  The type of file (profile, logo, blog, documents, ...).
+     * @param  string  $processing  imgproxy processing options, e.g. `rs:fill:64:64`.
      */
-    public function getFileUrl($file, $type = 'profile')
+    public function getFileUrl($file, $type = 'profile', $subDir = '', $processing = '')
     {
-        if ($file) {
-            $path = $this->getfilePath($type);
-            $storage = new Storage;
-            if ($storage::has($path.$file)) {
-                return $storage::url($path.$file);
-            }
+        if ($file && $this->files()->exists($file, $type)) {
+            return $this->files()->url($file, $type, $subDir, $processing);
         }
 
         return $this->getNoFile($type);
@@ -359,58 +254,26 @@ class General
         return isset($errors[0]) ? $errors[0] : 'Something went wrong';
     }
 
-    /**
-     * Deletes a file from the storage.
-     *
-     * @param  string|null  $file  The file name.
-     * @param  string  $type  The type of file (profile, setting, etc.).
-     * @param  string|null  $subDir  Subdirectory under the type's path.
-     * @return void
-     */
     public function deleteFile($file, $type = 'profile')
     {
-        if ($file) {
-            $path = $this->getfilePath($type);
-            $storage = new Storage;
-            if ($storage::has($path.$file)) {
-                $storage::delete($path.$file);
-            }
-        }
+        $this->files()->delete($file, $type);
     }
 
     /**
-     * Uploads a file to storage and returns its path.
+     * Stores an upload on the disk for `$type` and returns where it went.
      *
-     * @param  UploadedFile  $file  The file to upload.
-     * @param  int  $type  The file type identifier.
-     * @param  string|null  $subDir  Optional subdirectory under the type's path.
-     * @param  string  $name  Optional name for the uploaded file.
+     * @param  string  $subDir  Optional folder under the type's directory; `date` means Y/m.
+     * @param  string  $name  Optional file name; `same` keeps the client's name.
      * @return array{http_status: int, status: int, message: string, data: array<string, mixed>} `data`: file_name, file_type, size, name, extension
      */
     public function uploadFile($file, $type = 'profile', $subDir = '', $name = '')
     {
-        $fileDir = $this->getfilePath($type);
-        if ($subDir != '') {
-            if ($subDir == 'date') {
-                $subDir = date('Y/m');
-            }
-            Storage::makeDirectory($fileDir.$subDir);
-        }
-        try {
-            if ($name == '') {
-                $name = Str::random(32).'.'.$file->getClientOriginalExtension();
-            } elseif ($name == 'same') {
-                $name = $file->getClientOriginalName();
-            }
-            $fileResult = Storage::putFileAs($fileDir.$subDir, $file, $name);
-            if ($fileResult) {
-                return ApiResult::success('File uploaded successfully', ['file_name' => trim(str_replace($fileDir, '', $fileResult), '/'), 'file_type' => $file->getClientMimeType(), 'size' => $file->getSize(), 'name' => $file->getClientOriginalName(), 'extension' => $file->getClientOriginalExtension()]);
-            } else {
-                return ApiResult::failure('File upload failed');
-            }
-        } catch (\Exception $e) {
-            return ApiResult::failure($e->getMessage());
-        }
+        return $this->files()->store($file, $type, $subDir, $name);
+    }
+
+    protected function files(): FileStorageService
+    {
+        return app(FileStorageService::class);
     }
 
     /**

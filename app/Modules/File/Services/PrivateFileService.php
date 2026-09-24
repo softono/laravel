@@ -6,7 +6,7 @@ use App\Helpers\ApiResult;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Resolves a path inside the private disk (`storage/app/private`), refusing
+ * Resolves a path inside the local private disk (`files.private_disk`, `storage/app/private` by default), refusing
  * anything that would escape it. The path arrives base64-encoded, as in Next's
  * `GET /api/file?p=`.
  */
@@ -26,8 +26,16 @@ class PrivateFileService
             return $this->notFound();
         }
 
-        $root = realpath(Storage::disk('local')->path(''));
-        $resolved = realpath(Storage::disk('local')->path($relative));
+        $diskName = config('files.private_disk');
+
+        // A remote private disk (S3) is reached through presigned URLs, never through this route.
+        if (config("filesystems.disks.$diskName.driver") !== 'local') {
+            return $this->notFound();
+        }
+
+        $disk = Storage::disk($diskName);
+        $root = realpath($disk->path(''));
+        $resolved = realpath($disk->path($relative));
 
         if ($root === false || $resolved === false) {
             return $this->notFound();
