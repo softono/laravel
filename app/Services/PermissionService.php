@@ -2,50 +2,113 @@
 
 namespace App\Services;
 
+use App\Models\Auth\User;
+use Illuminate\Http\Request;
+
 class PermissionService
 {
+    /** Admin routes any signed-in admin may use: their own account and the dashboard. */
+    private const SELF_SERVICE = ['admin/account/', 'admin/dashboard'];
+
+    /** Endpoints that are not permission keys themselves, and the key that guards each. */
+    private const GUARDED_BY = [
+        'admin/pages' => 'admin/page',
+        'admin/seo/list' => 'admin/seo/meta',
+        'admin/seo/sitemap-update' => 'admin/seo/update',
+        'admin/admin/change-status' => 'admin/admin/update',
+        'admin/user/change-status' => 'admin/user/update',
+        'admin/user/mail' => 'admin/user/view',
+        'admin/page/save' => 'admin/page/update',
+        'admin/page/save-image' => 'admin/page/update',
+        'admin/email-template/save' => 'admin/email-template/update',
+        'admin/email-template/save-image' => 'admin/email-template/update',
+        'admin/blog/save-image' => 'admin/blog/update',
+        'admin/setting/save' => 'admin/setting/update',
+        'admin/setting/save-logo' => 'admin/setting/update',
+        'admin/setting/cache-clear' => 'admin/setting/update',
+        'admin/setting/mail-process' => 'admin/setting/update',
+    ];
+
     /**
-     * Check if the user has a specific permission.
-     *
-     * @param  string|array  $permission  The permission(s) to check.
-     * @param  string  $userPermission  The user's permissions.
+     * Whether the admin may run this request. Fails closed: a route that is
+     * neither self-service nor mapped to a known permission key is refused.
      */
-    public function hasPermission($permission = '', $userPermission = ''): bool
+    public function allowsRequest(User $user, Request $request): bool
     {
-        // dd($permission);
-        if ($permission == '') {
-            $permission = \Route::getCurrentRoute()->uri;
-        }
-        if (is_null($userPermission)) {
-            $userPermission = $this->permission ?? '';
+        if ($user->isSuperAdmin()) {
+            return true;
         }
 
-        if (is_array($permission)) {
-            foreach ($permission as $p) {
-                if ($this->checkPermission($p, $userPermission)) {
-                    return true;
-                }
-            }
+        $keys = $this->requiredKeys($request->route()->uri(), $request->filled('id'));
 
-            return false;
-        }
-
-        return $this->checkPermission($permission, $userPermission);
+        return $keys === null || $this->hasPermission($keys, (string) $user->permission);
     }
 
     /**
-     * Check if the user has a specific permission in the permission list.
+     * Permission keys (any one suffices) guarding an admin route URI, or null for self-service routes.
      *
-     * @param  string  $permission  The permission to check.
-     * @param  string  $userPermission  The user's permissions.
+     * @return string[]|null
+     */
+    public function requiredKeys(string $uri, bool $hasId = false): ?array
+    {
+        foreach (self::SELF_SERVICE as $prefix) {
+            if (str_starts_with($uri, $prefix)) {
+                return null;
+            }
+        }
+
+        $known = $this->getPermissionList();
+
+        if (in_array($uri, $known, true)) {
+            return [$uri];
+        }
+
+        if (isset(self::GUARDED_BY[$uri])) {
+            return [self::GUARDED_BY[$uri]];
+        }
+
+        $base = dirname($uri);
+
+        // `X/list` is the listing behind the page `X`.
+        if (basename($uri) === 'list') {
+            return [$base];
+        }
+
+        // `X/save` creates when no id is posted, otherwise updates.
+        if (basename($uri) === 'save') {
+            return [$base.($hasId ? '/update' : '/create')];
+        }
+
+        return [$uri];
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     *
+     * @param  string|array  $permission  The permission(s) to check; an array means any one of them.
+     * @param  string  $userPermission  The user's comma-joined permissions.
+     */
+    public function hasPermission(string|array $permission, ?string $userPermission = ''): bool
+    {
+        foreach ((array) $permission as $key) {
+            if ($this->checkPermission($key, (string) $userPermission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the user has a specific permission. Keys that are not in the
+     * permission list are refused, except endpoints that map onto one (GUARDED_BY).
      */
     public function checkPermission(string $permission, string $userPermission): bool
     {
-        if (in_array($permission, $this->getPermissionList())) {
-            return in_array($permission, explode(',', $userPermission));
-        }
+        $permission = self::GUARDED_BY[$permission] ?? $permission;
 
-        return true;
+        return in_array($permission, $this->getPermissionList(), true)
+            && in_array($permission, explode(',', $userPermission), true);
     }
 
     /**

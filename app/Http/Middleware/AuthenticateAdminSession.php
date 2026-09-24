@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Helpers\Response;
+use App\Services\PermissionService;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +38,7 @@ class AuthenticateAdminSession
             return redirect('/admin/auth/login');
         }
 
-        if (! $user->hasPermission()) {
+        if (! app(PermissionService::class)->allowsRequest($user, $request)) {
             if ($isJson) {
                 return Response::sendError(401, 'You are not authorized');
             }

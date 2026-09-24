@@ -244,8 +244,9 @@ Route **names** are load-bearing: `SeoMetaRepository::metaForRoute()` looks up `
 8. **Hash high-entropy tokens with SHA-256, not argon2id.** Argon2id is for passwords, OTPs and backup codes.
 9. **Rate-limit every new public endpoint** (`auth.throttle:{name}` for auth, `throttle:5,15` for forms).
 10. **Log security-relevant actions** via `ActivityService::log()` with a `UserActivity` constant.
-11. **Admin screens are role-scoped.** `AccountManagementService` takes the role it may touch; look accounts up with `UserRepository::findByIdAndRole()`, never by id alone. Notes are always looked up with the owning user's id.
-12. **Never build HTML in models, repositories or with string concatenation in services.** Render Blade partials.
+11. **Admin routes are permission-gated and fail closed.** `PermissionService::requiredKeys()` maps a route to a key in the permission list (`X/list` → `X`, `X/save` → `X/create` or `X/update`, irregular ones in `GUARDED_BY`); an unmapped route is refused. Add new admin routes to that map/list — `PermissionAuditTest` fails otherwise.
+12. **Admin screens are role-scoped.** `AccountManagementService` takes the role it may touch; look accounts up with `UserRepository::findByIdAndRole()`, never by id alone. Notes are always looked up with the owning user's id.
+13. **Never build HTML in models, repositories or with string concatenation in services.** Render Blade partials.
 
 ---
 

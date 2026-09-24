@@ -84,14 +84,8 @@ class User extends Authenticatable
         return $this->status === UserStatus::ACTIVE;
     }
 
-    /**
-     * Mirrors the legacy App\Models\User::hasPermission() so the existing
-     * App\Services\PermissionService (route-key tree checked against the
-     * comma-joined `permission` string) keeps working unchanged for the
-     * new admin session guard - the column format is identical between
-     * the legacy `user` table and this one.
-     */
-    public function hasPermission($permission = ''): bool
+    /** Super admins may do everything; other admins need the key in their comma-joined `permission` column. */
+    public function hasPermission(string|array $permission): bool
     {
         if ($this->isSuperAdmin()) {
             return true;
