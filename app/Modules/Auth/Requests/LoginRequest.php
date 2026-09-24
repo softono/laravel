@@ -2,10 +2,7 @@
 
 namespace App\Modules\Auth\Requests;
 
-use App\Helpers\Response;
-use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class LoginRequest extends FormRequest
 {
@@ -21,12 +18,5 @@ class LoginRequest extends FormRequest
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
         ];
-    }
-
-    protected function failedValidation(ValidatorContract $validator)
-    {
-        throw new HttpResponseException(
-            Response::sendError(422, $validator->errors()->first())
-        );
     }
 }

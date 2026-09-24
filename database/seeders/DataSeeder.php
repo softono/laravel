@@ -89,34 +89,6 @@ class DataSeeder extends Seeder
                     'updated_at' => $user['updated_at'],
                 ]
             );
-
-            // Legacy user table seeding if exists
-            if (DB::getSchemaBuilder()->hasTable('user')) {
-                $roleInt = match ($user['role']) {
-                    'SUPER_ADMIN' => 0,
-                    'ADMIN' => 1,
-                    default => 4,
-                };
-                DB::table('user')->updateOrInsert(
-                    ['email' => $user['email']],
-                    [
-                        'first_name' => $user['first_name'],
-                        'last_name' => $user['last_name'],
-                        'email' => $user['email'],
-                        'phone' => $user['phone'],
-                        'password' => $hashedPassword,
-                        'email_verified' => 1,
-                        'role' => $roleInt,
-                        'status' => 1,
-                        'country' => $user['country'],
-                        'timezone' => $user['timezone'],
-                        'permission' => $user['permission'],
-                        'registered_ip' => $user['registered_ip'],
-                        'created_at' => $user['created_at'],
-                        'updated_at' => $user['updated_at'],
-                    ]
-                );
-            }
         }
         $this->command?->info('Seeded users and user_accounts.');
 
