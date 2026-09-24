@@ -135,8 +135,12 @@ class TfaService
         return Response::sendMessage('Logged in successfully');
     }
 
-    /** @return array{valid: bool, message: ?string} */
-    protected function verifyByMethod(User $user, string $method, string $code): array
+    /**
+     * Checks a TOTP, email-OTP or backup code for the user (a used backup code is consumed).
+     *
+     * @return array{valid: bool, message: ?string}
+     */
+    public function verifyByMethod(User $user, string $method, string $code): array
     {
         return match ($method) {
             'totp' => $this->verifyTotp($user, $code),

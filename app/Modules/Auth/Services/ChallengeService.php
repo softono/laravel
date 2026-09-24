@@ -104,4 +104,48 @@ class ChallengeService
 
         return $data;
     }
+
+    /**
+     * Email-change challenge: the handle goes to the browser, the target
+     * address and progress stay server-side. Stage 1 proves control of the
+     * new address, stage 2 proves the account owner (2FA / email code).
+     */
+    public function createEmailChange(string $userId, string $newEmail): string
+    {
+        $handle = SignedCookie::base64UrlEncode(random_bytes(32));
+
+        $this->cache()->put("account:email-change:{$handle}", [
+            'user_id' => $userId,
+            'new_email' => $newEmail,
+            'new_email_verified' => false,
+        ], (int) config('auth_next.tfa_ttl'));
+
+        return $handle;
+    }
+
+    public function peekEmailChange(string $handle): ?array
+    {
+        return $this->cache()->get("account:email-change:{$handle}");
+    }
+
+    public function markEmailChangeVerified(string $handle, array $pending): void
+    {
+        $this->cache()->put("account:email-change:{$handle}", [...$pending, 'new_email_verified' => true], (int) config('auth_next.tfa_ttl'));
+    }
+
+    public function consumeEmailChange(string $handle): void
+    {
+        $this->cache()->forget("account:email-change:{$handle}");
+        $this->cache()->forget("account:email-change:attempts:{$handle}");
+    }
+
+    /** Counts a failed attempt (shared by both stages); true once the cap is reached. */
+    public function bumpEmailChangeAttempts(string $handle): bool
+    {
+        $key = "account:email-change:attempts:{$handle}";
+
+        $this->cache()->add($key, 0, (int) config('auth_next.tfa_ttl'));
+
+        return $this->cache()->increment($key) >= (int) config('auth_next.tfa_max_attempts');
+    }
 }

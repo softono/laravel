@@ -81,6 +81,7 @@
                     </form>
                 </div>
             </div>
+            @include('modules.user.account.component.email_change')
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title">Deactivate Account</h5>
@@ -107,8 +108,16 @@
     </div>
 @endsection
 @push('scripts')
+    <script src="{{ asset('assets/js/account/email-change.js') }}"></script>
     <script type="text/javascript">
         documentReady(function() {
+            emailChange.init({
+                startUrl: @json(route($prefix.'account/email/start')),
+                resendUrl: @json(route($prefix.'account/email/resend')),
+                verifyNewUrl: @json(route($prefix.'account/email/verify-new')),
+                sendOtpUrl: @json(route($prefix.'account/email/send-otp')),
+                verifyUrl: @json(route($prefix.'account/email/verify')),
+            });
             $('#ajax-form').validate({
                 submitHandler: function(form) {
                     app.ajaxForm(form);

@@ -27,10 +27,20 @@ var accountPasskeys = (function () {
 
                 passkeys.forEach(function (pk) {
                     var tr = document.createElement('tr');
-                    tr.innerHTML = '<td>' + pk.name + '</td>' +
-                        '<td>' + pk.device_type + '</td>' +
-                        '<td>' + (pk.created_at || '') + '</td>' +
-                        '<td><button type="button" class="btn btn-sm btn-outline-danger" data-id="' + pk.id + '">Remove</button></td>';
+                    // textContent, not innerHTML: the passkey name is user-supplied.
+                    [pk.name, pk.device_type, pk.created_at || ''].forEach(function (text) {
+                        var td = document.createElement('td');
+                        td.textContent = text;
+                        tr.appendChild(td);
+                    });
+                    var actionCell = document.createElement('td');
+                    var removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'btn btn-sm btn-outline-danger';
+                    removeBtn.dataset.id = pk.id;
+                    removeBtn.textContent = 'Remove';
+                    actionCell.appendChild(removeBtn);
+                    tr.appendChild(actionCell);
                     tbody.appendChild(tr);
                 });
 

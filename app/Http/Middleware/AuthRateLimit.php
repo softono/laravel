@@ -31,6 +31,7 @@ class AuthRateLimit
         'verify_account' => [5, 900],
         'login_otp' => [5, 900],
         'tfa' => [5, 900],
+        'email_change' => [20, 900],
         'login_link' => [5, 300],
         'login_link_poll' => [900, 300],
         'login_link_approve' => [20, 300],

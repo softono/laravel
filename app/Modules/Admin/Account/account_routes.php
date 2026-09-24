@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Admin\Account\Controllers\AccountController;
+use App\Modules\User\Controllers\EmailChangeController;
 use Illuminate\Support\Facades\Route;
 
 // Admin prefix and auth.admin are applied by the loader in bootstrap/app.php.
@@ -19,4 +20,9 @@ Route::prefix('account')->group(function () {
     Route::get('user-activity', [AccountController::class, 'userActivity'])->name('admin/account/user-activity');
     Route::post('user-activity-list', [AccountController::class, 'userActivityList'])->name('admin/account/user-activity-list');
     Route::post('deactivate', [AccountController::class, 'deactivate'])->name('admin/account/deactivate');
+    Route::post('email/start', [EmailChangeController::class, 'start'])->middleware('auth.throttle:email_change')->name('admin/account/email/start');
+    Route::post('email/resend', [EmailChangeController::class, 'resend'])->middleware('auth.throttle:email_change')->name('admin/account/email/resend');
+    Route::post('email/verify-new', [EmailChangeController::class, 'verifyNew'])->middleware('auth.throttle:email_change')->name('admin/account/email/verify-new');
+    Route::post('email/send-otp', [EmailChangeController::class, 'sendOtp'])->middleware('auth.throttle:email_change')->name('admin/account/email/send-otp');
+    Route::post('email/verify', [EmailChangeController::class, 'verify'])->middleware('auth.throttle:email_change')->name('admin/account/email/verify');
 });

@@ -2,6 +2,7 @@
 
 use App\Modules\User\Controllers\AccountController;
 use App\Modules\User\Controllers\DashboardController;
+use App\Modules\User\Controllers\EmailChangeController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['device.uid', 'auth.user'])->group(function () {
@@ -22,5 +23,10 @@ Route::middleware(['device.uid', 'auth.user'])->group(function () {
         Route::get('user-activity', [AccountController::class, 'userActivity'])->name('account/user-activity');
         Route::post('user-activity-list', [AccountController::class, 'userActivityList'])->name('account/user-activity-list');
         Route::post('deactivate', [AccountController::class, 'deactivate'])->name('account/deactivate');
+        Route::post('email/start', [EmailChangeController::class, 'start'])->middleware('auth.throttle:email_change')->name('account/email/start');
+        Route::post('email/resend', [EmailChangeController::class, 'resend'])->middleware('auth.throttle:email_change')->name('account/email/resend');
+        Route::post('email/verify-new', [EmailChangeController::class, 'verifyNew'])->middleware('auth.throttle:email_change')->name('account/email/verify-new');
+        Route::post('email/send-otp', [EmailChangeController::class, 'sendOtp'])->middleware('auth.throttle:email_change')->name('account/email/send-otp');
+        Route::post('email/verify', [EmailChangeController::class, 'verify'])->middleware('auth.throttle:email_change')->name('account/email/verify');
     });
 });
