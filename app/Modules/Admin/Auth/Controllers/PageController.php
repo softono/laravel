@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\Modules\Admin\Auth\Controllers;
 
-use App\Http\Controllers\Admin\Controller;
+use App\Modules\Admin\Controllers\Controller;
 use Illuminate\Http\Request;
 
 /**
@@ -16,23 +16,23 @@ class PageController extends Controller
 {
     public function showForgot()
     {
-        return view('admin.auth.password-forgot');
+        return view('modules.admin.auth.password-forgot');
     }
 
     public function showReset()
     {
-        return view('admin.auth.reset-password');
+        return view('modules.admin.auth.reset-password');
     }
 
     public function showVerify()
     {
-        return view('admin.auth.verify-tfa');
+        return view('modules.admin.auth.verify-tfa');
     }
 
     public function showVerifyAccount(Request $request)
     {
         $email = $request->query('code') ? base64_decode($request->query('code')) : null;
 
-        return view('admin.auth.verify-account', ['email' => $email]);
+        return view('modules.admin.auth.verify-account', ['email' => $email]);
     }
 }

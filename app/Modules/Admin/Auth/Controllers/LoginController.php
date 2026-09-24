@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin\Auth;
+namespace App\Modules\Admin\Auth\Controllers;
 
 use App\Constants\UserActivity;
 use App\Helpers\Response;
 use App\Helpers\SignedCookie;
-use App\Http\Controllers\Admin\Controller;
 use App\Models\Auth\User;
+use App\Modules\Admin\Controllers\Controller;
 use App\Modules\Auth\Requests\LoginRequest;
 use App\Modules\Auth\Services\AuthService;
 use App\Modules\Auth\Services\DeviceService;
@@ -33,7 +33,7 @@ class LoginController extends Controller
 
     public function show()
     {
-        return view('admin.auth.login');
+        return view('modules.admin.auth.login');
     }
 
     public function login(LoginRequest $request)

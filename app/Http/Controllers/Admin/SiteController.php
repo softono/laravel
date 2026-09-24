@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Modules\Admin\Controllers\Controller;
 use App\Services\AccountService;
 use App\Services\GeneralService;
 use Illuminate\Http\JsonResponse;

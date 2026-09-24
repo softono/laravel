@@ -1,4 +1,4 @@
-@extends('admin.layouts.main')
+@extends('modules.admin.layouts.main')
 @section('title')
 Admin Update
 @endsection

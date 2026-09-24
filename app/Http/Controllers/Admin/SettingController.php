@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Setting;
+use App\Modules\Admin\Controllers\Controller;
 use App\Repositories\SettingRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;

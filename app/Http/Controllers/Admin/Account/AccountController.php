@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin\Account;
 
-use App\Http\Controllers\Admin\Controller;
 use App\Models\UserActivity;
 use App\Models\UserAuth;
+use App\Modules\Admin\Controllers\Controller;
 use App\Services\AccountService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

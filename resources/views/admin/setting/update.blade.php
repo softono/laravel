@@ -1,4 +1,4 @@
-@extends('admin.layouts.main')
+@extends('modules.admin.layouts.main')
 @section('title', 'Setting Update')
 @section('content')
 <div class="breadcrumb-box">

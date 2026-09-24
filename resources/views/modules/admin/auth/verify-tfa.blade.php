@@ -1,4 +1,4 @@
-@extends('admin.layouts.blank')
+@extends('modules.admin.layouts.blank')
 @section('title')
     Two-Factor Verification
 @endsection

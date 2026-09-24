@@ -67,12 +67,12 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <!-- Layout wrapper -->
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        {{ view('admin/layouts/component/main_sidebar', compact('sessionUser')) }}
+        {{ view('modules.admin.layouts.component.main_sidebar', compact('sessionUser')) }}
         <!-- / Sidebar -->
 
         <div class="flex min-h-screen w-full flex-1 flex-col lg:ps-64">
             <!-- Navbar -->
-            {{ view('admin/layouts/component/main_navbar', compact('sessionUser')) }}
+            {{ view('modules.admin.layouts.component.main_navbar', compact('sessionUser')) }}
             <!-- / Navbar -->
 
             <div class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
