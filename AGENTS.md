@@ -6,9 +6,11 @@ Working guide for AI coding agents on this repository. Read this before making c
 
 ## Project Overview
 
-A Laravel 12 application with a **public marketing front-end**, a **user account area**, and a **Bootstrap admin panel**. Its defining feature is a hand-rolled authentication system supporting password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys, and Google OAuth.
+A Laravel 12 application with a **public site** (home, blog, pages, contact), a **user area** (dashboard, notes, account) and a **Bootstrap-free Tailwind admin panel**. Its defining feature is a hand-rolled authentication system: password login, email-OTP verification, TOTP/email/backup-code 2FA with trusted devices, magic login links with second-device approval, WebAuthn passkeys and Google OAuth.
 
-**The single most important thing to know:** this repo is **mid-migration**. A modern auth stack (`App\*\Auth\*`) lives alongside a legacy one (`App\Services\AuthService`, `App\Models\User`). Both are wired and running. Many class names exist twice in different namespaces. See [Legacy vs. Current](#legacy-vs-current-critical) — getting this wrong is the most common way to break the app.
+It is a port of a Next.js app (`/www/wwwroot/demo/next/next`). **The database is identical to Next's** (same tables, columns, defaults, enums, indexes, foreign keys — see [Database](#database)), and new pages reuse Next's Tailwind/shadcn class vocabulary.
+
+The code is organised into **modules** (`app/Modules/*`). There is no legacy stack any more: the old integer-role `App\Models\User`, `UserAuth`, and the legacy Auth/Tfa/Account services were deleted. Do not reintroduce them.
 
 ---
 
@@ -19,8 +21,9 @@ A Laravel 12 application with a **public marketing front-end**, a **user account
 | Framework | Laravel 12, PHP 8.2+ (running 8.4) |
 | Database | MariaDB / MySQL (`DB_CONNECTION=mysql`) |
 | Session & Cache | `database` driver (both) |
-| Views | Blade + Bootstrap 5 (vendored theme in `public/theme/`) |
-| Browser JS | **Vanilla JS**, plain `<script>` tags — no bundler for app code |
+| Views | Blade + Tailwind CSS v4 (built by Vite); shadcn-style Blade components in `resources/views/components/ui` |
+| Tables | jQuery DataTables 2 with the Tailwind styling integration (`dataTables.tailwindcss`) |
+| Browser JS | Vanilla JS + jQuery `app.*` helpers in `public/assets/js/` (not bundled by Vite) |
 | Password hashing | argon2id (m=65536, t=3, p=4) |
 | 2FA | `pragmarx/google2fa` + `bacon/bacon-qr-code` |
 | Passkeys | `web-auth/webauthn-lib` v5 |
@@ -28,185 +31,126 @@ A Laravel 12 application with a **public marketing front-end**, a **user account
 | Formatting | Laravel Pint |
 | Tests | PHPUnit 11 |
 
-> `tailwindcss` and `@tailwindcss/vite` are in `package.json` but **not active** — no Tailwind plugin in `vite.config.js`, no `@import "tailwindcss"` in any CSS. Do not write Tailwind classes; this project is Bootstrap.
-
 ---
 
 ## Repository Structure
 
 ```
 app/
-  Constants/          UserRole, UserStatus, UserActivity (string constants)
-  Helpers/            Response, SignedCookie, ClientInfo, SessionTokenGuard,
-                      General, Pagination, QrGenerator (legacy)
-  Http/
-    Controllers/
-      Auth/           Current auth: Login, Register, Password, Verify, Tfa,
-                      Passkey, LoginLink, Google, Session
-      Account/        User account area
-      Admin/          Admin panel CRUD
-      Admin/Auth/     Admin login + auth pages
-    Middleware/       See "Middleware" below
-    Requests/Auth/    FormRequests for auth endpoints
-  Models/
-    Auth/             Current: User + 8 auth tables (UUID PKs)
-    *.php             Legacy models (see warning below)
-  Services/
-    Auth/             Current auth services + Tfa/ method classes
-    *.php             Legacy services (see warning below)
-routes/
-  web.php             Front-end, account area, admin panel
-  auth.php            All authentication routes
+  Modules/
+    Admin/                     every admin-panel module
+      Controllers/Controller.php   admin base controller
+      Services/                    services shared by admin modules
+      Auth/  Dashboard/  Account/  User/  Admins/  Activity/  Device/
+      Page/  Seo/  Setting/  EmailTemplate/  Blog/
+    Auth/  User/  Page/  Contact/  Site/  Blog/  Note/    end-user modules
+      (each: Controllers/  Requests/  Services/  <module>_routes.php)
+  Models/                      schema, casts, relationships only
+    Auth/                      User + 8 auth tables (UUID PKs)
+  Repositories/                every database query
+    Auth/                      one repository per auth table
+  Services/                    cross-module services (ActivityService, PermissionService, EmailTemplateService)
+  Constants/  Helpers/  Http/Middleware/  Jobs/
 resources/views/
-  layouts/            blank (auth pages), main (app shell)
-  auth/  admin/  account/  common/  front/  email/
-public/assets/js/     Hand-written vanilla JS (NOT built by Vite)
-docs/                 Detailed documentation (see References)
-docs/local/           Working notes: pending tasks, improvement & security plans
+  modules/<module>/            module views  (modules/admin/<module>/ for the admin panel)
+  components/ui/               x-ui.* Blade components (Next's shadcn class strings)
+  layouts/  common/  email/    shared
+public/assets/js/              app.js, common.js, pjax.js, auth/*, account/*   (NOT built by Vite)
+docs/                          documentation; docs/local/ is gitignored working notes
 ```
+
+Module layout rules and the migration history are in [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
 ## Architecture Summary
 
-Request flow:
-
 ```
 Request
-  → web middleware (+ EnsureDeviceUid, appended globally)
-  → route middleware (auth.user / auth.admin / auth.throttle / auth.redirect)
-  → Controller  (thin: validate → call service → return Response)
-  → Service     (all business logic lives here)
-  → Model       (Eloquent; schema + relationships only)
+  → web middleware (+ EnsureDeviceUid)
+  → route middleware (auth.user / auth.admin / auth.throttle / auth.redirect / throttle)
+  → Controller   thin: FormRequest validates → call a service → return Response / view
+  → Service      business logic; talks to repositories, never to Eloquent directly
+  → Repository   the only place that queries (Model::where, DB::table, Pagination)
+  → Model        schema, casts, relationships
 ```
 
-**Layering rule:** controllers stay thin. Business logic belongs in `App\Services\Auth\*`. Models should not accumulate query methods — new query logic goes in a service (a repository extraction is planned; see `docs/local/task_pending.md`).
+- **Routes** live in `app/Modules/<Module>/<module>_routes.php`, loaded by `bootstrap/app.php`. Admin route files are written *relative to the admin group*: the loader adds the `admin` prefix and the `auth.admin` middleware (except `Modules/Admin/Auth`, which is guest-only). There is no `routes/web.php`.
+- **A service used by two or more modules** goes in `app/Services/`. An admin module may use top-level services; a top-level module never imports `App\Modules\Admin\*`.
+- **Authentication** is resolved by a custom guard (`SessionTokenGuard`), so `auth()->user()`, `Auth::id()` and `@auth` work while the real session lives in `user_sessions`, keyed by a signed cookie. `auth()->guard()->session()` returns the current session row.
 
-Authentication is resolved by a **custom guard** (`SessionTokenGuard`) rather than Laravel's session auth, so `auth()->user()`, `Auth::id()` and `@auth` work everywhere while the actual session lives in the `user_sessions` table keyed by a signed cookie.
-
-For request lifecycle, layer boundaries, the legacy/current split, and caching strategy → **[`docs/architecture.md`](docs/architecture.md)**
-
----
-
-## Legacy vs. Current (CRITICAL)
-
-Several classes exist twice. **Always confirm which namespace you are importing.**
-
-| Concern | ✅ Current | ⚠️ Legacy |
-|---|---|---|
-| User model | `App\Models\Auth\User` | `App\Models\User` |
-| Auth service | `App\Services\Auth\AuthService` | `App\Services\AuthService` |
-| 2FA service | `App\Services\Auth\TfaService` | `App\Services\TfaService` |
-| Account service | `App\Services\Auth\AccountService` | `App\Services\AccountService` |
-
-Facts you need:
-
-- **The guard resolves `App\Models\Auth\User`.** So `auth()->user()` always returns the *current* model, even inside legacy controllers.
-- **`App\Models\User` (legacy) now points at the same `users` table** but still uses **integer role codes** (`[1,2,3]`) while the column stores strings (`'ADMIN'`). Its list queries silently return zero rows. Do not copy its role logic.
-- **`routes/web.php` now gates every non-auth page with `auth.user` / `auth.admin`** (the old `user`/`admin` aliases and their `UserAuth`/`AdminAuth` middleware classes have been removed). They work because they call `Auth::user()`, which resolves the current model.
-- The `users` table has **no** `password`, `otp`, `status_tfa`, `totp_secret_key`, `backup_code`, or `ignore_tfa_device` columns. Passwords live in `user_accounts`. Legacy code touching those columns is broken — treat it as a bug, not a pattern.
+For the request lifecycle, layers and caching → **[`docs/architecture.md`](docs/architecture.md)**
 
 ---
 
 ## Development Workflow
 
-1. **Read before writing.** Grep for existing patterns; this codebase has strong local conventions that differ from stock Laravel.
-2. **Check the namespace** against the table above before importing anything auth-related.
-3. Make the change.
-4. **Format:** `./vendor/bin/pint`
-5. **Verify it actually works** — start the server and exercise the route. Static checks will not catch the failure modes this repo has (see Pitfalls).
-6. If you moved or renamed a class: **`php composer.phar dump-autoload`**.
+1. **Read before writing.** Grep for how the codebase already solves the problem.
+2. New feature → new module folder (or a controller in an existing one). Routes go in that module's `<module>_routes.php`, with **no `/api` prefix**, using `[Controller::class, 'method']`.
+3. New queries → a repository method.
+4. Make the change, then `./vendor/bin/pint`.
+5. **Verify it actually works** — hit the route on the running site (see the note on URLs below). Static checks will not catch this repo's failure modes.
+6. If you moved or renamed a class: regenerate the autoloader (see below), then `php artisan optimize:clear`.
 
 ---
 
 ## Build / Test / Lint Commands
 
 ```bash
-# Dev server
-php artisan serve
-
-# Everything at once (server + queue + logs + vite)
-php composer.phar run dev
-
-# Format (run before finishing any task)
-./vendor/bin/pint
-./vendor/bin/pint --test          # check only, no writes
-
-# Tests
-php artisan test
-php artisan test --filter=SomeTest
-
-# Frontend CSS (only needed if you edit resources/css/*)
+php artisan serve                      # dev server
+./vendor/bin/pint                      # format (run before finishing any task)
+php artisan test                       # PHPUnit
+npm run build                          # Tailwind/Vite build (needed after adding new utility classes)
 npm run dev
-npm run build
 ```
 
-> ⚠️ `composer` is **not on PATH** in this environment. Use `php composer.phar …`.
+> ⚠️ **Autoload:** the system `composer` (2.0.14) cannot parse `enum` files and silently drops `SortDirection` from the classmap, which breaks every page. Use a current Composer (2.7+): `php composer.phar dump-autoload -o`.
 >
-> ⚠️ `phpunit.xml` has the SQLite lines **commented out**, so `php artisan test` runs against the **real MySQL database**. Uncomment them or point `DB_DATABASE` at a scratch database before running the suite.
-
----
-
-## Common Commands
+> ⚠️ **URLs:** the deployed site does not rewrite pretty URLs under `/laravel/laravel/public/`; request routes as `…/public/index.php/<route>`.
+>
+> ⚠️ `phpunit.xml` has the SQLite lines **commented out**, so `php artisan test` runs against the **real MySQL database**. Configure a scratch database before running the suite.
 
 ```bash
-php artisan route:list --path=auth        # inspect auth endpoints
-php artisan migrate                       # run migrations
-php artisan db:seed --class="Database\Seeders\AuthSeeder"
+php artisan route:list --except-vendor
+php artisan migrate:fresh --seed         # only on a database you can wipe
 php artisan tinker
-php artisan optimize:clear                # config + cache + views + routes
-php artisan cache:clear                   # settings are cached under key 'setting'
-php artisan view:clear                    # after editing Blade
+php artisan optimize:clear
+php artisan view:clear                   # after editing Blade
 ```
 
 ---
 
-## Database Overview
+## Database
 
-MySQL/MariaDB. Migrations exist **only** for the auth tables; other tables (`settings`, `pages`, `seos`, `blogs`, `email_templates`, `notes`, `contact_messages`) predate migrations and live only in the database.
-
-**Auth tables (9)** — all UUID `char(36)` primary keys:
-
-| Table | Holds |
-|---|---|
-| `users` | identity, role, status, profile |
-| `user_accounts` | one row per provider (`credential` holds the password, or `google`) |
-| `user_sessions` | active sessions (token → user) |
-| `user_two_factors` | TOTP secret (encrypted) + backup codes (JSON) |
-| `user_devices` | trusted devices (skip 2FA for 30 days) |
-| `user_verifications` | OTP store, keyed `"{purpose}:{email}"` |
-| `user_login_links` | magic-link requests |
-| `user_passkeys` | WebAuthn credentials |
-| `user_activities` | audit log |
+MySQL/MariaDB with **the same 16 tables as the Next app** (Postgres): `users`, `user_accounts`, `user_sessions`, `user_two_factors`, `user_devices`, `user_verifications`, `user_login_links`, `user_passkeys`, `user_activities`, `settings`, `pages`, `seos`, `blogs`, `notes`, `contact_messages`, `email_templates`. Migrations and `DataSeeder` (rows from Next's `db/seed/*.sql`) live in `database/`. Laravel adds only infrastructure tables (`sessions`, `cache`, `jobs`, `migrations`, …).
 
 Conventions:
 
-- **UUID PKs** via `HasUuids`; `$keyType = 'string'`, `$incrementing = false`.
-- **`ascii_bin` collation** on every token / UUID / base64url column. This is security-critical — a case-insensitive collation would collapse the session-token keyspace. Never relax it.
-- **`DATETIME`, not `TIMESTAMP`** (no 2038 limit, no implicit TZ conversion). Keep `APP_TIMEZONE=UTC`.
-- Roles are **strings**: `USER`, `ADMIN`, `SUPER_ADMIN` (`App\Constants\UserRole`). Status: `active` / `inactive`.
+- **UUID PKs** on the auth tables (`char(36) ascii_bin`, `HasUuids`); `serial` (INT AUTO_INCREMENT) on the content tables.
+- **`ascii_bin` collation** on token / UUID / base64url columns. Security-critical — never relax it.
+- **`DATETIME`, not `TIMESTAMP`.** Keep `APP_TIMEZONE=UTC`.
+- `text` in Postgres is `TEXT` here, except unique/indexed columns (`VARCHAR`) and HTML bodies (`LONGTEXT`).
+- Roles are strings: `USER`, `ADMIN`, `SUPER_ADMIN` (`App\Constants\UserRole`). Status: `active` / `inactive` (`UserStatus`).
+- `settings` rows use Next's plain keys (`smtp_host`, `user_email_verify`, …); `SettingRepository::configOverrides()` maps them into Laravel config. Date formats are stored as date-fns patterns and converted to PHP patterns on load.
+- The `users` table has **no** password column. Passwords live in `user_accounts` where `provider_id = 'credential'`.
 
 ---
 
-## API Overview
+## Responses and the Frontend Contract
 
-All JSON endpoints return the same envelope:
+Every AJAX endpoint returns the Next envelope, built with `App\Helpers\Response` (same function names as Next's `response.ts`):
 
 ```json
 { "status": 1, "message": "…", "data": {} }
 ```
 
-`status` is `1` (success) or `0` (failure) — **not** the HTTP status.
+- `status` is `1`/`0`, **not** the HTTP status. `data` defaults to `[]`; extras live *inside* `data`.
+- **Responses never carry navigation** (`next`, `url`). The view decides what happens after success with `data-next` (`load`, `refresh`, `table_refresh`, `reload`, `redirect`, `hide_modal`, `show_modal_view`) and `data-next-url` on the form or button that triggers the request; `app.js` runs it. Flags such as `requires_tfa` / `requires_verification` are data, not navigation.
+- Use **HTTP 200** for any failure the page handles itself (it reads `data`, or shows the message inline): jQuery only calls the caller's callback for 2xx. Validation (422), auth (401), CSRF (419) and rate limit (429) use their real codes and are rendered as the envelope for AJAX requests (`bootstrap/app.php`).
+- **DataTables endpoints** are the one exception: they return DataTables' own JSON (`recordsTotal`, `data`, `draw`) from `Helpers\Pagination::getDataTable()`. Build rows in a service and render HTML cells with Blade partials, not string concatenation.
+- Use the existing helpers — `app.ajaxForm`, `app.ajaxFileForm`, `app.ajaxPost`, `app.confirmAction`, `app.dataTable`, `app.showMessage` — never raw `$.ajax` for forms.
 
-Key conventions:
-
-- Build responses with `Response::sendMessage()` / `sendError()` / `sendData()` / `sendResult()` (same names and body as the Next app's `response.ts`; extras go inside `data`).
-- **Use HTTP 200 for any failure the page must handle** (it reads `data.next`, or shows the message inline). The jQuery helper in `public/assets/js/app.js` only routes 2xx to the caller's callback; non-2xx goes to a generic handler that shows `message` and drops `data`. Validation (422), auth (401), CSRF (419) and rate limit (429) use their real codes. See `docs/api.md`.
-- Validation via FormRequests in `App\Http\Requests\Auth\` — they render errors into the same envelope.
-- Rate limiting via `auth.throttle:{name}` (see `AuthRateLimit::LIMITS`).
-- CSRF applies to every POST (all auth endpoints live in the `web` group).
-
-For endpoint listings, error handling, rate-limit tiers and examples → **[`docs/api.md`](docs/api.md)**
+Details and examples → **[`docs/api.md`](docs/api.md)**.
 
 ---
 
@@ -214,39 +158,27 @@ For endpoint listings, error handling, rate-limit tiers and examples → **[`doc
 
 Session-cookie based, not Laravel's built-in auth:
 
-- Login verifies the password against `user_accounts` (argon2id), then issues a row in `user_sessions` and sets a signed cookie.
-- `SessionTokenGuard` resolves the user from that cookie on each request, cached ~300s.
-- Cookies are named `{APP_UID}_{name}` and signed with **`ENCRYPTION_KEY`** (a separate 32-byte env var, *not* `APP_KEY`).
-- Admin and user share one `users` table; admin login just adds `requireAdmin: true`.
+- Login verifies the password against `user_accounts` (argon2id), issues a row in `user_sessions` and sets a signed cookie.
+- `SessionTokenGuard` resolves the user from that cookie on each request, cached ~300s (`SessionService::invalidateUserCache()` after changing a user).
+- Cookies are named `{APP_UID}_{name}` and signed with **`ENCRYPTION_KEY`** (a separate 32-byte env var, *not* `APP_KEY`) via `SignedCookie`.
+- Admin and user share one `users` table and one session model; `auth.admin` additionally requires an admin role and permission.
 
-Supported flows: password, email OTP verification, forgot/reset password, 2FA (TOTP / email OTP / backup codes) with trusted devices, magic login links, WebAuthn passkeys, Google OAuth.
+Flows: password, email OTP, forgot/reset password, 2FA (TOTP / email OTP / backup codes) with trusted devices, magic login links, WebAuthn passkeys, Google OAuth. Endpoints are ordinary web routes under `/auth/*` and `/admin/auth/login`.
 
-For the cookie table, guard internals, middleware order, 2FA and passkey ceremonies, and OAuth precedence → **[`docs/authentication.md`](docs/authentication.md)**
+For the cookie table, guard internals, 2FA and passkey ceremonies → **[`docs/authentication.md`](docs/authentication.md)**
 
 ---
 
 ## Frontend Overview
 
-Server-rendered Blade + Bootstrap 5. **No SPA framework, no build step for application JS.**
+Server-rendered Blade + Tailwind.
 
-- **Layouts:** `layouts/blank.blade.php` (auth pages) and `layouts/main.blade.php` (app shell, PJAX-aware). Admin mirrors both under `admin/layouts/`.
-- **JS lives in `public/assets/js/`** and is included with plain `<script src="…">`. It is *not* processed by Vite.
-- Use the existing helpers — `app.ajaxForm(form, cb)`, `app.ajaxPost(url, data, cb)`, `app.ajaxGet(url, cb)`, `app.showMessage(msg, type)` — which already speak the response envelope.
-- New interactive widgets are **plain DOM code in an IIFE**, exposing a named global if the page needs to initialise them.
-- Vite compiles **CSS only**, and only for `layouts/main.blade.php`. `resources/js/app.js` is built but never loaded by any view.
+- **Layouts:** `layouts/blank` (auth pages), `layouts/main` (site shell, PJAX-aware); admin mirrors them in `modules/admin/layouts/`.
+- **New pages use Next's class vocabulary** through the `x-ui.*` components (`button`, `input`, `textarea`, `select`, `label`, `card`, `card-header`, `card-title`, `card-content`, `badge`, `alert`, `table`/`tr`/`th`/`td`, `pagination`). The design tokens (`bg-card`, `text-muted-foreground`, `border-border`, …) come from `resources/css/next-theme.css`. Run `npm run build` after using a new utility class.
+- **JS lives in `public/assets/js/`** and is included with plain `<script>`. `resources/js/app.js` is not used by any view.
+- Pass URLs in from Blade (`route()`, `data-*`), never hardcode paths in JS.
 
-For layout selection, the JS module pattern, CSRF wiring and PJAX behaviour → **[`docs/frontend.md`](docs/frontend.md)**
-
----
-
-## Backend Overview
-
-- **Controllers** validate (via FormRequest) and delegate. They extend `App\Http\Controllers\Controller` (user) or `App\Http\Controllers\Admin\Controller` (admin) — both share `$general` and app settings into every view, so **always call `parent::__construct()`**.
-- **Services** hold business logic and return plain arrays (`['ok' => bool, 'message' => string, …]`) or an `Response`. Dependencies are constructor-injected.
-- **Models** define schema, casts and relationships. The `App\Models\Auth\*` models are query-free by design.
-- **Config:** every auth tunable lives in `config/auth_next.php` (TTLs, attempt caps, window sizes). Never hardcode these values.
-
-Layer responsibilities and service-by-service detail are covered in **[`docs/architecture.md`](docs/architecture.md)**.
+Details → **[`docs/frontend.md`](docs/frontend.md)**
 
 ---
 
@@ -254,37 +186,30 @@ Layer responsibilities and service-by-service detail are covered in **[`docs/arc
 
 **PHP**
 
-- PSR-12 via Pint (Laravel preset). Run `./vendor/bin/pint` before finishing.
-- Constructor property promotion for dependencies:
+- PSR-12 via Pint. Constructor property promotion for dependencies:
   ```php
   public function __construct(
       protected SessionService $sessions,
       protected ActivityService $activity,
   ) {}
   ```
-- Type-hint parameters and return types. Use array shapes in docblocks:
-  ```php
-  /** @return array{ok: bool, message: ?string, user: ?User} */
-  ```
-- Prefer constructor injection over `app(Foo::class)` service location.
-- Use constants, never string literals, for roles/statuses/activity types:
-  ```php
-  $user->role === UserRole::ADMIN          // ✅
-  $user->role === 'ADMIN'                  // ❌
-  ```
-- Comments explain **why**, not what. Do not narrate the code.
+- Type-hint parameters and return types; array shapes in docblocks (`@return array{ok: bool, message: string}`).
+- Prefer constructor injection over `app(Foo::class)`.
+- Controllers call `parent::__construct()` (they extend `App\Http\Controllers\Controller`, or `App\Modules\Admin\Controllers\Controller` for admin, which share `$general` and settings with the views).
+- **FormRequests** validate; do not override `failedValidation()` — the exception handler renders the envelope.
+- Use constants for roles, statuses, activity types and blog categories (`UserRole`, `UserStatus`, `UserActivity`, `BlogCategory`).
+- Services return `['ok' => bool, 'message' => string, …extra]`; `Response::sendResult()` maps `ok` to `status` and nests extras in `data`.
+- Comments explain **why**, not what.
 
 **Blade**
 
-- Reuse existing partials in `resources/views/common/`.
-- Auth pages `@extends('layouts.blank')`; admin auth `@extends('admin.layouts.blank')`.
-- Follow the established card markup — `container-xxl` → `authentication-wrapper` → `.card` → `.card-body`.
+- Auth pages `@extends('layouts.blank')`; admin pages `@extends('modules.admin.layouts.main')`.
+- Shared admin partials: `modules/admin/partials/{status-badge,row-actions,account-form,account-profile,editor,…}`.
 
 **JavaScript**
 
-- Vanilla only. **No new framework or jQuery-plugin dependency.** (jQuery already loads for Bootstrap and the `app.*` helpers; that stays.)
-- Wrap in an IIFE; `'use strict'`; guard against a missing target element.
-- Pass URLs in from Blade via `data-*` attributes or an `init({...})` call — never hardcode paths in JS.
+- Vanilla plus the existing jQuery helpers. No new framework or plugin dependency.
+- Pass URLs in via `data-*` attributes or an `init({...})` call.
 
 ---
 
@@ -295,78 +220,32 @@ Layer responsibilities and service-by-service detail are covered in **[`docs/arc
 | Class | `StudlyCase` | `LoginLinkService` |
 | Method / variable | `camelCase` | `verifyLoginChallenge()` |
 | DB table | `snake_case` plural | `user_login_links` |
-| DB column | `snake_case` | `two_factor_enabled` |
-| Route path | `kebab-case` | `/auth/verify-account` |
-| Route name | matches the path | `->name('account/two-factor')` |
-| Blade view | `kebab-case.blade.php` | `verify-tfa.blade.php` |
+| Route path | `kebab-case`, no `/api` prefix | `/auth/verify-account` |
+| Route name | slash style, matches the path | `->name('admin/user/view')` |
+| Module route file | `<module>_routes.php` | `Modules/Blog/blog_routes.php` |
+| Blade view | `kebab-case.blade.php` under `modules/<module>/` | `modules/auth/verify-tfa.blade.php` |
 | JS file | `kebab-case.js` | `login-link.js` |
-| Constant | `SCREAMING_SNAKE` | `UserActivity::LOGIN_SUCCESS` |
 | Cookie | `{APP_UID}_{name}` | `demo_session_token` |
 | Cache key | `colon:separated` | `auth:session:{token}` |
 
-Service classes are named for their domain (`OtpService`, `DeviceService`), not for a layer (`OtpManager`, `OtpHelper`).
+Route **names** are load-bearing: `SeoMetaRepository::metaForRoute()` looks up `seos.url` by the current route name (`home`, `contact`, `blog`; `blog/*` matches `blog/show`).
 
 ---
 
 ## Project-Specific Rules
 
-1. **Never store a password on `users`.** Passwords live in `user_accounts` where `provider_id = 'credential'`.
+1. **Never store a password on `users`.**
 2. **Never weaken `ascii_bin`** on token/UUID columns.
-3. **Never sign cookies with `APP_KEY`.** Use `SignedCookie`, which uses `ENCRYPTION_KEY`.
+3. **Never sign cookies with `APP_KEY`.** Use `SignedCookie`.
 4. **Never hardcode TTLs or attempt caps.** They live in `config/auth_next.php`.
-5. **Password change and reset revoke every session**, including the current one. This is intentional — keep it, and say so in the UI.
-6. **Keep auth responses enumeration-safe.** Unknown email and known email must be indistinguishable in message, shape, and (where practical) timing. Use `AuthService::dummyPasswordCheck()` on failure paths.
-7. **OTP and 2FA attempt counters increment *before* comparison**, so a wrong guess always costs an attempt.
-8. **Hash high-entropy tokens with SHA-256, not argon2id.** Argon2id is for passwords, OTPs and backup codes only.
-9. **Rate-limit every new public auth endpoint** with `auth.throttle:{name}`.
-10. **Log security-relevant actions** via `ActivityService::log()` using an `App\Constants\UserActivity` constant.
-
----
-
-## Important Patterns
-
-**Service returns a result array; the controller send the response**
-
-```php
-$result = $this->auth->changePassword($request, $user, $current, $new);
-Response::sendResult($result);
-```
-
-**Issuing a session after any successful login**
-
-```php
-$session   = $this->sessions->issue($request, $user->id, $remember);
-$ttlSeconds = ($remember
-    ? config('auth_next.session_ttl_days.remember')
-    : config('auth_next.session_ttl_days.default')) * 86400;
-
-SignedCookie::queueRaw('session_token', $session->token, $ttlSeconds);
-$this->activity->log($request, $user->id, UserActivity::LOGIN_SUCCESS);
-```
-
-> This block is currently duplicated in six places. If you add a seventh login path, extract a shared helper instead — see `docs/local/plan_improvemtns.md`.
-
-**Cache-only challenge handles (2FA / WebAuthn)** — the cookie carries a random handle; the state lives in the cache and never touches the database.
-
-**Single-use claim via conditional update** — how magic-link approval is made race-safe:
-
-```php
-$claimed = UserLoginLink::where('id', $id)->where('status', 'approved')
-    ->update(['status' => 'consumed']);
-
-if ($claimed === 0) { /* someone else won the race */ }
-```
-
-**Frontend page script**
-
-```php
-@push('scripts')
-    <script src="{{ asset('assets/js/auth/login-link.js') }}"></script>
-    <script>
-        loginLink.init({ pollUrl: '{{ url('/auth/login-link/poll') }}' });
-    </script>
-@endpush
-```
+5. **Password change and reset revoke every session**, including the current one — the UI says so.
+6. **Keep auth responses enumeration-safe.** Unknown and known email must be indistinguishable in message, shape and (where practical) timing. Use `AuthService::dummyPasswordCheck()` on failure paths.
+7. **OTP and 2FA attempt counters increment *before* comparison.**
+8. **Hash high-entropy tokens with SHA-256, not argon2id.** Argon2id is for passwords, OTPs and backup codes.
+9. **Rate-limit every new public endpoint** (`auth.throttle:{name}` for auth, `throttle:5,15` for forms).
+10. **Log security-relevant actions** via `ActivityService::log()` with a `UserActivity` constant.
+11. **Admin screens are role-scoped.** `AccountManagementService` takes the role it may touch; look accounts up with `UserRepository::findByIdAndRole()`, never by id alone. Notes are always looked up with the owning user's id.
+12. **Never build HTML in models, repositories or with string concatenation in services.** Render Blade partials.
 
 ---
 
@@ -374,46 +253,28 @@ if ($claimed === 0) { /* someone else won the race */ }
 
 | Pitfall | Consequence | Avoid by |
 |---|---|---|
-| Importing `App\Models\User` instead of `App\Models\Auth\User` | Broken role checks, empty query results | Check the [Legacy vs. Current](#legacy-vs-current-critical) table |
-| Moving/renaming a class without re-dumping the autoloader | Fatal "class not found" on a *deleted* path — the optimized classmap is authoritative | `php composer.phar dump-autoload` |
-| Returning a non-200 status on a failure the page handles itself | Frontend callback never fires; `data.next` is lost | Use `Response::sendMessage($msg, 0)` / `sendResponse(200, …)` |
-| Adding a column to `users` for auth state | Wrong table — auth state is normalised across `user_*` tables | Use the existing table for that concern |
-| Assuming `php artisan test` is isolated | Runs against the **real** database | Configure a test DB in `phpunit.xml` first |
-| Writing Tailwind classes | Silently unstyled — Tailwind is installed but inactive | Use Bootstrap 5 utilities |
+| Regenerating the autoloader with the system `composer` | `Class "SortDirection" not found` on every page | Use a current `composer.phar` |
+| Returning `next` / `url` from a controller | Navigation logic split between server and view | Put `data-next` on the form/button |
+| Returning non-200 on a failure the page handles itself | The frontend callback never fires; `data` is lost | `Response::sendMessage($msg, 0)` or `sendResponse(200, …)` |
+| Trusting `Auth::login()` / `Auth::logout()` | `SessionTokenGuard` implements only `Guard`; these fatal | `SessionService::issue()` / `revoke()` |
+| Adding a column to `users` for auth state | Wrong table; the schema mirrors Next | Use the existing `user_*` table for that concern |
+| Using a utility class no view had before | Silently unstyled until the CSS is rebuilt | `npm run build` |
 | Editing `resources/js/app.js` expecting a browser change | That bundle is never loaded | Edit `public/assets/js/*.js` |
 | Forgetting `parent::__construct()` in a controller | `$general` / settings missing → view errors | Always call it |
-| Trusting `Auth::login()` / `Auth::logout()` | `SessionTokenGuard` implements only `Guard`, so these fatal | Use `SessionService::issue()` / `revoke()` |
-| Adding a distinct error message on a failure path | Enables user enumeration | Keep messages generic; log the real reason |
+| A distinct error message on a failure path | Enables user enumeration | Keep messages generic; log the real reason |
 | Editing Blade and not seeing the change | Compiled views are cached | `php artisan view:clear` |
-| Changing settings and not seeing the change | Settings cached under key `setting` | `php artisan cache:clear` |
+| Changing a setting and not seeing it | Settings are cached under key `setting` | `SettingRepository::setMany()` clears it, or `php artisan cache:clear` |
+| Assuming `php artisan test` is isolated | Runs against the **real** database | Configure a test DB first |
 
 ---
 
 ## AI Agent Instructions
 
-**Before changing anything**
+**Before changing anything:** grep for the existing solution; read `docs/local/*.md` if present (plans and known gaps); for auth, sessions, cookies, hashing, rate limiting and 2FA read `docs/authentication.md` first.
 
-1. Grep for how the codebase already solves the problem; match that, not stock Laravel.
-2. Confirm which namespace you need (legacy vs. current).
-3. Read `docs/local/task_pending.md` — the thing you are about to "fix" may be a known, documented issue with a planned approach.
+**While working:** change the minimum necessary; reuse `Response`, `SignedCookie`, `ClientInfo`, `ActivityService`; match surrounding style; commit per completed task.
 
-**While working**
-
-- Change the minimum necessary. Do not opportunistically refactor unrelated code.
-- Reuse `Response`, `SignedCookie`, `ClientInfo`, `ActivityService` — do not reimplement them.
-- Match surrounding comment density and style.
-- Add new auth routes to `routes/auth.php`, not `routes/web.php`.
-
-**Before reporting done**
-
-- Run `./vendor/bin/pint`.
-- **Actually exercise the change** — start the server, hit the route, confirm the status code. This codebase has repeatedly failed in ways only a live request reveals (stale autoload, column type mismatches, missing tables).
-- If you could not verify something, **say so explicitly.** Do not describe untested code as working.
-- Report failures with the real output. Never claim a test passed that you did not run.
-
-**Security-sensitive work**
-
-Auth, sessions, cookies, hashing, rate limiting and 2FA are load-bearing. For changes there: read `docs/authentication.md` first, keep the [Project-Specific Rules](#project-specific-rules) intact, and flag any behaviour change explicitly rather than burying it.
+**Before reporting done:** run `./vendor/bin/pint`; **actually exercise the change** on the running site (login, hit the route, confirm status and body); if you could not verify something, say so; report failures with real output.
 
 ---
 
@@ -421,10 +282,8 @@ Auth, sessions, cookies, hashing, rate limiting and 2FA are load-bearing. For ch
 
 | Document | Contents |
 |---|---|
-| [`docs/architecture.md`](docs/architecture.md) | Request lifecycle, layer boundaries, guard resolution, caching, legacy/current split |
+| [`docs/architecture.md`](docs/architecture.md) | Modules, layers, request lifecycle, guard resolution, caching |
 | [`docs/authentication.md`](docs/authentication.md) | Cookies, sessions, every auth flow, 2FA, passkeys, OAuth, middleware |
-| [`docs/api.md`](docs/api.md) | Endpoint reference, envelope, validation, rate limits, error handling |
-| [`docs/frontend.md`](docs/frontend.md) | Layouts, Blade conventions, JS patterns, asset pipeline, PJAX |
-| `docs/local/task_pending.md` | Known issues and unfinished work (verified) |
-| `docs/local/plan_improvemtns.md` | Refactoring backlog |
-| `docs/local/plan_security.md` | Security findings and hardening plan |
+| [`docs/api.md`](docs/api.md) | Envelope, HTTP status rules, validation, rate limits, endpoint list |
+| [`docs/frontend.md`](docs/frontend.md) | Layouts, x-ui components, JS helpers, DataTables, PJAX |
+| `docs/local/*` | Gitignored working notes (missing features, module plan) |

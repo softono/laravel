@@ -54,11 +54,11 @@ use App\Helpers\Response;
 Response::sendMessage('Password changed successfully');          // status 1, data []
 Response::sendMessage('Invalid email or password', 0);           // status 0, HTTP 200
 Response::sendError(401, 'Authentication required');             // status 0, HTTP 401
-Response::sendData(['next' => 'tfa']);                           // status 1 with a payload
+Response::sendData(['requires_tfa' => true]);                    // status 1 with a payload
 Response::sendResponse(200, [                                    // full control
     'status'  => 0,
     'message' => 'Please verify your account',
-    'data'    => ['next' => 'verify-account', 'email' => $user->email],
+    'data'    => ['requires_verification' => true, 'email' => $user->email],
 ]);
 ```
 
@@ -78,38 +78,54 @@ Extra headers: `Response::sendResultWithHeaders($result, ['X-Foo' => 'bar'])`. C
 
 ---
 
-## The `next` Convention
+## Follow-up actions live in the view
 
-`data.next` tells the frontend where to go, so redirect logic lives server-side:
+The response never says where to go. The view declares what happens after a successful request with `data-next` and `data-next-url` on the **form or button that triggers it**, and `app.js` runs it (after showing the message):
 
-| Value | Frontend action |
+| `data-next` | Action |
 |---|---|
-| `dashboard` | Redirect to `/dashboard` |
-| `admin-dashboard` | Redirect to `/admin/dashboard` |
-| `tfa` | Redirect to `/verify?type=tfa` |
-| `verify-account` | Redirect to `/verify-account?code={btoa(email)}` |
-| `refresh` | Reload the current page |
+| `load` | PJAX-load `data-next-url` |
+| `refresh` | Reload the current page through PJAX |
+| `table_refresh` | Reload the DataTable (`datatableObj`) |
+| `reload` | Full page reload |
+| `redirect` | `window.location = data-next-url` |
+| `hide_modal` / `show_modal_view` | Close the common modal / load `data-next-url` into it |
+
+Several actions can be combined: `data-next="hide_modal,table_refresh"`.
+
+```blade
+{{-- after saving, go back to the list --}}
+<form action="{{ route('admin/user/save') }}" data-next="load" data-next-url="{{ route('admin/user') }}">
+
+{{-- after deleting a row, reload the table --}}
+<button onclick="app.confirmAction(this);" data-action="{{ route('admin/user/delete') }}"
+        data-id="{{ $id }}" data-next="table_refresh">Delete</button>
+```
+
+Pages that need to branch on the outcome (login, register, 2FA) pass their own callback and read **data flags**, which are data, not navigation:
 
 ```js
 app.ajaxForm(this, function (response) {
     if (response.status == 1) {
-        if (response.data.next === 'tfa') { window.location.href = '/verify?type=tfa'; return; }
-        window.location.href = '/dashboard';
+        window.location.href = response.data.requires_tfa ? '/verify?type=tfa' : '/dashboard';
+    } else if (response.data.requires_verification) {
+        window.location.href = '/verify-account?code=' + btoa(response.data.email);
     } else {
-        if (response.data.next === 'verify-account') { /* … */ return; }
         app.showMessage(response.message, 'error');
     }
 });
 ```
 
+DataTables endpoints return DataTables' own JSON (`recordsTotal`, `recordsFiltered`, `draw`, `data`), not the envelope.
+
 ---
 
 ## Validation
 
-FormRequests in `App\Http\Requests\Auth\`, overriding `failedValidation()` so errors use the envelope instead of Laravel's default 422 body:
+FormRequests live in the module (`app/Modules/<Module>/Requests/`). They do **not** override `failedValidation()`: for AJAX requests `bootstrap/app.php` renders any `ValidationException` — including inline `$request->validate()` — as the envelope with HTTP 422 and the **first error** as a plain string. The UI shows one message at a time rather than a field-keyed error bag.
 
 ```php
-class RegisterRequest extends FormRequest
+class SaveNoteRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -119,34 +135,15 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name'       => ['required', 'string', 'regex:/^[a-zA-Z ]+$/', 'min:3', 'max:50'],
-            'email'            => ['required', 'email', 'max:255'],
-            'phone'            => ['required', 'digits:10'],
-            'password'         => ['required', 'string', 'min:6', 'max:100'],
-            'confirm_password' => ['required', 'same:password'],
-            'agree'            => ['accepted'],
+            'id'    => ['nullable', 'integer'],
+            'title' => ['required', 'string', 'max:255'],
+            'note'  => ['nullable', 'string', 'max:5000'],
         ];
-    }
-
-    protected function failedValidation(ValidatorContract $validator)
-    {
-        throw new HttpResponseException(
-            Response::sendError(422,$validator->errors()->first())
-        );
     }
 }
 ```
 
-**Only the first error is returned**, as a plain string — the UI shows one message at a time rather than a field-keyed error bag.
-
-Simple endpoints may validate inline instead:
-
-```php
-$request->validate([
-    'id'     => ['required', 'string'],
-    'action' => ['required', 'in:approve,reject'],
-]);
-```
+Simple endpoints may validate inline: `$request->validate(['id' => ['required', 'string']]);`.
 
 ---
 
@@ -156,16 +153,16 @@ $request->validate([
 |---|---|---|
 | Success | 200 | `{status: 1, …}` |
 | Business failure (bad credentials, expired OTP) | 200 | `{status: 0, message, data}` |
-| Rate limited | 200 | `{status: 0, message: "Too many requests…"}` + `Retry-After` |
-| Unauthenticated (JSON request) | 200 | `{status: 0, message: "Authentication required"}` |
+| Rate limited | 429 | `{status: 0, message: "Too many requests…"}` + `Retry-After` |
+| Unauthenticated (JSON request) | 401 | `{status: 0, message: "Authentication required"}` |
 | Validation failure | 422 | `{status: 0, message: "<first error>"}` |
-| CSRF token missing/stale | 419 | Laravel's page-expired response |
+| CSRF token missing/stale | 419 | `{status: 0, message: "Your session has expired…"}` |
 
 Messages must be **safe to display and non-revealing**. Never leak whether an email exists, whether an account is an admin, or which specific credential was wrong.
 
 ```php
-Response::sendError(422,'Invalid email or password')   // ✅
-Response::sendError(422,'No account with that email')  // ❌ enumeration
+Response::sendMessage('Invalid email or password', 0)      // ✅
+Response::sendMessage('No account with that email', 0)     // ❌ enumeration
 ```
 
 ---
@@ -270,17 +267,19 @@ php artisan route:list --path=auth
 
 ## Adding an Endpoint
 
-1. **Route** in `routes/auth.php`, in the matching group, with a throttle tier.
-2. **FormRequest** if it takes more than one or two fields.
-3. **Service method** returning `['ok' => bool, 'message' => …]`.
-4. **Controller** maps that to `Response`.
-5. **Log** via `ActivityService` if security-relevant.
-6. **Test it live** — confirm the status code and the envelope.
+1. **Route** in the module's `<module>_routes.php` (admin modules: relative to the admin group), with a throttle for public endpoints.
+2. **FormRequest** in the module's `Requests/`.
+3. **Service method** returning `['ok' => bool, 'message' => …]`, calling repositories.
+4. **Controller** maps that to `Response::sendResult()`.
+5. **View**: put `data-next` / `data-next-url` on the form or button.
+6. **Log** via `ActivityService` if security-relevant.
+7. **Test it live** — confirm the status code and the envelope.
 
 ```php
-// routes/auth.php
-Route::post('/set-password', [PasswordController::class, 'setPassword'])
-    ->middleware('auth.throttle:reset_password');
+// app/Modules/Auth/auth_routes.php
+Route::middleware(['device.uid', 'auth.user'])->prefix('auth')->group(function () {
+    Route::post('/set-password', [PasswordController::class, 'setPassword']);
+});
 
 // Controller
 public function setPassword(SetPasswordRequest $request)
@@ -290,5 +289,3 @@ public function setPassword(SetPasswordRequest $request)
     return Response::sendResult($result);
 }
 ```
-
-Endpoints that were planned but never wired (including `set-password`, whose service method already exists) are listed in `docs/local/task_pending.md`.

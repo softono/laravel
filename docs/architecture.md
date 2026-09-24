@@ -1,6 +1,6 @@
 # Architecture
 
-Detailed reference for how a request moves through this application, where each kind of logic belongs, and how the legacy and current stacks coexist.
+Detailed reference for how a request moves through this application, how the code is split into modules, and where each kind of logic belongs.
 
 Summary in [`../AGENTS.md`](../AGENTS.md#architecture-summary).
 
@@ -30,7 +30,10 @@ HTTP Request
   │    FormRequest validates → service call → Response / view
   │
   ├─ Service
-  │    business logic, returns array or Response
+  │    business logic, returns a result array or a Response
+  │
+  ├─ Repository
+  │    the only layer that queries
   │
   └─ Model / Cache / DB
 ```
@@ -39,11 +42,50 @@ HTTP Request
 
 ---
 
+## Modules
+
+Code is grouped by feature in `app/Modules/`. Each module has the same shape:
+
+```
+app/Modules/<Module>/
+  Controllers/       thin HTTP layer
+  Requests/          FormRequests
+  Services/          business logic
+  <module>_routes.php
+resources/views/modules/<module>/
+```
+
+Admin-panel features are modules inside one container, `app/Modules/Admin/` (views in `resources/views/modules/admin/`). Its `Controllers/Controller.php` is the shared admin base; `Services/` holds services used by several admin modules (`AccountManagementService`, `AccountListService`).
+
+| Module | Owns |
+|---|---|
+| `Auth` | Login, register, password, verify, 2FA, passkeys, magic link, Google, session endpoints; the auth services |
+| `User` | The signed-in user's dashboard and account area (profile, image, sessions, activity, 2FA/passkey pages, deactivate) |
+| `Page`, `Contact`, `Site`, `Blog` | Public pages, contact form, home + cron, blog |
+| `Note` | The signed-in user's notes |
+| `Admin/Auth` | Admin login and password pages |
+| `Admin/Dashboard`, `Account`, `User`, `Admins`, `Activity`, `Device` | Dashboard, the admin's own account (a subclass of the user account controller), end-user management, admin accounts, activity log, sessions |
+| `Admin/Page`, `Seo`, `Setting`, `EmailTemplate`, `Blog` | Content management |
+
+Dependency direction: an admin module may use a top-level module's services (admin login reuses `Auth\Services\SessionService`; `Admin/Account` extends `User\Controllers\AccountController`); a top-level module never imports `App\Modules\Admin`. A service used by two or more modules lives in `app/Services/`.
+
+### Routes
+
+Every module owns `<module>_routes.php`, loaded by `bootstrap/app.php`:
+
+- top-level modules: `Route::middleware('web')`, each route file states its own middleware;
+- `Admin/Auth`: `web` + the `admin` prefix, guest-only (routes set their own middleware);
+- every other admin module: `web` + `auth.admin` + the `admin` prefix — so an admin route file contains `Route::get('user', …)`, not `admin/user`, and a new module cannot forget the auth check.
+
+There is no `routes/web.php` and no `/api` prefix. Route **names** stay in slash style (`admin/user/view`) because `SeoMetaRepository` matches `seos.url` against the current route name.
+
+---
+
 ## Layer Responsibilities
 
 ### Controllers
 
-Thin. A controller should read as: validate, delegate, shape the response.
+Thin. A controller reads as: validate, delegate, shape the response.
 
 ```php
 class PasswordController extends Controller
@@ -57,26 +99,22 @@ class PasswordController extends Controller
     {
         $result = $this->account->forgotPassword($request->string('email'));
 
-        return Response::success($result['message']);
+        return Response::sendMessage($result['message']);
     }
 }
 ```
 
 Rules:
 
-- Extend `App\Http\Controllers\Controller` (user side) or `App\Http\Controllers\Admin\Controller` (admin side). Both constructors call `General::configSettings()` and `View::share('general', …)`. Skipping `parent::__construct()` leaves every view without `$general` and without `config('setting.*')`.
+- Extend `App\Http\Controllers\Controller` (public/user side) or `App\Modules\Admin\Controllers\Controller` (admin side, which extends it). The constructor calls `General::configSettings()` and `View::share('general', …)`; skipping `parent::__construct()` leaves every view without `$general` and `config('setting.*')`.
 - No business logic, no query building, no direct `Hash::` or `Cookie::` calls where a service or helper exists.
+- Responses never carry navigation. The view puts `data-next` / `data-next-url` on the triggering element.
 
 ### Services
 
-All business logic. Located in `app/Services/Auth/` for auth concerns.
+All business logic, in the owning module's `Services/` (or `app/Services/` when shared). Return either a **result array** — `['ok' => bool, 'message' => ?string, ...extra]` — that `Response::sendResult()` maps to the envelope, or a **`Response`** when the service must also attach cookies (`TfaService::verifyLoginChallenge()` issues a session cookie).
 
-Return either:
-
-- a **result array** — `['ok' => bool, 'message' => ?string, ...]` — when the caller decides the HTTP shape, or
-- an **`Response`/`JsonResponse`** when the service must also attach cookies (e.g. `TfaService::verifyLoginChallenge()` issues a session cookie on success).
-
-Dependencies are constructor-injected:
+Dependencies are constructor-injected, and services never call Eloquent directly:
 
 ```php
 class LoginLinkService
@@ -84,30 +122,35 @@ class LoginLinkService
     public function __construct(
         protected SessionService $sessions,
         protected ActivityService $activity,
-        protected DeviceService $devices,
+        protected UserLoginLinkRepository $loginLinks,
     ) {}
 }
 ```
 
-Service catalogue:
+| Service | Module | Responsibility |
+|---|---|---|
+| `SessionService` | Auth | Issue / validate / revoke sessions; sliding expiry; user cache |
+| `AuthService` | Auth | Password credential check, logout, change/set password |
+| `AccountService` | Auth | Registration, email verification, forgot/reset password |
+| `OtpService` | Auth | 6-digit OTP issue + verify with atomic attempt cap |
+| `ChallengeService` | Auth | Cache-only 2FA / WebAuthn challenge handles + attempt counter |
+| `TfaService` | Auth | 2FA orchestration; delegates to `Tfa/{Totp,EmailOtp,BackupCode}Method` |
+| `DeviceService` | Auth | Trusted devices (30-day 2FA bypass) |
+| `LoginLinkService`, `PasskeyService`, `OAuthService` | Auth | Magic link, WebAuthn, Google sign-in |
+| `ProfileService`, `SessionListService`, `ActivityListService` | User | Profile/image/deactivate; session and activity DataTables (also used by the admin modules) |
+| `AccountManagementService`, `AccountListService` | Admin | Create/update/status/delete accounts scoped to one role; user and admin list rows |
+| `DashboardService`, `SitemapService`, `BlogService`, … | Admin/* | Feature logic |
+| `ActivityService`, `PermissionService`, `EmailTemplateService` | shared | Audit log, admin permission tree, template rendering |
 
-| Service | Responsibility |
-|---|---|
-| `SessionService` | Issue / validate / revoke sessions; sliding expiry; user cache |
-| `AuthService` | Password credential check, logout, change/set password |
-| `AccountService` | Registration, email verification, forgot/reset password |
-| `OtpService` | 6-digit OTP issue + verify with atomic attempt cap |
-| `ChallengeService` | Cache-only 2FA / WebAuthn challenge handles + attempt counter |
-| `TfaService` | 2FA orchestration; delegates to `Tfa/{Totp,EmailOtp,BackupCode}Method` |
-| `DeviceService` | Trusted devices (30-day 2FA bypass) |
-| `LoginLinkService` | Magic link lifecycle: create, poll, approve/reject, claim |
-| `PasskeyService` | WebAuthn registration + assertion |
-| `OAuthService` | Google sign-in, account linking precedence |
-| `ActivityService` | Audit log writer |
+### Repositories
+
+`app/Repositories/` is the only place that queries. One repository per table or aggregate — not per module, because modules share tables (`users` is read by Auth, User and Dashboard). The auth tables keep `Repositories/Auth/`. Repositories return models, collections, paginators or scalars — never HTML or the envelope — and DataTables methods return `Helpers\Pagination::getDataTable()` payloads for services to format.
+
+Scoped lookups are the security boundary: `UserRepository::findByIdAndRole()`, `NoteRepository::findForUser()`, `UserSessionRepository::findForUser()`.
 
 ### Models
 
-Schema, casts, relationships. The nine `App\Models\Auth\*` models contain **zero query methods** — that is deliberate and should be preserved.
+Schema, casts, relationships — no query methods, anywhere. The content models (`Page`, `SeoMeta`, `EmailTemplate`, `Setting`, `ContactMessages`, `Blog`, `Note`) set `$timestamps = false` because the tables mirror Next's (`created_at` / `updated_at` are filled by database defaults, `ON UPDATE` on the content tables).
 
 ```php
 class UserSession extends Model
@@ -132,21 +175,18 @@ class UserSession extends Model
 }
 ```
 
-Legacy models (`App\Models\User`, `UserActivity`, `UserAuth`, `Setting`, `Seos`, `Pages`, `EmailTemplates`) *do* carry query methods (`list`, `listAdmin`, `store`, …). That is the pattern being migrated away from — do not extend it. A repository extraction is planned; see `docs/local/task_pending.md`.
-
 ### Helpers
 
 Stateless utilities in `app/Helpers/`:
 
 | Helper | Purpose |
 |---|---|
-| `Response` | The `{status, message, data}` envelope |
+| `Response` | The `{status, message, data}` envelope (Next's `response.ts` function names) |
 | `SignedCookie` | HMAC-signed cookie naming, signing, verification, base64url |
 | `ClientInfo` | Client IP (XFF-aware), user agent, device name, device UID |
-| `SessionTokenGuard` | The custom auth guard |
-| `General` | Legacy grab-bag: settings, email sending, file URLs, IP location |
-| `Pagination` | Legacy paginator |
-| `QrGenerator` | Legacy QR generator, superseded by `bacon/bacon-qr-code` |
+| `SessionTokenGuard` | The custom auth guard (also exposes the current session) |
+| `General` | Settings access, email sending, file upload/URLs, date formatting, reCAPTCHA check |
+| `Pagination` | DataTables server-side paging and ordering |
 
 ---
 
@@ -177,7 +217,7 @@ Auth::extend('session_token', fn ($app, $name, array $config) =>
 2. `SessionService::validate($token)` → session row + user, or `null`.
 3. Cache the result on the guard instance.
 
-**Consequence:** every existing `auth()->user()`, `Auth::id()`, `Auth::check()` and `@auth` in the codebase keeps working unchanged, including inside legacy controllers — they all resolve `App\Models\Auth\User`.
+**Consequence:** every existing `auth()->user()`, `Auth::id()`, `Auth::check()` and `@auth` in the codebase works in every controller and view — they all resolve `App\Models\Auth\User`.
 
 **Limitation:** the guard implements `Illuminate\Contracts\Auth\Guard`, **not** `StatefulGuard`. `Auth::login()`, `Auth::logout()` and `Auth::attempt()` will fatal. Use `SessionService::issue()` / `revoke()` instead. This is why admin impersonation was removed rather than ported.
 
@@ -245,50 +285,23 @@ Invalidate the user cache with `SessionService::invalidateUserCache($userId)` af
 
 ---
 
-## The Legacy / Current Split
+## History
 
-### Why both exist
-
-The auth system was rebuilt in place. The new stack owns authentication; the legacy stack still owns the admin CRUD screens and parts of the account area. Rather than a big-bang cutover, the guard was made compatible so both sides resolve the same user model.
-
-### What actually differs
-
-| Aspect | Current | Legacy |
-|---|---|---|
-| User table | `users` (UUID) | `users` — repointed, but expects integer roles |
-| Password | `user_accounts.password` | expected `users.password` (**gone**) |
-| Sessions | `user_sessions` + signed cookie | `user_devices` via `UserAuth` |
-| 2FA state | `user_two_factors` | `users.status_tfa`, `totp_secret_key` (**gone**) |
-| Trusted devices | `user_devices` | `users.ignore_tfa_device` CSV (**gone**) |
-| Roles | strings via `UserRole` | integers `[1,2,3]` / `[4]` |
-
-Columns marked **gone** do not exist. Legacy code touching them either errors on write or silently reads `null`.
-
-### Rules for working across the split
-
-1. New auth work → `App\Services\Auth\*`, routes in `routes/auth.php`.
-2. Touching a legacy controller → verify which model and columns it assumes before trusting it.
-3. `routes/web.php` now gates on `auth.user` / `auth.admin` directly (the old `user`/`admin` aliases and their `UserAuth`/`AdminAuth` middleware classes were removed).
-4. When porting a legacy screen, migrate its data source to the `user_*` tables in the same change — do not leave it half-converted.
-
-Current status and remaining work: `docs/local/task_pending.md`.
+The app started as a Bootstrap/jQuery Laravel project with integer role codes and a `user` table, and an auth system rebuilt in place alongside it. That migration is finished: every screen now reads the Next-shaped schema through repositories, and the legacy models, services and controllers are gone. If you find a reference to `App\Models\User`, `UserAuth`, `status_tfa`, `ignore_tfa_device` or integer roles, it is a bug.
 
 ---
 
 ## Adding a New Feature
 
-**A new auth endpoint**
+**A new module** (public or admin)
 
-1. Route in `routes/auth.php` with `auth.throttle:{name}` (add the tier to `AuthRateLimit::LIMITS`).
-2. FormRequest in `App\Http\Requests\Auth\` overriding `failedValidation()` to return the envelope.
-3. Service method returning a result array.
-4. Thin controller mapping the result to `Response`.
-5. Log the outcome via `ActivityService` with a `UserActivity` constant.
-6. Exercise it live before calling it done.
+1. `app/Modules/<Module>/` (or `app/Modules/Admin/<Module>/`) with `Controllers/`, `Requests/`, `Services/` and `<module>_routes.php`. Admin route files are relative to the admin group.
+2. Queries go in a repository (`app/Repositories/`); models stay schema-only.
+3. Views in `resources/views/modules/<module>/`, built from the `x-ui.*` components.
+4. A permission group in `PermissionService` for admin screens, and a sidebar link.
+5. Forms and buttons declare their follow-up with `data-next` / `data-next-url`.
+6. Regenerate the autoloader, run Pint, and exercise the endpoints on the running site.
 
-**A new admin screen**
+**A new public endpoint**
 
-1. Route in `routes/web.php` under the `['web', 'auth.admin']` group.
-2. Controller extending `App\Http\Controllers\Admin\Controller`.
-3. Blade view extending `admin.layouts.main`.
-4. Data access through a service — do not add query methods to models.
+Add the route with `auth.throttle:{name}` (add the tier to `AuthRateLimit::LIMITS`) or `throttle:5,15` for forms; validate in a FormRequest; return a result array; log security-relevant outcomes with `ActivityService` and a `UserActivity` constant.

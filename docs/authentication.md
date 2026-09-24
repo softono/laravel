@@ -92,7 +92,7 @@ $sessions->revokeAllForUser($userId);   // every session for a user
 
 Key points:
 
-- `auth()->user()` returns `App\Models\Auth\User` everywhere, including legacy controllers.
+- `auth()->user()` returns `App\Models\Auth\User` everywhere.
 - Resolution is lazy and memoised per request.
 - Only implements `Guard`, **not** `StatefulGuard` — `Auth::login()` / `Auth::logout()` / `Auth::attempt()` will fatal. Use `SessionService`.
 
@@ -137,9 +137,9 @@ Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many reque
 
 1. `AuthService::authenticate()` — lowercase the email, load the user, load the `credential` account, `Hash::check()`.
 2. Transparent rehash if `Hash::needsRehash()` (upgrades legacy bcrypt to argon2id).
-3. Unverified email + `setting.user_email_verify` → send OTP, return `{next: 'verify-account'}`.
-4. 2FA enabled and device not trusted → `TfaService::startLoginChallenge()`, return `{next: 'tfa'}`.
-5. Otherwise issue the session and return `{next: 'dashboard'}`.
+3. Unverified email + `setting.user_email_verify` → send OTP, return a `status: 0` envelope with `data.requires_verification` and the email (HTTP 200, so the page callback runs).
+4. 2FA enabled and device not trusted → `TfaService::startLoginChallenge()`, return `data.requires_tfa: true`; the page then goes to the verify screen.
+5. Otherwise issue the session and return a plain success message; the page redirects.
 
 **Enumeration safety:** unknown email and wrong-role admin login both run `dummyPasswordCheck()` (an argon2id verify against a fixed hash with no known plaintext) so failures cost the same wall-clock time, and return the identical generic message.
 
@@ -151,7 +151,7 @@ Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many reque
 
 ### Registration & email verification
 
-`POST /auth/register` → creates `users` + `user_accounts(credential)` rows, logs `REGISTER`, and (when `setting.user_email_verify` is on) issues an OTP and returns `{next: 'verify-account'}`.
+`POST /auth/register` → creates `users` + `user_accounts(credential)` rows, logs `REGISTER`, and (when `setting.user_email_verify` is on) issues an OTP and returns `data.requires_verification`.
 
 `POST /auth/verify-account` verifies the OTP, sets `email_verified`, and invalidates the user cache.
 
@@ -177,7 +177,7 @@ Preserve this ordering: incrementing after the compare would let an attacker gue
 
 Challenge state lives **only in the cache**, never the database. The signed `{uid}_tfa` cookie carries a random handle; `auth:tfa:{handle}` holds `{user_id, remember}`.
 
-Three methods, registered in `TfaService` and implemented under `Services/Auth/Tfa/`:
+Three methods, registered in `TfaService` and implemented under `Modules/Auth/Services/Tfa/`:
 
 | Method | Class | Verification |
 |---|---|---|
@@ -188,7 +188,7 @@ Three methods, registered in `TfaService` and implemented under `Services/Auth/T
 ### Login-time challenge
 
 ```
-POST /auth/login          → {next: 'tfa'}, sets {uid}_tfa
+POST /auth/login          → {requires_tfa: true}, sets {uid}_tfa
 GET  /auth/tfa/methods    → available methods for this handle
 POST /auth/tfa/send-otp   → emails a code (method 'otp')
 POST /auth/tfa/verify     → {method, code, trust_device} → session issued
