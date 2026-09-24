@@ -109,6 +109,7 @@ class LoginLinkService
             'first_name' => $user->first_name,
             'last_name' => $user->last_name,
             'link' => $approveUrl,
+            'message' => $attributes['purpose'] === 'tfa' ? 'login verification' : 'login',
             'code' => $code,
         ]);
 

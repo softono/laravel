@@ -38,6 +38,15 @@ class UserSession extends Model
         ];
     }
 
+    /**
+     * "Remember me" sessions live 30 days, ordinary ones a day (sliding), so an expiry
+     * beyond the ordinary lifetime marks a remembered session.
+     */
+    public function isRemembered(): bool
+    {
+        return $this->expires_at->gt(now()->addSeconds(config('auth_next.session_ttl_days.default') * 86400 + 3600));
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

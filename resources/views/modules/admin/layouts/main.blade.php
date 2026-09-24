@@ -115,6 +115,13 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <script src="assets/js/common.js"></script>
     <script src="assets/js/app.js"></script>
     @stack('scripts')
+    <script src="assets/js/admin-idle.js"></script>
+    <script>
+        adminIdle.init({
+            logoutUrl: @json(route('admin/auth/logout')),
+            remember: @json((bool) auth()->guard()->session()?->isRemembered()),
+        });
+    </script>
     <script src="assets/js/pjax.js"></script>
 </body>
 
