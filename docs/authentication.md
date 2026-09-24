@@ -125,7 +125,9 @@ Keyed `{name}:{path}:{ip}`; the poll tier keys on `{request_id}:{ip}` instead.
 
 Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many requests" rather than allowing the request through.
 
-> Limits are per-IP only. There is no per-account throttle, so a distributed attack on one account is not rate-limited. See `docs/local/plan_security.md`.
+> The tiers above are per-IP; the per-account lockout is in [Password login](#password-login). `email_change` is 20 / 900s, `tfa_link` 5 / 300s.
+
+The client IP is the `X-Forwarded-For` entry `TRUSTED_PROXY_COUNT` hops from the right (default 1). Set `TRUSTED_PROXIES` for Laravel's own scheme/host detection behind a proxy.
 
 ---
 
@@ -143,7 +145,13 @@ Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many reque
 
 **Enumeration safety:** unknown email and wrong-role admin login both run `dummyPasswordCheck()` (an argon2id verify against a fixed hash with no known plaintext) so failures cost the same wall-clock time, and return the identical generic message.
 
-> ⚠️ Known gap: the `isActive()` check runs *before* password verification and returns a distinct `"Account is disabled"` message, which leaks account existence to an unauthenticated caller. Documented as **H1** in `docs/local/plan_security.md`.
+The `"Account is disabled"` message is only returned after the password was verified, so it does not reveal which emails exist.
+
+**Per-account lockout and captcha.** `LoginAttemptService` counts failures per submitted email (unknown emails too) in a 15-minute cache window: from 3 failures the login demands a reCAPTCHA (`data.requires_captcha`, only when reCAPTCHA is enabled), at 5 the account is locked until the window ends. A successful login clears the counter. The admin user/admin view shows a *Locked* badge. Register, forgot-password and the first step of login-with-OTP require a reCAPTCHA whenever it is enabled in settings (`recaptcha` middleware, `General::recaptchaFails()`).
+
+### Login with email OTP
+
+`POST /auth/login-otp` (`login_otp` throttle), only when the `user_login_with_otp` setting is on. `step=1` mails a 6-digit code (purpose `signin`; an unknown or disabled account gets the same answer; reCAPTCHA checked here only, since a token is single-use). `step=2` verifies it and continues exactly like a password login (`LoginController::completeLogin`: 2FA challenge or session, `LOGIN_WITH_OTP` logged).
 
 ### Admin login
 
@@ -165,6 +173,14 @@ Emits `Retry-After` and `X-RateLimit-*`. A cache failure returns "too many reque
 - **Attempts increment atomically before the compare**, inside `DB::transaction()` with `lockForUpdate()`. Exceeding `otp_max_attempts` deletes the row. Success deletes it too (single use).
 
 Preserve this ordering: incrementing after the compare would let an attacker guess indefinitely by never "using" an attempt.
+
+### Change email
+
+`POST /account/email/{start,resend,verify-new,send-otp,verify}` (also under `admin/account/…`), `EmailChangeService`. Password + new address → OTP mailed to the **new** address (`email-change` purpose) → a second proof for the account owner (TOTP, backup code, or an email OTP mailed to the **current** address) → the email changes and `email_verified` is set. The challenge lives in cache under a random handle; failed codes in either stage share one attempt counter and destroy the challenge at the cap (`data.restart`).
+
+### Set password / linked accounts
+
+`POST /auth/set-password` only works while the account has no password (Google sign-ups); replacing one goes through change-password. `GET /auth/list-accounts` returns the linked provider ids (`credential` = a password exists).
 
 ### Forgot / reset password
 
@@ -218,6 +234,8 @@ Ticking "trust this device" upserts `user_devices` on `(user_id, device_uid)` wi
 ---
 
 ## Magic Login Links
+
+The same mechanism doubles as a 2FA method: `POST /auth/tfa/send-login-link` (signed `tfa` cookie required) creates a `purpose='tfa'` link tied to the pending challenge; approving it and polling consumes that challenge and issues the session (`tfa` appears in `/auth/tfa/methods` as `link`).
 
 Sign in on device A by approving on device B (or the same device, from email).
 

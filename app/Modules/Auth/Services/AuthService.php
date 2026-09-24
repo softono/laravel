@@ -65,10 +65,6 @@ class AuthService
             return $this->failure('Invalid email or password');
         }
 
-        if (! $user->isActive()) {
-            return $this->failure('Account is disabled');
-        }
-
         $account = $this->userAccounts->findCredentialAccount($user->id);
 
         if (! $account || ! $account->password) {
@@ -83,6 +79,12 @@ class AuthService
             $this->activity->log($request, $user->id, UserActivity::LOGIN_FAILED);
 
             return $this->failure('Invalid email or password');
+        }
+
+        // Only reveal a disabled account to someone who proved the password, so the message
+        // cannot be used to discover which emails are registered.
+        if (! $user->isActive()) {
+            return $this->failure('Account is disabled');
         }
 
         $this->attempts->clear($email);

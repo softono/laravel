@@ -51,18 +51,19 @@ class LoginOtpService
             return $this->failure('Invalid email or OTP');
         }
 
+        $result = $this->otp->verify(self::PURPOSE, $email, $code);
+
+        if (! $result['valid']) {
+            return $this->failure($result['message'] ?? 'Invalid email or OTP');
+        }
+
+        // Both checks come after the code is proven, so neither message reveals whether an email is registered.
         if (! $user->isActive()) {
             return $this->failure('Account is disabled');
         }
 
         if (! $user->email_verified && config('setting.user_email_verify') == 1) {
             return $this->failure('Please verify your email first', ['requires_verification' => true, 'email' => $user->email]);
-        }
-
-        $result = $this->otp->verify(self::PURPOSE, $email, $code);
-
-        if (! $result['valid']) {
-            return $this->failure($result['message'] ?? 'Invalid email or OTP');
         }
 
         return ['ok' => true, 'message' => null, 'user' => $user, 'data' => []];

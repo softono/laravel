@@ -213,6 +213,7 @@ If you add a POST endpoint that a non-browser client must call, do **not** exemp
 | POST | `/auth/reset-password` | `reset_password` | Reset with OTP |
 | POST | `/auth/verify-account` | `verify_account` | Verify email with OTP |
 | POST | `/auth/otp` | `otp` | Resend verification OTP |
+| POST | `/auth/login-otp` | `login_otp` | Login with a mailed code (`step` 1 or 2) |
 | POST | `/admin/auth/login` | `admin_login` | Admin login (`requireAdmin`) |
 
 ### Public — 2FA challenge (gated by the signed `tfa` cookie, not a session)
@@ -222,6 +223,7 @@ If you add a POST endpoint that a non-browser client must call, do **not** exemp
 | GET | `/auth/tfa/methods` | `tfa` |
 | POST | `/auth/tfa/send-otp` | `tfa` |
 | POST | `/auth/tfa/verify` | `tfa` |
+| POST | `/auth/tfa/send-login-link` | `tfa_link` |
 
 ### Public — magic login link
 
@@ -246,6 +248,11 @@ If you add a POST endpoint that a non-browser client must call, do **not** exemp
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/auth/change-password` | Change password (revokes all sessions) |
+| POST | `/auth/set-password` | Set a first password (accounts without one) |
+| GET | `/auth/list-accounts` | Linked sign-in providers |
+| POST | `/account/email/start` … `verify` | Change-email flow (`email_change` throttle; five endpoints) |
+| POST | `/account/session-logout-others` | End every other session |
+| GET | `/file?p=<base64>` | A private file from `storage/app/private` |
 | GET | `/auth/2fa/status` | 2FA state + backup codes remaining |
 | POST | `/auth/2fa/enable` | Begin setup → secret, QR, backup codes |
 | POST | `/auth/2fa/verify-setup` | Confirm TOTP, activate |
