@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Helpers\Pagination;
 use App\Models\ContactMessages;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ContactMessageRepository
@@ -16,6 +17,12 @@ class ContactMessageRepository
     public function create(array $data): ContactMessages
     {
         return ContactMessages::create($data);
+    }
+
+    /** @return Collection<int, ContactMessages> */
+    public function forUser(string $userId): Collection
+    {
+        return ContactMessages::where('user_id', $userId)->orderByDesc('created_at')->get();
     }
 
     public function listAdmin(array $postData): array

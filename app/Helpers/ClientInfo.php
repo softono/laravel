@@ -49,16 +49,20 @@ class ClientInfo
      */
     public static function deviceName(Request $request): string
     {
-        $ua = $request->userAgent();
+        return self::deviceNameFor($request->userAgent());
+    }
 
-        if (! $ua) {
+    /** "Chrome on Windows" from a stored user agent string (session and activity lists). */
+    public static function deviceNameFor(?string $userAgent): string
+    {
+        if (! $userAgent) {
             return '';
         }
 
-        $result = new Parser($ua);
+        $result = new Parser($userAgent);
 
-        if ($result && isset($result->browser->name)) {
-            return trim(($result->browser->name ?? '').' on '.($result->os->name ?? ''));
+        if (isset($result->browser->name)) {
+            return trim($result->browser->name.' on '.($result->os->name ?? ''));
         }
 
         return '';
