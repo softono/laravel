@@ -74,6 +74,34 @@
                     Login with Magic Link
                 </button>
 
+                @if (config('setting.user_login_with_otp') == 1)
+                    <button type="button" class="btn-outline w-full mb-4" id="otp-toggle"
+                        data-url="{{ url('/auth/login-otp') }}"
+                        data-captcha="{{ config('setting.google_recaptcha') ? 1 : 0 }}"
+                        data-tfa-url="{{ url('/verify') }}?type=tfa&redirect={{ urlencode($redirectPath) }}"
+                        data-verify-account-url="{{ url('/verify-account') }}"
+                        data-dashboard-url="{{ url($redirectPath) }}">
+                        Login with OTP
+                    </button>
+                    <div id="otp-panel" style="display:none;" class="mb-4">
+                        <div id="otp-start">
+                            <div class="mb-4">
+                                <label for="otp-email" class="form-label">Email</label>
+                                <input type="email" class="form-input" id="otp-email" placeholder="Enter your email" />
+                            </div>
+                            <button type="button" class="btn-primary w-full" id="otp-send">Send OTP</button>
+                        </div>
+                        <div id="otp-verify" style="display:none;">
+                            <div class="mb-4">
+                                <label for="otp-code" class="form-label">OTP</label>
+                                <input type="text" class="form-input" id="otp-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="6-digit code" />
+                            </div>
+                            <button type="button" class="btn-primary w-full mb-2" id="otp-submit">Login</button>
+                            <button type="button" class="btn-outline w-full" id="otp-resend">Resend OTP</button>
+                        </div>
+                    </div>
+                @endif
+
                 @if (config('services.google.client_id'))
                     <a href="{{ url('/auth/google') }}" class="btn-outline w-full mb-4 inline-flex items-center justify-center">
                         Sign in with Google
@@ -114,6 +142,7 @@
 @push('scripts')
     <script src="{{ asset('assets/js/auth/password-toggle.js') }}"></script>
     <script src="{{ asset('assets/js/auth/login-link.js') }}"></script>
+    <script src="{{ asset('assets/js/auth/login-otp.js') }}"></script>
     <script src="{{ asset('assets/js/auth/passkey.js') }}"></script>
     <script>
         (function () {

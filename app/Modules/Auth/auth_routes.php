@@ -3,6 +3,7 @@
 use App\Modules\Auth\Controllers\GoogleController;
 use App\Modules\Auth\Controllers\LoginController;
 use App\Modules\Auth\Controllers\LoginLinkController;
+use App\Modules\Auth\Controllers\LoginOtpController;
 use App\Modules\Auth\Controllers\PasskeyController;
 use App\Modules\Auth\Controllers\PasswordController;
 use App\Modules\Auth\Controllers\RegisterController;
@@ -32,6 +33,7 @@ Route::get('/login/approve', [LoginLinkController::class, 'showApprove'])
 // --- Public endpoints ---
 Route::middleware('device.uid')->prefix('auth')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->middleware('auth.throttle:login');
+    Route::post('/login-otp', [LoginOtpController::class, 'handle'])->middleware('auth.throttle:login_otp');
     Route::post('/register', [RegisterController::class, 'register'])->middleware(['auth.throttle:register', 'recaptcha']);
     Route::post('/logout', [LoginController::class, 'apiLogout']);
     Route::get('/session', [SessionController::class, 'show']);

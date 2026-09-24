@@ -60,20 +60,28 @@ class LoginController extends Controller
             ]);
         }
 
-        $remember = $request->boolean('remember');
+        return $this->completeLogin($request, $user, $request->boolean('remember'), $result['requiresTfa']);
+    }
 
-        if ($result['requiresTfa'] && class_exists(TfaService::class) && ! $this->deviceIsTrusted($request, $user)) {
+    /**
+     * Second half of every credential-style login (password, email OTP): a 2FA
+     * challenge when the account needs one and this device is not trusted,
+     * otherwise the session.
+     */
+    public function completeLogin(Request $request, User $user, bool $remember, bool $requiresTfa, string $activity = UserActivity::LOGIN_SUCCESS)
+    {
+        if ($requiresTfa && ! $this->deviceIsTrusted($request, $user)) {
             return app(TfaService::class)->startLoginChallenge($request, $user, $remember);
         }
 
-        return $this->issueSessionResponse($request, $user, $remember);
+        return $this->issueSessionResponse($request, $user, $remember, $activity);
     }
 
-    public function issueSessionResponse(Request $request, User $user, bool $remember)
+    public function issueSessionResponse(Request $request, User $user, bool $remember, string $activity = UserActivity::LOGIN_SUCCESS)
     {
         $session = $this->sessions->issue($request, $user->id, $remember);
 
-        $this->auth->logSuccess($request, $user, UserActivity::LOGIN_SUCCESS);
+        $this->auth->logSuccess($request, $user, $activity);
 
         $ttlSeconds = $remember
             ? config('auth_next.session_ttl_days.remember') * 86400
@@ -87,10 +95,6 @@ class LoginController extends Controller
 
     protected function deviceIsTrusted(Request $request, User $user): bool
     {
-        if (! class_exists(DeviceService::class)) {
-            return false;
-        }
-
         return app(DeviceService::class)->isTrusted($request, $user->id);
     }
 
