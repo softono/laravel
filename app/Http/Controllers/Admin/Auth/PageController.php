@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\Controller;
 use Illuminate\Http\Request;
 
 /**
- * Renders the admin auth pages. All POST to the SAME shared /api/auth/*
+ * Renders the admin auth pages. All POST to the SAME shared /auth/*
  * endpoints as the user side (forgot/reset/verify-account/tfa are not
  * admin-specific - a `users` row is a `users` row regardless of role) -
  * only the admin LOGIN endpoint differs (Admin\Auth\LoginController),

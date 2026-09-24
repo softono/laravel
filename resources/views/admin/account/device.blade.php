@@ -4,38 +4,32 @@ Device
 @endsection
 @section('content')
 
-<div class="row">
-  <div class="col-md-12">
+<div>
     <?= view('admin/account/component/account_block'); ?>
-          <!-- Content -->
-        {{-- <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Device /</span> List</h4> --}}
-            <!-- Invoice List Table -->
-      <div class="card">
-        <div class="card-body">
-          <h5 class="mb-1"><span class="text-muted fw-light">Device /</span> List</h5>
-        </div>  
-          <div class="card-datatable table-responsive">
-            <table class="datatable-list-table table border-top" id="data-table">
-              <thead>
-                <tr>
-                  <th>id</th>
-                  <th>Client</th>
-                  <th>IP</th>
-                  <th>Location</th>
-                  <th>Last Activity</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+    <!-- Content -->
+    <!-- Invoice List Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title"><span class="font-normal text-slate-500">Device /</span> List</h5>
+        </div>
+        <div class="card-body overflow-x-auto">
+            <table class="w-full text-sm" id="data-table">
+                <thead>
+                    <tr>
+                        <th>id</th>
+                        <th>Client</th>
+                        <th>IP</th>
+                        <th>Location</th>
+                        <th>Last Activity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
             </table>
-          </div>
-      </div>
-  </div>
+        </div>
+    </div>
 </div>
 
 <!-- / Content -->
-
-<!--Bootstrap Tables-->
-
 @endsection
 @push('scripts')
 <script>

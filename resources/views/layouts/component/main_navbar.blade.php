@@ -1,99 +1,64 @@
-<nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-    id="layout-navbar">
-    <div class="navbar-nav-right d-flex align-items-center justify-content-end ">
-        <a href="{{ route('home') }}" class="app-brand-link gap-1 pjax">
-            <span class="avatar me-2">
-                <img src="{{ $general->getFileUrl(config('setting.app_logo'),'logo')}}"
-                    alt="{{ config('setting.app_name') }}" class="rounded" />
-            </span>
-            <span class="app-brand-text demo menu-text fw-bold text-heading">{{ config('setting.app_name') }}</span>
+<nav class="border-b border-slate-200 bg-white" x-data="{ mobileOpen: false }">
+    <div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <a href="{{ route('home') }}" class="pjax flex items-center gap-2">
+            <img src="{{ $general->getFileUrl(config('setting.app_logo'),'logo')}}" alt="{{ config('setting.app_name') }}" class="h-8 w-8 rounded" />
+            <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+
+        <button type="button" class="btn-icon border border-slate-200 lg:hidden" @click="mobileOpen = !mobileOpen" aria-label="Toggle navigation">
+            <i class="bx bx-menu text-xl" x-show="!mobileOpen"></i>
+            <i class="bx bx-x text-xl" x-show="mobileOpen" x-cloak></i>
         </button>
-        <div class="collapse navbar-collapse ms-8" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-1">
-                <li class="nav-item active-menu" data-active_menu_links="home">
-                    <a class="nav-link pjax" aria-current="page"
-                        href="{{ route('home') }}">Home</a>
-                </li>
-                <li class="nav-item active-menu" data-active_menu_links="contact">
-                    <a class="nav-link  pjax" data-pjax-cache="true"
-                        href="{{ route('contact') }} ">Contact</a>
-                </li>
-            </ul>
-            <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-                <ul class="navbar-nav flex-row align-items-center ms-auto">
-                    <!-- User -->
-                    <?php if ($sessionUser) { ?>
-                    <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                        <a class="nav-link dropdown-toggle hide-arrow p-0 pjax" href="javascript:void(0);"
-                            data-bs-toggle="dropdown">
-                            <div class="avatar avatar-online">
-                                <img src="{{ $general->getFileUrl($sessionUser->image,'profile') }}" alt
-                                    class="w-px-40 h-auto rounded-circle" />
-                            </div>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item pjax" href="{{ route('account/update') }}">
-                                    <div class="d-flex">
-                                        <div class="flex-shrink-0 me-3">
-                                            <div class="avatar avatar-online">
-                                                <img src="{{ $general->getFileUrl($sessionUser->image,'profile') }}" alt
-                                                    class="rounded-circle" />
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <span
-                                                class="fw-semibold d-block">{{$sessionUser->first_name.' '.$sessionUser->last_name}}</span>
-                                            <small class="text-muted">{{ $sessionUser->email }}</small>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <div class="dropdown-divider"></div>
-                            </li>
-                            <li>
-                                <a class="dropdown-item pjax" href="{{ route('account/update') }}">
-                                    <i class="icon-base bx bx-user icon-md me-3"></i>
-                                    <span class="align-middle">My Account</span>
-                                </a>
-                            </li>
-                            <li>
-                                <div class="dropdown-divider"></div>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('logout') }}">
-                                    <i class="icon-base bx bx-power-off icon-md me-3"></i>
-                                    <span class="align-middle">Log Out</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <?php } else { ?>
-                    <li class="menu-item {{ $general->routeMatchClass('login')}}">
-                        <a href="login" class="menu-link btn rounded-pill btn-primary text-white pjax" data-pjax-layout="blank">
-                            <div data-i18n="Login">Login
-                                <span class="icon-base bx bx-log-in-circle icon-sm "></span>
-                            </div>
-                        </a>
-                    </li>
-                    <br>
-                    <li class="menu-item {{ $general->routeMatchClass('register')}} ms-2">
-                        <a href="register" class="menu-link btn rounded-pill btn-primary text-white pjax" data-pjax-layout="blank">
-                            <div data-i18n="Register">Register <span class="icon-base bx bx-user icon-sm "></span></div>
-                        </a>
-                    </li>
-                    <?php } ?>
-                    <!--/ User -->
-                </ul>
+
+        <div class="hidden items-center gap-6 lg:flex">
+            <a class="pjax text-sm font-medium text-slate-600 hover:text-primary-600" href="{{ route('home') }}">Home</a>
+            <a class="pjax text-sm font-medium text-slate-600 hover:text-primary-600" href="{{ route('contact') }}">Contact</a>
+        </div>
+
+        <div class="hidden items-center gap-3 lg:flex">
+            <?php if ($sessionUser) { ?>
+            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                <button type="button" class="flex items-center gap-2" @click="open = !open">
+                    <img src="{{ $general->getFileUrl($sessionUser->image,'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
+                </button>
+                <div x-show="open" x-cloak x-transition class="absolute end-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                    <a class="pjax flex items-center gap-3 px-4 py-2 hover:bg-slate-50" href="{{ route('account/update') }}">
+                        <img src="{{ $general->getFileUrl($sessionUser->image,'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
+                        <span>
+                            <span class="block text-sm font-semibold text-slate-800">{{$sessionUser->first_name.' '.$sessionUser->last_name}}</span>
+                            <small class="text-slate-400">{{ $sessionUser->email }}</small>
+                        </span>
+                    </a>
+                    <div class="my-1 border-t border-slate-100"></div>
+                    <a class="pjax flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50" href="{{ route('account/update') }}">
+                        <i class="bx bx-user"></i> My Account
+                    </a>
+                    <div class="my-1 border-t border-slate-100"></div>
+                    <a class="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50" href="{{ route('logout') }}">
+                        <i class="bx bx-power-off"></i> Log Out
+                    </a>
+                </div>
             </div>
+            <?php } else { ?>
+            <a href="login" class="btn-primary rounded-full pjax" data-pjax-layout="blank">
+                Login <i class="bx bx-log-in-circle"></i>
+            </a>
+            <a href="register" class="btn-primary rounded-full pjax" data-pjax-layout="blank">
+                Register <i class="bx bx-user"></i>
+            </a>
+            <?php } ?>
         </div>
     </div>
+
+    <div class="space-y-1 border-t border-slate-200 px-4 py-3 lg:hidden" x-show="mobileOpen" x-cloak x-transition>
+        <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('home') }}">Home</a>
+        <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('contact') }}">Contact</a>
+        <?php if ($sessionUser) { ?>
+        <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('account/update') }}">My Account</a>
+        <a class="block rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50" href="{{ route('logout') }}">Log Out</a>
+        <?php } else { ?>
+        <a href="login" class="block rounded-md px-3 py-2 text-sm font-medium text-primary-600 hover:bg-slate-50 pjax" data-pjax-layout="blank">Login</a>
+        <a href="register" class="block rounded-md px-3 py-2 text-sm font-medium text-primary-600 hover:bg-slate-50 pjax" data-pjax-layout="blank">Register</a>
+        <?php } ?>
+    </div>
 </nav>
-
-
-

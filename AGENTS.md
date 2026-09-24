@@ -150,7 +150,7 @@ npm run build
 ## Common Commands
 
 ```bash
-php artisan route:list --path=api/auth    # inspect auth endpoints
+php artisan route:list --path=auth        # inspect auth endpoints
 php artisan migrate                       # run migrations
 php artisan db:seed --class="Database\Seeders\AuthSeeder"
 php artisan tinker
@@ -296,7 +296,7 @@ Layer responsibilities and service-by-service detail are covered in **[`docs/arc
 | Method / variable | `camelCase` | `verifyLoginChallenge()` |
 | DB table | `snake_case` plural | `user_login_links` |
 | DB column | `snake_case` | `two_factor_enabled` |
-| Route path | `kebab-case` | `/api/auth/verify-account` |
+| Route path | `kebab-case` | `/auth/verify-account` |
 | Route name | matches the path | `->name('account/two-factor')` |
 | Blade view | `kebab-case.blade.php` | `verify-tfa.blade.php` |
 | JS file | `kebab-case.js` | `login-link.js` |
@@ -363,7 +363,7 @@ if ($claimed === 0) { /* someone else won the race */ }
 @push('scripts')
     <script src="{{ asset('assets/js/auth/login-link.js') }}"></script>
     <script>
-        loginLink.init({ pollUrl: '{{ url('/api/auth/login-link/poll') }}' });
+        loginLink.init({ pollUrl: '{{ url('/auth/login-link/poll') }}' });
     </script>
 @endpush
 ```

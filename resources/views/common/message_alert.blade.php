@@ -1,30 +1,30 @@
 @if ($message = Session::get('success'))
-<div class="alert alert-success alert-dismissible">
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    <strong>{!! $message !!}</strong>
+<div class="alert-success mb-4">
+    <strong class="flex-1">{!! $message !!}</strong>
+    <button type="button" class="alert-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
 </div>
 @endif
 @if ($message = Session::get('error'))
-<div class="alert alert-danger alert-dismissible">
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    <strong>{!! $message !!}</strong>
+<div class="alert-danger mb-4">
+    <strong class="flex-1">{!! $message !!}</strong>
+    <button type="button" class="alert-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
 </div>
 @endif
 @if ($message = Session::get('warning'))
-<div class="alert alert-warning alert-dismissible">
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    <strong>{!! $message !!}</strong>
+<div class="alert-warning mb-4">
+    <strong class="flex-1">{!! $message !!}</strong>
+    <button type="button" class="alert-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
 </div>
 @endif
 @if ($message = Session::get('info'))
-<div class="alert alert-info alert-dismissible">
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    <strong>{!! $message !!}</strong>
+<div class="alert-info mb-4">
+    <strong class="flex-1">{!! $message !!}</strong>
+    <button type="button" class="alert-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
 </div>
 @endif
 @if ($errors->any())
-<div class="alert alert-denger alert-dismissible">
-    <button type="button" class="close" data-bs-dismiss="alert"></button>
-    {!! $errors->first() !!}
+<div class="alert-danger mb-4">
+    <span class="flex-1">{!! $errors->first() !!}</span>
+    <button type="button" class="alert-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
 </div>
 @endif

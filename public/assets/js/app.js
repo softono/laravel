@@ -79,14 +79,31 @@ const app = {
     },
 
     showModal: function () {
-        if (!this.commonModel.is(":visible")) {
-            this.commonModel.modal("show");
+        if (!this.commonModel.hasClass("modal-open")) {
+            app.openModal(this.commonModel);
         }
     },
 
     hideModal: function () {
-        if (this.commonModel.is(":visible")) {
-            this.commonModel.modal("hide");
+        if (this.commonModel.hasClass("modal-open")) {
+            app.closeModal(this.commonModel);
+        }
+    },
+
+    /**
+     * Generic Tailwind modal open/close helpers (replaces Bootstrap's .modal() plugin)
+     */
+    openModal: function ($modal) {
+        $modal = $modal.jquery ? $modal : $($modal);
+        $modal.removeClass("hidden").addClass("modal-open");
+        $("body").addClass("overflow-hidden");
+    },
+
+    closeModal: function ($modal) {
+        $modal = $modal.jquery ? $modal : $($modal);
+        $modal.removeClass("modal-open").addClass("hidden");
+        if ($(".modal.modal-open").length === 0) {
+            $("body").removeClass("overflow-hidden");
         }
     },
 
@@ -294,13 +311,15 @@ const app = {
 
     showMessage: function (message, type) {
         var toastHtml = `
-        <div class="bs-toast toast toast-placement-ex m-2 fade bg-__type__ top-0 end-0 show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
-            <div class="toast-header">
-                <i class="icon-base bx bx-bell me-2"></i>
-                <div class="me-auto fw-medium">__title__</div>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        <div class="toast-msg toast-__type__" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-msg-header">
+                <div class="flex items-center gap-2">
+                    <i class="bx bx-bell"></i>
+                    <span class="font-medium">__title__</span>
+                </div>
+                <button type="button" class="toast-dismiss" aria-label="Close"><i class="bx bx-x text-lg"></i></button>
             </div>
-            <div class="toast-body">__message__</div>
+            <div class="toast-msg-body">__message__</div>
         </div>`;
         var title = type.charAt(0).toUpperCase() + type.slice(1);
         type = type.replace("error", "danger");
@@ -530,6 +549,38 @@ const app = {
 
 $(document).ready(function () {
     app.init();
+
+    // Generic modal triggers/dismissals (replaces Bootstrap's data-bs-toggle="modal")
+    $(document).on("click", "[data-modal-open]", function (e) {
+        e.preventDefault();
+        app.openModal($($(this).data("modal-open")));
+    });
+    $(document).on("click", "[data-modal-dismiss]", function (e) {
+        e.preventDefault();
+        app.closeModal($(this).closest(".modal"));
+    });
+    $(document).on("click", ".modal", function (e) {
+        if ($(e.target).is(".modal")) {
+            app.closeModal($(this));
+        }
+    });
+    $(document).on("click", ".toast-dismiss", function () {
+        $(this).closest(".toast-msg").remove();
+    });
+    $(document).on("click", ".alert-dismiss", function () {
+        $(this).closest(".alert").remove();
+    });
+    $(document).on("click", ".menu-toggle", function (e) {
+        e.preventDefault();
+        $(this).closest(".menu-item").toggleClass("open");
+    });
+    $(document).on("keydown", function (e) {
+        if (e.key === "Escape") {
+            $(".modal.modal-open").each(function () {
+                app.closeModal($(this));
+            });
+        }
+    });
 });
 
 

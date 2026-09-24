@@ -1,29 +1,25 @@
 <div class="modal-header">
     <h4 class="modal-title">Change Avatar</h4>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-
+    <button type="button" class="btn-close" data-modal-dismiss aria-label="Close"></button>
 </div>
-<div class="modal-body">
-    <div class="col-md-12 text-center">
-        <div id="file-input-container" method="POST">
-            <input type='file' onchange="imageCrop.setCropFile(this.files[0])" style="display:none" accept="image/png, image/gif, image/jpeg, image/webp , image/jpg">
-            <button type="button" class="btn btn-secondary file-btn fdgmage" onclick="$(this).prev().click()"><i class="mx-1 icon-base bx bx-upload" aria-hidden="true"> </i>Choose File</button>
-        </div>
-        <div class="image-crop-box" style="max-width:200%;">
-            <img src="{{ $general->getFileUrl(@$model->image,'profile'); }}" id="image-crop">
-        </div>
-        <div class="image-crop-action" style="display:none;max-width:100%;">
-            <button onclick="imageCrop.rotateLeft()" class="btn btn-default">Rotate Left</button>
-            <button onclick="imageCrop.rotateRight()" class="btn btn-default">Rotate Right</button>
-        </div>
+<div class="modal-body text-center">
+    <div id="file-input-container" method="POST">
+        <input type='file' onchange="imageCrop.setCropFile(this.files[0])" style="display:none" accept="image/png, image/gif, image/jpeg, image/webp , image/jpg">
+        <button type="button" class="btn-secondary file-btn fdgmage" onclick="$(this).prev().click()"><i class="mx-1 bx bx-upload" aria-hidden="true"> </i>Choose File</button>
+    </div>
+    <div class="image-crop-box" style="max-width:200%;">
+        <img src="{{ $general->getFileUrl(@$model->image,'profile'); }}" id="image-crop">
+    </div>
+    <div class="image-crop-action mt-4 flex justify-center gap-2" style="display:none;max-width:100%;">
+        <button onclick="imageCrop.rotateLeft()" class="btn-outline">Rotate Left</button>
+        <button onclick="imageCrop.rotateRight()" class="btn-outline">Rotate Right</button>
     </div>
 </div>
-<div class="modal-footer justify-content-between">
+<div class="modal-footer justify-between">
     @if(!empty($model->image))
-    <button type="button" class="btn btn-danger" onclick="app.confirmAction(this);" data-action="{{route('admin/account/delete-image')}}" data-id="{{$model->image}}">Delete Image</button>
+    <button type="button" class="btn-danger" onclick="app.confirmAction(this);" data-action="{{route('admin/account/delete-image')}}" data-id="{{$model->image}}">Delete Image</button>
     @endif
-    <br>
-    <button type="button" class="btn btn-success" class="submit" onclick="imageCrop.uploadImage();">Save</button>
+    <button type="button" class="btn-success" onclick="imageCrop.uploadImage();">Save</button>
 </div>
 <script>
     var imageCrop = false;

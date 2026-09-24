@@ -4,7 +4,7 @@ Reference for the AJAX/JSON endpoints: response envelope, validation, error hand
 
 > **URL convention: no `/api` prefix.** This is a server-rendered Laravel app, so every endpoint is an ordinary `web`-group route (session, CSRF, `device.uid`). JSON endpoints sit next to the pages they serve, grouped by module, e.g. `POST /auth/login` beside `GET /login`. There is no separate API surface, API guard or token auth.
 >
-> **Status:** paths below are the target. Until Phase 0 of [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix) is done, the code still registers these routes as `api/auth/*` and `api/admin/auth/login`, so `route:list` shows the old paths.
+> Routes are registered without the prefix (done in Phase 0 of [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix)).
 
 Summary in [`../AGENTS.md`](../AGENTS.md#api-overview).
 

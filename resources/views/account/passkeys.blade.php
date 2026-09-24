@@ -1,19 +1,19 @@
 @extends('layouts.main')
 @section('title', 'Passkeys')
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            {{ view('account/component/account_block', compact('model')) }}
-            <div class="main-card mb-3 card">
-                <div class="card-header">
-                    <h5 class="mb-2">Passkeys</h5>
-                    <p class="text-muted mb-4">Sign in without a password using your device's fingerprint, face, or security key.</p>
+    <div>
+        {{ view('account/component/account_block', compact('model')) }}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-2">Passkeys</h5>
+                <p class="mb-4 text-sm text-slate-500">Sign in without a password using your device's fingerprint, face, or security key.</p>
 
-                    <div id="passkey-unsupported" class="alert alert-warning" style="display:none;">
-                        Passkeys are not supported in this browser.
-                    </div>
+                <div id="passkey-unsupported" class="alert-warning" style="display:none;">
+                    Passkeys are not supported in this browser.
+                </div>
 
-                    <table class="table" id="passkey-table">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm" id="passkey-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -24,11 +24,11 @@
                         </thead>
                         <tbody id="passkey-list"></tbody>
                     </table>
+                </div>
 
-                    <div class="d-flex gap-2 align-items-center mt-3">
-                        <input type="text" class="form-control" id="passkey-name" placeholder="Name this passkey (e.g. My Phone)" style="max-width:280px;" />
-                        <button class="btn btn-primary" id="passkey-add">Add a Passkey</button>
-                    </div>
+                <div class="mt-3 flex items-center gap-2">
+                    <input type="text" class="form-input" id="passkey-name" placeholder="Name this passkey (e.g. My Phone)" style="max-width:280px;" />
+                    <button class="btn-primary" id="passkey-add">Add a Passkey</button>
                 </div>
             </div>
         </div>
@@ -39,10 +39,10 @@
     <script src="{{ asset('assets/js/account/passkeys.js') }}"></script>
     <script>
         accountPasskeys.init({
-            listUrl: '{{ url('/api/auth/passkey/list') }}',
-            registerOptionsUrl: '{{ url('/api/auth/passkey/register-options') }}',
-            registerVerifyUrl: '{{ url('/api/auth/passkey/register-verify') }}',
-            deleteUrl: '{{ url('/api/auth/passkey/delete') }}',
+            listUrl: '{{ url('/auth/passkey/list') }}',
+            registerOptionsUrl: '{{ url('/auth/passkey/register-options') }}',
+            registerVerifyUrl: '{{ url('/auth/passkey/register-verify') }}',
+            deleteUrl: '{{ url('/auth/passkey/delete') }}',
         });
     </script>
 @endpush

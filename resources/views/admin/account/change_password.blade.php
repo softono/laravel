@@ -3,63 +3,56 @@
 Change password
 @endsection
 @section('content')
-<style>
-    .input-group-text.error {
-    /* background-color: #f8d7da;
-    color: #dc3545;
-    border-color: #dc3545; */
-}</style>
-<div class="row">
-    <div class="col-md-12">
-        <?= view('admin/account/component/account_block'); ?>
-        <div class="card mb-6">
-            <h5 class="card-header">Change Password</h5>
-            <div class="card-body">
-                <form action="admin/account/password-change-process" method="post" id="ajax-form">
-                    {{ csrf_field() }}
-                    <div class="row">
-                        <div class="mb-6 col-md-6 form-password-toggle form-control-validation fv-plugins-icon-container">
-                            <label class="form-label" for="currentPassword">Current Password <span class="text-danger">*</span></label>
-                            <div class="input-group input-group-merge has-validation">
-                                <input class="form-control" maxlength="32" minlength="6" type="password" name="current_password" id="current_password" required="required" />
-                                 <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
-                            </div>
+<div>
+    <?= view('admin/account/component/account_block'); ?>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Change Password</h5>
+        </div>
+        <div class="card-body">
+            <form action="admin/account/password-change-process" method="post" id="ajax-form">
+                {{ csrf_field() }}
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <label class="form-label" for="current_password">Current Password <span class="text-rose-600">*</span></label>
+                        <div class="input-group">
+                            <input class="form-input" maxlength="32" minlength="6" type="password" name="current_password" id="current_password" required="required" />
+                            <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                        </div>
                         <label id="current_password-error" class="error" for="current_password" style="display:none;"></label>
-                        </div>
                     </div>
-                     <div class="row">
-                        <div class="mb-6 col-md-6 form-password-toggle form-control-validation fv-plugins-icon-container fv-plugins-bootstrap5-row-invalid">
-                            <label class="form-label" for="newPassword">New Password <span class="text-danger">*</span></label>
-                            <div class="input-group input-group-merge has-validation">
-                                <input class="form-control" maxlength="32" minlength="6" type="password" id="password" name="password" required="required" />
-                                 <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
-                            </div>
-                         <label id="password-error" class="error" for="password" style="display:none;"></label>
+                </div>
+                <div class="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <label class="form-label" for="password">New Password <span class="text-rose-600">*</span></label>
+                        <div class="input-group">
+                            <input class="form-input" maxlength="32" minlength="6" type="password" id="password" name="password" required="required" />
+                            <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                         </div>
+                        <label id="password-error" class="error" for="password" style="display:none;"></label>
+                    </div>
 
-                        <div class="mb-6 col-md-6 form-password-toggle form-control-validation fv-plugins-icon-container fv-plugins-bootstrap5-row-invalid">
-                            <label class="form-label" for="confirmPassword">Confirm New Password <span class="text-danger">*</span></label>
-                            <div class="input-group input-group-merge has-validation">
-                                <input class="form-control" maxlength="32" minlength="6" type="password" name="confirm_password" id="confirm_password" required="required" />
-                                 <span class="input-group-text cursor-pointer"><i class="icon-base bx bx-hide"></i></span>
-                            </div>
+                    <div>
+                        <label class="form-label" for="confirm_password">Confirm New Password <span class="text-rose-600">*</span></label>
+                        <div class="input-group">
+                            <input class="form-input" maxlength="32" minlength="6" type="password" name="confirm_password" id="confirm_password" required="required" />
+                            <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                        </div>
                         <label id="confirm_password-error" class="error" for="confirm_password" style="display:none;"></label>
-                        </div>
-                         <h6 class="text-body">Password Requirements:</h6>
-                        <ul class="ps-8 mb-0">
-                            <li class="mb-4">Password must be at least 6 characters long.</li>
-                        </ul>
-                        <div class="mt-6">
-                            <button type="submit" class="btn btn-primary me-2">Save changes</button>
-                            <button type="reset" class="btn btn-dark">Cancel</button>
-                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+                <h6 class="mt-6 text-slate-700">Password Requirements:</h6>
+                <ul class="ms-4 mb-0 list-disc">
+                    <li class="mb-1">Password must be at least 6 characters long.</li>
+                </ul>
+                <div class="mt-6">
+                    <button type="submit" class="btn-primary">Save changes</button>
+                    <button type="reset" class="btn-dark">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
-</div>     
-
+</div>
 @endsection
 @push('scripts')
 <script type="text/javascript">

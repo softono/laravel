@@ -1,70 +1,64 @@
-<aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" data-bg-class="bg-menu-theme">
-    <div class="app-brand demo">
-        <a href="{{ route('admin/dashboard') }}" class="app-brand-link">
-            <span class="app-brand-logo demo">
-                <span class="avatar  fav-side">
-                    <img src="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}"
-                        alt="{{ config('setting.app_name') }}" class="rounded h-px-38" />
-                </span>
-            </span>
-            <!--<span class="app-brand-text demo menu-text fw-bold ms-2"><img src="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}"-->
-            <!--            alt="{{ config('setting.app_name') }}" class="rounded h-px-38 demo-img-logo " />{{ config('setting.app_name') }}</span>-->
-                        <span class="app-brand-text demo menu-text fw-bold">{{ config('setting.app_name') }}</span>
+<div class="fixed inset-0 z-30 bg-slate-900/50 lg:hidden" x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"></div>
+
+<aside id="layout-menu"
+    class="fixed inset-y-0 start-0 z-40 flex w-64 -translate-x-full flex-col bg-slate-900 transition-transform lg:translate-x-0"
+    :class="{ '!translate-x-0': sidebarOpen }">
+    <div class="flex items-center gap-2 px-4 py-4">
+        <a href="{{ route('admin/dashboard') }}" class="pjax flex flex-1 items-center gap-2">
+            <img src="{{ $general->getFileUrl(config('setting.app_favicon'),'logo') }}"
+                alt="{{ config('setting.app_name') }}" class="h-8 w-8 rounded" />
+            <span class="truncate font-bold text-white">{{ config('setting.app_name') }}</span>
         </a>
-        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">
-            <i class="icon-base bx bx-chevron-left"></i>
-        </a>
+        <button type="button" class="text-slate-400 hover:text-white lg:hidden" @click="sidebarOpen = false" aria-label="Close sidebar">
+            <i class="bx bx-x text-xl"></i>
+        </button>
     </div>
-    <div class="menu-divider mt-0"></div>
-    <div class="menu-inner-shadow" style="display: none;"></div>
-    <ul class="menu-inner py-1 ps ps--active-y">
+    <div class="border-t border-white/10"></div>
+    <ul class="flex-1 space-y-1 overflow-y-auto px-3 py-3">
         <li class="menu-item active-menu" data-active_menu_links="admin/dashboard">
             <a href="{{ route('admin/dashboard') }}" class="menu-link pjax">
-                <i class="menu-icon icon-base bx bx-home-smile"></i>
-                <div data-i18n="Dashboard">Dashboard</div>
+                <i class="bx bx-home-smile text-lg"></i>
+                <div>Dashboard</div>
             </a>
         </li>
-     
+
         @if($sessionUser->hasPermission('admin/user'))
-        <li
-            class="menu-item active-menu" data-active_menu_links="admin/user,admin/user/create,admin/user/view,admin/user/update">
-            <a href="{{ route('admin/user') }}" class="menu-link pjax" data-pjax-cache="true" >
-                <i class="menu-icon icon-base bx bx-user"></i>
-                <div data-i18n="Users">Users</div>
+        <li class="menu-item active-menu" data-active_menu_links="admin/user,admin/user/create,admin/user/view,admin/user/update">
+            <a href="{{ route('admin/user') }}" class="menu-link pjax" data-pjax-cache="true">
+                <i class="bx bx-user text-lg"></i>
+                <div>Users</div>
             </a>
         </li>
         @endif
+
         @if($sessionUser->hasPermission(['admin_setting', 'admin_seo', 'admin_admin', 'admin_device', 'admin_user_activity', 'admin_page', 'admin_emailtemplate']))
-        <li
-            class="menu-item active-menu" data-active_menu_class="open">
-            <a href="javascript:void(0);"
-                class="menu-link menu-toggle pjax">
-                <i class="menu-icon icon-base bx bx-cog"></i>
-                <div data-i18n="Setting">Setting</div>
+        <li class="menu-item active-menu" data-active_menu_class="open">
+            <a href="javascript:void(0);" class="menu-link menu-toggle pjax">
+                <i class="bx bx-cog text-lg"></i>
+                <div>Setting</div>
+                <i class="bx bx-chevron-right menu-toggle-icon"></i>
             </a>
             <ul class="menu-sub">
                 @if($sessionUser->hasPermission('admin_setting'))
                 <li class="menu-item active-menu" data-active_menu_links="admin/setting/update">
                     <a href="{{ route('admin/setting/update') }}" class="menu-link pjax">
-                        <div data-i18n="Setting">Setting</div>
+                        <div>Setting</div>
                     </a>
                 </li>
                 @endif
 
                 @if($sessionUser->hasPermission('admin_seo'))
-                <li
-                    class="menu-item active-menu" data-active_menu_links="admin/seo/create,admin/seo/update,admin/seo/meta">
+                <li class="menu-item active-menu" data-active_menu_links="admin/seo/create,admin/seo/update,admin/seo/meta">
                     <a href="{{ route('admin/seo/meta') }}" class="menu-link pjax" data-pjax-cache="true" data-active_menu_links="admin/seo/create">
-                        <div data-i18n="Seo Meta">Seo Meta</div>
+                        <div>Seo Meta</div>
                     </a>
                 </li>
                 @endif
 
                 @if($sessionUser->hasPermission('admin_admin'))
-                <li
-                    class="menu-item active-menu" data-active_menu_links="admin/admin,admin/admin/create,admin/admin/view,admin/admin/update">
+                <li class="menu-item active-menu" data-active_menu_links="admin/admin,admin/admin/create,admin/admin/view,admin/admin/update">
                     <a href="{{ route('admin/admin') }}" class="menu-link pjax" data-pjax-cache="true">
-                        <div data-i18n="Admin">Admin</div>
+                        <div>Admin</div>
                     </a>
                 </li>
                 @endif
@@ -72,7 +66,7 @@
                 @if($sessionUser->hasPermission('admin_device'))
                 <li class="menu-item active-menu" data-active_menu_links="admin/device">
                     <a href="{{ route('admin/device') }}" class="menu-link pjax" data-pjax-cache="true">
-                        <div data-i18n="Device">Device</div>
+                        <div>Device</div>
                     </a>
                 </li>
                 @endif
@@ -80,7 +74,7 @@
                 @if($sessionUser->hasPermission('admin_user_activity'))
                 <li class="menu-item active-menu" data-active_menu_links="admin/user-activity">
                     <a href="{{ route('admin/user-activity') }}" class="menu-link pjax" data-pjax-cache="true">
-                        <div data-i18n="Activity">Activity</div>
+                        <div>Activity</div>
                     </a>
                 </li>
                 @endif
@@ -88,7 +82,7 @@
                 @if($sessionUser->hasPermission('admin_page'))
                 <li class="menu-item active-menu" data-active_menu_links="admin/pages,admin/page/update">
                     <a href="{{ route('admin/page') }}" class="menu-link pjax" data-pjax-cache="true">
-                        <div data-i18n="Pages">Pages</div>
+                        <div>Pages</div>
                     </a>
                 </li>
                 @endif
@@ -96,16 +90,17 @@
                 @if($sessionUser->hasPermission('admin_emailtemplate'))
                 <li class="menu-item active-menu" data-active_menu_links="admin/email-template,admin/email-template/update">
                     <a href="{{ route('admin/email-template') }}" class="menu-link pjax" data-pjax-cache="true">
-                        <div data-i18n="Email Template">Email Template</div>
+                        <div>Email Template</div>
                     </a>
                 </li>
                 @endif
             </ul>
         </li>
         @endif
+
         <li class="menu-item">
             <a href="{{ route('admin/auth/logout') }}" class="menu-link">
-                <i class="menu-icon" style="font-size:12px;"><svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:22px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg></i>
+                <i class="bx bx-power-off text-lg"></i>
                 <div>Logout</div>
             </a>
         </li>

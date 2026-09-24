@@ -3,45 +3,39 @@
     Verify Your Account
 @endsection
 @section('content')
-    <div class="container-xxl">
-        <div class="authentication-wrapper authentication-basic container-p-y">
-            <div class="authentication-inner py-6">
-                <div class="card px-sm-6 px-0">
-                    <div class="card-body">
-                        <div class="app-brand justify-content-center">
-                            <a href="{{ url('/admin/auth/login') }}" class="app-brand-link d-flex align-items-center">
-                                <span class="app-brand-logo demo">
-                                    <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
-                                        class="brand-image img-circle elevation-3 preview-app-logo" style="height: 50px;">
-                                </span>
-                                <span class="app-brand-text demo text-heading fw-bold">{{ config('setting.app_name') }}</span>
-                            </a>
-                        </div>
-                        <h4 class="mb-1">Verify Your Account</h4>
-                        <p class="mb-6">We've sent a 6-digit code to your email. Enter it below to verify your account.</p>
-
-                        <form id="verify-form" class="mb-4" action="{{ url('/api/auth/verify-account') }}" method="POST">
-                            @csrf
-                            <div class="mb-4">
-                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                    value="{{ $email }}" placeholder="Enter your email" {{ $email ? 'readonly' : '' }} />
-                            </div>
-                            <div class="mb-6">
-                                <label for="otp" class="form-label">OTP <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="otp" name="otp" maxlength="6"
-                                    inputmode="numeric" placeholder="Enter the 6-digit OTP" autofocus />
-                            </div>
-                            <button class="btn btn-primary d-grid w-100 mb-4" type="submit" id="verify-submit">Verify</button>
-                        </form>
-
-                        <p class="text-center">
-                            <button type="button" class="btn btn-link p-0" id="resend-otp" data-resend-seconds="60">
-                                Resend OTP
-                            </button>
-                        </p>
-                    </div>
+    <div class="w-full max-w-md">
+        <div class="card">
+            <div class="card-body p-6 sm:p-8">
+                <div class="mb-6 flex justify-center">
+                    <a href="{{ url('/admin/auth/login') }}" class="flex items-center gap-2">
+                        <img src="{{ $general->getFileUrl(config('setting.app_logo'), 'logo') }}"
+                            class="h-10 w-10 rounded-full object-cover" alt="">
+                        <span class="text-lg font-bold text-slate-800">{{ config('setting.app_name') }}</span>
+                    </a>
                 </div>
+                <h4 class="mb-1 text-xl font-semibold text-slate-800">Verify Your Account</h4>
+                <p class="mb-6 text-sm text-slate-500">We've sent a 6-digit code to your email. Enter it below to verify your account.</p>
+
+                <form id="verify-form" class="mb-4" action="{{ url('/auth/verify-account') }}" method="POST">
+                    @csrf
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email <span class="text-rose-600">*</span></label>
+                        <input type="email" class="form-input" id="email" name="email"
+                            value="{{ $email }}" placeholder="Enter your email" {{ $email ? 'readonly' : '' }} />
+                    </div>
+                    <div class="mb-6">
+                        <label for="otp" class="form-label">OTP <span class="text-rose-600">*</span></label>
+                        <input type="text" class="form-input" id="otp" name="otp" maxlength="6"
+                            inputmode="numeric" placeholder="Enter the 6-digit OTP" autofocus />
+                    </div>
+                    <button class="btn-primary w-full mb-4" type="submit" id="verify-submit">Verify</button>
+                </form>
+
+                <p class="text-center">
+                    <button type="button" class="text-sm text-primary-600 hover:underline" id="resend-otp" data-resend-seconds="60">
+                        Resend OTP
+                    </button>
+                </p>
             </div>
         </div>
     </div>
@@ -66,7 +60,7 @@
         });
 
         authCountdown.attachResend(document.getElementById('resend-otp'), function () {
-            app.ajaxPost('{{ url('/api/auth/otp') }}', {
+            app.ajaxPost('{{ url('/auth/otp') }}', {
                 email: document.getElementById('email').value,
                 purpose: 'verify'
             }, function (response) {

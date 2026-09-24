@@ -4,82 +4,75 @@ Forgot Password
 @endsection
 @section('content')
 
-<div class="container-xxl">
-    <div class="authentication-wrapper authentication-basic container-p-y">
-        <div class="authentication-inner py-6">
-            <div class="card px-sm-6 px-0">
-                <div class="card-body">
-                    <!-- Logo -->
-                    <div class="app-brand justify-content-center">
-                        <a href="admin/site/password-forgot" class="app-brand-link gap-2 pjax">
-                            <span class="app-brand-logo demo">
-                                <img src="{{$general->getFileUrl(config('setting.app_logo'))}}" class="brand-image img-circle elevation-3 preview-app-logo" style="height: 50px;">
-                            </span>
-                            <span class="app-brand-text demo text-heading fw-bold">{{ Config::get('setting.app_name') }}</span>
-                        </a>
-                    </div>
-                    <!-- /Logo -->
-                    <h4 class="mb-1">Forgot Password? 🔒</h4>
-                    <p class="mb-6">Enter your email and we'll send you instructions to reset your password</p>
-                    {{ view('common/message_alert') }}
-                    <form id="ajax-form" action="{{ route('admin/site/password-forgot-process') }}" class="mb-6 fv-plugins-bootstrap5 fv-plugins-framework" method="POST">
-                        {{ csrf_field() }}
-                        <input type="hidden" name="step" id="step" value="1">
-                        <div id="email-block">
-                            <div class="mb-6 form-control-validation fv-plugins-icon-container">
-                                <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input id="email" type="email" class="form-control" name="email" placeholder="Enter your email" autofocus value="" />
-                                <div class="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
-                                <div class="col-12 recaptcha-block">
-                                    {{view('common/recaptcha')}}
-                                </div>
-                            </div>
+<div class="w-full max-w-md">
+    <div class="card">
+        <div class="card-body p-6 sm:p-8">
+            <!-- Logo -->
+            <div class="mb-6 flex justify-center">
+                <a href="admin/site/password-forgot" class="flex items-center gap-2 pjax">
+                    <img src="{{$general->getFileUrl(config('setting.app_logo'))}}" class="h-10 w-10 rounded-full object-cover" alt="">
+                    <span class="text-lg font-bold text-slate-800">{{ Config::get('setting.app_name') }}</span>
+                </a>
+            </div>
+            <!-- /Logo -->
+            <h4 class="mb-1 text-xl font-semibold text-slate-800">Forgot Password? 🔒</h4>
+            <p class="mb-6 text-sm text-slate-500">Enter your email and we'll send you instructions to reset your password</p>
+            {{ view('common/message_alert') }}
+            <form id="ajax-form" action="{{ route('admin/site/password-forgot-process') }}" class="mb-6" method="POST">
+                {{ csrf_field() }}
+                <input type="hidden" name="step" id="step" value="1">
+                <div id="email-block">
+                    <div class="mb-6">
+                        <label class="form-label">Email <span class="text-rose-600">*</span></label>
+                        <input id="email" type="email" class="form-input" name="email" placeholder="Enter your email" autofocus value="" />
+                        <div class="mt-3">
+                            {{view('common/recaptcha')}}
                         </div>
-                        <div id="otp-block" style="display: none;">
-                            <div class="mb-6">
-                                <label class="form-label">OTP <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="otp" placeholder="Enter your otp" autofocus value="" />
-                                <div class="text-center">
-                                    <br>
-                                    Didn't get the code?
-                                    <a href="javascript:void(0)" onclick="resendOtp($('#email').val())" id="resend-otp-link">Resend</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="password-block" style="display: none;">
-                            <div class="mb-6">
-                                <div class="mb-6 form-password-toggle form-control-validation">
-                                    <label class="form-label">Password <span class="text-danger">*</span></label>
-                                        <div class="input-group input-group-merge has-validation">
-                                             <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" autofocus value="" />
-                                             <span class="input-group-text cursor-pointer">
-                                             <i class="icon-base bx bx-hide"></i></span>
-                                        </div>
-                                         <label id="password-error" class="error" for="password" style="display:none;"></label>
-                                </div>
-                                <div class="mb-6 form-password-toggle form-control-validation">
-                                    <label class="form-label">confirm password <span class="text-danger">*</span></label>
-                                         <div class="input-group input-group-merge has-validation">
-                                            <input type="password" class="form-control" name="password_confirm" id="password_confirm" placeholder="Enter your password" value="" />
-                                             <span class="input-group-text cursor-pointer">
-                                                 <i class="icon-base bx bx-hide"></i></span>
-                                        </div>
-                                         <label id="password_confirm-error" class="error" for="password_confirm" style="display:none;"></label>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary d-grid w-100 waves-effect waves-light">Submit</button>
-                    </form>
-                    <div class="text-center">
-                        <a href="{{ route('admin/auth/login') }}" class="d-flex justify-content-center pjax">
-                            <i class="icon-base bx bx-chevron-left scaleX-n1-rtl me-1"></i>
-                            Back to login
-                        </a>
                     </div>
                 </div>
-                <!-- /Forgot Password -->
+                <div id="otp-block" style="display: none;">
+                    <div class="mb-6">
+                        <label class="form-label">OTP <span class="text-rose-600">*</span></label>
+                        <input type="text" class="form-input" name="otp" placeholder="Enter your otp" autofocus value="" />
+                        <div class="text-center">
+                            <br>
+                            Didn't get the code?
+                            <a href="javascript:void(0)" onclick="resendOtp($('#email').val())" id="resend-otp-link">Resend</a>
+                        </div>
+                    </div>
+                </div>
+                <div id="password-block" style="display: none;">
+                    <div class="mb-6">
+                        <div class="mb-6">
+                            <label class="form-label">Password <span class="text-rose-600">*</span></label>
+                                <div class="input-group">
+                                     <input type="password" class="form-input" id="password" name="password" placeholder="Enter your password" autofocus value="" />
+                                     <span class="input-group-text cursor-pointer">
+                                     <i class="bx bx-hide"></i></span>
+                                </div>
+                                 <label id="password-error" class="error" for="password" style="display:none;"></label>
+                        </div>
+                        <div class="mb-6">
+                            <label class="form-label">confirm password <span class="text-rose-600">*</span></label>
+                                 <div class="input-group">
+                                    <input type="password" class="form-input" name="password_confirm" id="password_confirm" placeholder="Enter your password" value="" />
+                                     <span class="input-group-text cursor-pointer">
+                                         <i class="bx bx-hide"></i></span>
+                                </div>
+                                 <label id="password_confirm-error" class="error" for="password_confirm" style="display:none;"></label>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary w-full">Submit</button>
+            </form>
+            <div class="text-center">
+                <a href="{{ route('admin/auth/login') }}" class="inline-flex items-center justify-center gap-1 text-sm text-primary-600 hover:underline pjax">
+                    <i class="bx bx-chevron-left rtl:-scale-x-100"></i>
+                    Back to login
+                </a>
             </div>
         </div>
+        <!-- /Forgot Password -->
     </div>
 </div>
 <!-- /.login-box -->
@@ -122,7 +115,7 @@ Forgot Password
                                 $('#password-block').show();
                                 $('#otp-block').hide();
                                 $('#step').val('3');
-                            } 
+                            }
                         }
                     } else if (response.message) {
                         app.showMessage(response.message, "error");

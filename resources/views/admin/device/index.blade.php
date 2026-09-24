@@ -5,13 +5,12 @@
 @section('content')
     <!-- Content -->
 
-
     <div class="breadcrumb-box">
-        <h4 class="fw-bold py-3 mb-4">Device</h4>
+        <h4 class="text-xl font-bold text-slate-800">Device</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="admin/dashboard" class="pjax">Dashboard</a>
+                    <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
                 </li>
                 <li class="breadcrumb-item active">Device</li>
             </ol>
@@ -20,11 +19,11 @@
 
     <!-- Invoice List Table -->
     <div class="card">
-        <div class="card-header justify-content-between">
-            <h4 class="align-middle d-sm-inline-block d-none">Device </h4>
+        <div class="card-header">
+            <h5 class="card-title">Device</h5>
         </div>
-        <div class="card-datatable table-responsive">
-            <table class="datatable-list-table table border-top " id="data-table">
+        <div class="card-body overflow-x-auto">
+            <table class="w-full text-sm" id="data-table">
                 <thead>
                     <tr>
                         <th>Last Activity</th>
@@ -42,9 +41,6 @@
     </div>
 
     <!-- / Content -->
-
-
-    <!--Bootstrap Tables-->
 @endsection
 @push('scripts')
     <script>

@@ -1,21 +1,18 @@
 <form id="ajax-form" method="post" action="{{ route('admin/page/save') }}">
     @csrf
     <input type="hidden" name="id" value="{{ @$model->id }}">
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-label" >Title <span class="text-danger">*</span></label>
-            <div class="form-group">
-                <input type="text" class="form-control" required id="title" placeholder="Title" name="title" aria-label="Name" value="{{ $model->title }}" />
-            </div>
-        </div>
+    <div class="mb-3">
+        <label class="form-label">Title <span class="text-rose-500">*</span></label>
+        <input type="text" class="form-input" required id="title" placeholder="Title" name="title" aria-label="Name" value="{{ $model->title }}" />
     </div>
-    <div class="form-group">
-        <label for="form-label">Body <span class="text-danger">*</span></label>
+    <div class="mb-3">
+        <label for="form-label" class="form-label">Body <span class="text-rose-500">*</span></label>
         <textarea name="body" id="body">{!! $model->body !!}</textarea>
     </div>
-    <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <a class="pjax" href="admin/pages"><button type="button" class="btn btn-primary">Back</button></a>
+    <div class="flex gap-2">
+        <button type="submit" class="btn-primary">Submit</button>
+        <a class="btn-primary pjax" href="admin/pages">Back</a>
+    </div>
 </form>
 @push('scripts')
 <script type="text/javascript">
@@ -52,7 +49,7 @@ documentReady(function() {
                  summernoteRequired: true,
                  minlength: 2
             }
-        },  
+        },
         messages: {
             title: {
                 required: "Please enter the title",
@@ -78,9 +75,9 @@ documentReady(function() {
                  error.insertAfter(".note-editor");
             } else {
                 error.insertAfter(element.closest('.mb-3'));
-            }          
+            }
         },
-       
+
     })
 });
 </script>

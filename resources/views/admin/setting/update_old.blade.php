@@ -4,114 +4,107 @@
 @endsection
 @section('content')
     <div class="breadcrumb-box">
-        <h4 class="fw-bold py-3 mb-4">Setting</h4>
+        <h4 class="text-xl font-bold text-slate-800">Setting</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="admin/dashboard" class="pjax">Dashboard</a>
+                    <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
                 </li>
                 <li class="breadcrumb-item active">Setting</li>
             </ol>
         </nav>
     </div>
-    <div class="content-wrapper">
+    <div class="">
         <!-- Content -->
 
         <!-- Tabs -->
-        <div class="row">
-            <div class="col-xl-12">
+        <div class="flex flex-wrap gap-4">
+            <div class="w-full">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-start">
+                    <div class="card-header">
                         <h5 class="m-0" style="padding: 21px;">Setting Update</h5>
                         <form action="{{ route('admin/setting/cache-clear') }}"
                             style="padding-top: 25px;padding-right: 15px;">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn-primary">
                                 Clear Cache
                             </button>
                         </form>
                     </div>
                     <div>
-                        <div class="nav-align-top nav-tabs-shadow mb-6">
-                            <ul class="nav nav-tabs" role="tablist">
+                        <div class="mb-6" x-data="{ tab: 'navs-top-general' }">
+                            <ul class="flex flex-wrap gap-1 border-b border-slate-200" role="tablist">
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-general" aria-controls="navs-top-general"
+                                    <button type="button" :class="tab === 'navs-top-general' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-general'" aria-controls="navs-top-general"
                                         aria-selected="true">
                                         General
                                     </button>
                                 </li>
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-mail" aria-controls="navs-top-mail" aria-selected="false">
+                                    <button type="button" :class="tab === 'navs-top-mail' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-mail'" aria-controls="navs-top-mail" aria-selected="false">
                                         Mail
                                     </button>
                                 </li>
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-logo" aria-controls="navs-top-logo" aria-selected="false">
+                                    <button type="button" :class="tab === 'navs-top-logo' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-logo'" aria-controls="navs-top-logo" aria-selected="false">
                                         Logo
                                     </button>
                                 </li>
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-recaptcha" aria-controls="navs-top-recaptcha"
+                                    <button type="button" :class="tab === 'navs-top-recaptcha' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-recaptcha'" aria-controls="navs-top-recaptcha"
                                         aria-selected="false">
                                         Google recaptcha
                                     </button>
                                 </li>
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-login" aria-controls="navs-top-login"
+                                    <button type="button" :class="tab === 'navs-top-login' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-login'" aria-controls="navs-top-login"
                                         aria-selected="false">
                                         Social Login
                                     </button>
                                 </li>
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-content" aria-controls="navs-top-content"
+                                    <button type="button" :class="tab === 'navs-top-content' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-content'" aria-controls="navs-top-content"
                                         aria-selected="false">
                                         Content
                                     </button>
                                 </li>
                                 <li class="nav-item">
-                                    <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
-                                        data-bs-target="#navs-top-payment" aria-controls="navs-top-payment"
+                                    <button type="button" :class="tab === 'navs-top-payment' ? 'border-primary-600 text-primary-600' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px" role="tab" @click="tab = 'navs-top-payment'" aria-controls="navs-top-payment"
                                         aria-selected="false">
                                         Payment
                                     </button>
                                 </li>
                             </ul>
-                            <div class="tab-content" id="custom-tabs-one-tabContent">
-                                <div class="tab-pane fade show active" id="navs-top-general" role="tabpanel"
+                            <div class="mt-4" id="custom-tabs-one-tabContent">
+                                <div x-show="tab === 'navs-top-general'" id="navs-top-general" role="tabpanel"
                                     aria-labelledby="navs-top-general">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
-                                        <div class="form-row row">
-                                            <div class="col-md-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">App Name <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" placeholder="App Name"
+                                                    <label class="form-label">App Name <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" placeholder="App Name"
                                                             name="app_name" value="{{ config('setting.app_name') }}"
                                                             required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Admin Contact Email <span
-                                                            class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="email" class="form-control"
+                                                    <label class="form-label">Admin Contact Email <span
+                                                            class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="email" class="form-input"
                                                             placeholder="Admin Contact Email" name="admin_email"
                                                             value="{{ config('setting.admin_email') }}" required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Date Format</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Date Format</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.date_format') }}" name="date_format">
                                                         <option value="Y-m-d"
                                                             <?= config('setting.date_format') == 'Y-m-d' ? 'selected' : '' ?>>
@@ -125,10 +118,10 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Timezone</label>
-                                                    <select class="form-control" value="{{ config('setting.timezone') }}"
+                                                    <label class="form-label">Timezone</label>
+                                                    <select class="form-input" value="{{ config('setting.timezone') }}"
                                                         name="timezone">
                                                         @foreach ($timezonelist as $timezone)
                                                             <option value="{{ $timezone }}"
@@ -138,10 +131,10 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Date Time Format</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Date Time Format</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.date_time_format') }}"
                                                         name="date_time_format">
                                                         <option value="Y-m-d h:i A"
@@ -156,10 +149,10 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Login With OTP</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Login With OTP</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.user_login_with_otp') }}"
                                                         name="user_login_with_otp">
                                                         <option value="1"
@@ -171,10 +164,10 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Email Verify</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Email Verify</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.user_email_verify') }}"
                                                         name="user_email_verify">
                                                         <option value="1"
@@ -186,10 +179,10 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Cookie Consent</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Cookie Consent</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.cookie_consent') }}"
                                                         name="cookie_consent">
                                                         <option value="1"
@@ -201,32 +194,32 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                            <div class="md:col-span-2">
+                                                <div class="">
+                                                    <button type="submit" class="btn-primary">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
-                                <div class="tab-pane fade" id="navs-top-mail" role="tabpanel">
+                                <div x-show="tab === 'navs-top-mail'" x-cloak id="navs-top-mail" role="tabpanel">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
-                                        <div class="form-row row">
-                                            <div class="col-md-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Host <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" placeholder="Host"
+                                                    <label class="form-label">Host <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" placeholder="Host"
                                                             name="host" value="{{ config('mail.mailers.smtp.host') }}"
                                                             required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Encryption</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Encryption</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.encryption') }}" name="encryption">
                                                         <option value="ssl"
                                                             <?= config('setting.encryption') == 'ssl' ? 'selected' : '' ?>>
@@ -237,63 +230,63 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Port <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" placeholder="Port"
+                                                    <label class="form-label">Port <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" placeholder="Port"
                                                             name="port" value="{{ config('mail.mailers.smtp.port') }}"
                                                             required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Username <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" placeholder="Username"
+                                                    <label class="form-label">Username <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" placeholder="Username"
                                                             name="username"
                                                             value="{{ config('mail.mailers.smtp.username') }}" required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Password <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" placeholder="Password"
+                                                    <label class="form-label">Password <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" placeholder="Password"
                                                             name="password"
                                                             value="{{ config('mail.mailers.smtp.password') }}" required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Mail From Name <span
-                                                            class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control"
+                                                    <label class="form-label">Mail From Name <span
+                                                            class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input"
                                                             placeholder="Mail From Name" name="mail_from_name"
                                                             value="{{ config('setting.mail_from_name') }}" required />
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Mail From Address <span
-                                                            class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control"
+                                                    <label class="form-label">Mail From Address <span
+                                                            class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input"
                                                             placeholder="Mail From Address" name="mail_from_address"
                                                             value="{{ config('setting.mail_from_address') }}" required />
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12">
-                                                <div class="form-group form-submail">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                                    <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                            <div class="md:col-span-2">
+                                                <div class="">
+                                                    <button type="submit" class="btn-primary">Submit</button>
+                                                    <!-- <button type="button" class="btn-primary" data-bs-toggle="modal"
                                                             data-bs-target="#exampleModal">Email </button> -->
                                                 </div>
                                             </div>
@@ -301,84 +294,84 @@
                                         </div>
                                     </form>
                                 </div>
-                                <div class="tab-pane fade" id="navs-top-logo" role="tabpanel">
-                                    <div class="row" style="margin-left:0%">
-                                        <div class="col-6">
+                                <div x-show="tab === 'navs-top-logo'" x-cloak id="navs-top-logo" role="tabpanel">
+                                    <div class="flex flex-wrap gap-4" style="margin-left:0%">
+                                        <div class="w-1/2">
                                             <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form"
                                                 method="post" enctype="multipart/form-data">
                                                 {{ csrf_field() }}
                                                 <input type="hidden" name="key" value="logo">
-                                                <div class="form-row row">
-                                                    <div class="col-md-12">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div class="md:col-span-2">
                                                         <div id="ajax-content">
-                                                            <div class="col-sm-6 col-lg-4 mb-4">
-                                                                <label class="body">App Logo <span
-                                                                        class="star">*</span></label>
-                                                                <div class="col-sm-6 col-lg-4 mb-4">
+                                                            <div class="mb-4">
+                                                                <label class="form-label">App Logo <span
+                                                                        class="text-rose-500">*</span></label>
+                                                                <div class="mb-4">
                                                                     <div class="card">
-                                                                        <img class="card-img-top preview-app-logo"
+                                                                        <img class="w-full rounded-t-lg preview-app-logo"
                                                                             src="{{ config('setting.app_logo') }}"
                                                                             alt="Card image cap" />
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="col-md-6">
+                                                            <div class="">
                                                                 <div class="mb-3">
-                                                                    <div class="input-group input-group-merge">
+                                                                    <div class="input-group">
                                                                         <input type="file" required="required"
                                                                             name="image"
                                                                             onchange="previewImage(this,'.preview-app-logo')"
-                                                                            class="form-control" accept="image/*"
+                                                                            class="form-input" accept="image/*"
                                                                             id="basic-default-upload-file">
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                                    <div class="md:col-span-2">
+                                                        <div class="">
+                                                            <button type="submit" class="btn-primary">Submit</button>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </form>
                                         </div>
-                                        <div class="col-6">
+                                        <div class="w-1/2">
                                             <form action="{{ route('admin/setting/save-logo') }}" class="ajax-file-form"
                                                 method="post" enctype="multipart/form-data">
                                                 {{ csrf_field() }}
                                                 <input type="hidden" name="key" value="fevicon">
-                                                <div class="form-row row">
-                                                    <div class="col-md-12">
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div class="md:col-span-2">
                                                         <div id="ajax-content">
-                                                            <div class="col-md-6">
+                                                            <div class="">
                                                                 <div class="mb-3">
-                                                                    <label class="body">App Favicon <span
-                                                                            class="star">*</span></label>
-                                                                    <div class="col-sm-6 col-lg-4 mb-4">
+                                                                    <label class="form-label">App Favicon <span
+                                                                            class="text-rose-500">*</span></label>
+                                                                    <div class="mb-4">
                                                                         <div class="card">
-                                                                            <img class="card-img-top preview-app-fevicon"
+                                                                            <img class="w-full rounded-t-lg preview-app-fevicon"
                                                                                 src="{{ config('setting.app_favicon') }}"
                                                                                 alt="Card image cap" />
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="col-md-6">
+                                                            <div class="">
                                                                 <div class="mb-3">
-                                                                    <div class="input-group input-group-merge">
+                                                                    <div class="input-group">
                                                                         <input type="file" required name="image"
                                                                             onchange="previewImage(this,'.preview-app-fevicon')"
-                                                                            class="form-control" accept="image/*"
+                                                                            class="form-input" accept="image/*"
                                                                             id="input-app-fevicon">
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                                    <div class="md:col-span-2">
+                                                        <div class="">
+                                                            <button type="submit" class="btn-primary">Submit</button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -386,14 +379,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="tab-pane fade" id="navs-top-recaptcha" role="tabpanel">
+                                <div x-show="tab === 'navs-top-recaptcha'" x-cloak id="navs-top-recaptcha" role="tabpanel">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
-                                        <div class="form-row row">
-                                            <div class="col-md-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Enable</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Enable</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.google_recaptcha') }}"
                                                         name="google_recaptcha">
                                                         <option value="1"
@@ -405,22 +398,22 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Secret key <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" required
+                                                    <label class="form-label">Secret key <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" required
                                                             value="{{ config('setting.google_recaptcha_secret_key') }}"
                                                             name="google_recaptcha_secret_key"
                                                             placeholder="google_recaptcha_secret_key">
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Public key <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control" required
+                                                    <label class="form-label">Public key <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input" required
                                                             value="{{ config('setting.google_recaptcha_public_key') }}"
                                                             name="google_recaptcha_public_key"
                                                             placeholder="google_recaptcha_public_key">
@@ -428,22 +421,22 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                            <div class="md:col-span-2">
+                                                <div class="">
+                                                    <button type="submit" class="btn-primary">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
-                                <div class="tab-pane fade" id="navs-top-login" role="tabpanel">
+                                <div x-show="tab === 'navs-top-login'" x-cloak id="navs-top-login" role="tabpanel">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
-                                        <div class="form-row row">
-                                            <div class="col-md-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Google Login</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Google Login</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.google_login') }}" name="google_login">
                                                         <option value="1"
                                                             <?= config('setting.google_login') == '1' ? 'selected' : '' ?>>
@@ -454,23 +447,23 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Google Client ID <span
-                                                            class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control"
+                                                    <label class="form-label">Google Client ID <span
+                                                            class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input"
                                                             value="<?= $setting['services.google_client_id'] ?>"
                                                             name="google.client_id" placeholder="google.client_id">
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Google Client Secreat <span
-                                                            class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control"
+                                                    <label class="form-label">Google Client Secreat <span
+                                                            class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input"
                                                             value="<?= $setting['services.google_client_secret'] ?>"
                                                             name="google.client_secret"
                                                             placeholder="google.client_secret">
@@ -478,51 +471,51 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                            <div class="md:col-span-2">
+                                                <div class="">
+                                                    <button type="submit" class="btn-primary">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
-                                <div class="tab-pane fade" id="navs-top-content" role="tabpanel">
+                                <div x-show="tab === 'navs-top-content'" x-cloak id="navs-top-content" role="tabpanel">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
-                                        <div class="form-row row">
-                                            <div class="col-md-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Header</label>
-                                                    <div class="input-group input-group-merge">
-                                                        <textarea class="form-control" rows="8" name="header_content" placeholder="Header content"><?= $setting['setting.header_content'] ?></textarea>
+                                                    <label class="form-label">Header</label>
+                                                    <div class="input-group">
+                                                        <textarea class="form-input" rows="8" name="header_content" placeholder="Header content"><?= $setting['setting.header_content'] ?></textarea>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Footer</label>
-                                                    <div class="input-group input-group-merge">
-                                                        <textarea class="form-control" rows="8" name="footer_content" placeholder="Footer content"><?= $setting['setting.footer_content'] ?></textarea>
+                                                    <label class="form-label">Footer</label>
+                                                    <div class="input-group">
+                                                        <textarea class="form-input" rows="8" name="footer_content" placeholder="Footer content"><?= $setting['setting.footer_content'] ?></textarea>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                            <div class="md:col-span-2">
+                                                <div class="">
+                                                    <button type="submit" class="btn-primary">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </form>
                                 </div>
-                                <div class="tab-pane fade" id="navs-top-payment" role="tabpanel">
+                                <div x-show="tab === 'navs-top-payment'" x-cloak id="navs-top-payment" role="tabpanel">
                                     <form action="{{ route('admin/setting/save') }}" class="ajax-form" method="post">
                                         {{ csrf_field() }}
-                                        <div class="form-row row">
-                                            <div class="col-md-6">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Stripe Enable</label>
-                                                    <select class="form-control"
+                                                    <label class="form-label">Stripe Enable</label>
+                                                    <select class="form-input"
                                                         value="{{ config('setting.stripe_enable') }}"
                                                         name="stripe_enable">
                                                         <option value="1"
@@ -534,31 +527,31 @@
                                                     </select>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Stripe Secret Key <span
-                                                            class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control"
+                                                    <label class="form-label">Stripe Secret Key <span
+                                                            class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input"
                                                             value= "{{ config('setting.stripe_secret_key') }}"
                                                             name="stripe_secret_key" placeholder="stripe secret key">
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="">
                                                 <div class="mb-3">
-                                                    <label class="body">Public key <span class="star">*</span></label>
-                                                    <div class="input-group input-group-merge">
-                                                        <input type="text" class="form-control"
+                                                    <label class="form-label">Public key <span class="text-rose-500">*</span></label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-input"
                                                             value="{{ config('setting.stripe_public_key') }}"
                                                             name="stripe_public_key" placeholder="stripe public key">
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                            <div class="md:col-span-2">
+                                                <div class="">
+                                                    <button type="submit" class="btn-primary">Submit</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -574,23 +567,24 @@
         <form action="{{ route('admin/setting/save') }}" id="ajax-form" method="POST"
             onsubmit="event.preventDefault()">
             @csrf
-            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            <div class="modal fixed inset-0 z-50 hidden items-center justify-center p-4" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
                 aria-hidden="true">
-                <div class="modal-dialog" role="document">
+                <div class="modal-backdrop" data-modal-dismiss></div>
+                <div class="modal-dialog relative z-10 w-full max-w-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel">Mail</h5>
-                            <button type="button" class="close closebtnmodal" data-bs-dismiss="modal"
+                            <button type="button" class="btn-close closebtnmodal" data-modal-dismiss
                                 aria-label="Close">
-                                <span aria-hidden="false"><i class="fa-solid fa-xmark"></i></span>
+                                <i class="bx bx-x text-xl"></i>
                             </button>
                         </div>
                         <div class="modal-body">
-                            <input type="email" class="form-control" id="email" placeholder="Email Address"
+                            <input type="email" class="form-input" id="email" placeholder="Email Address"
                                 name="email" aria-label="Name" required />
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="submit" class="btn-primary">Submit</button>
                         </div>
                     </div>
                 </div>
@@ -598,7 +592,6 @@
         </form>
         <!-- mail Process End -->
         <!-- / Content -->
-        <div class="content-backdrop fade"></div>
     </div>
 @endsection
 @push('scripts')

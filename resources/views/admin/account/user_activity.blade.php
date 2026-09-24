@@ -3,38 +3,32 @@
 Log
 @endsection
 @section('content')
-<div class="row">
-  <div class="col-md-12">
-      <!-- Content -->
-      <?= view('admin/account/component/account_block'); ?>
-          <!-- Ajax Sourced Server-side -->
-          {{-- <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Activity /</span> List</h4> --}}
-          <!-- Invoice List Table -->
-          <div class="card">
-            <div class="card-body">
-              <h5 class="mb-1"><span class="text-muted fw-light">Activity /</span> List</h5>
-            </div>
-              <div class="card-datatable table-responsive">
-                <table class="datatable-list-table table border-top" id="data-table">
-                  <thead>
+<div>
+    <!-- Content -->
+    <?= view('admin/account/component/account_block'); ?>
+    <!-- Ajax Sourced Server-side -->
+    <!-- Invoice List Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title"><span class="font-normal text-slate-500">Activity /</span> List</h5>
+        </div>
+        <div class="card-body overflow-x-auto">
+            <table class="w-full text-sm" id="data-table">
+                <thead>
                     <tr>
-                      <th>Created At</th>
-                      <th>Client</th>
-                      <th>Location</th>
-                      <th>IP</th>
-                      <th>Type</th>
+                        <th>Created At</th>
+                        <th>Client</th>
+                        <th>Location</th>
+                        <th>IP</th>
+                        <th>Type</th>
                     </tr>
-                  </thead>
-                </table>
-              </div>
-            </div>
-          </div>
-  </div>
+                </thead>
+            </table>
+        </div>
+    </div>
 </div>
 
 <!-- / Content -->
-
-<!--Bootstrap Tables-->
 @endsection
 @push('scripts')
 <script>

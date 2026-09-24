@@ -1,36 +1,35 @@
 <form method="post" action="admin/email-template/save" id="ajax-form">
     @csrf
     <input type="hidden" name="id" value="{{ @$model->id }}">
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-label">Title <span class="text-danger">*</span></label>
-            <div class="input-group input-group-merge">
-                <input type="text" class="form-control" id="title" placeholder="Title" name="title"
-                    aria-label="Name" value="{{ @$model->title }}" />
-            </div>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Subject <span class="text-danger">*</span></label>
-            <div class="input-group input-group-merge">
-                <input type="text" class="form-control" id="subject" placeholder="subject" name="subject"
-                    aria-label="subject" value="{{ @$model->subject }}" />
-            </div>
+    <div class="mb-3">
+        <label class="form-label">Title <span class="text-rose-500">*</span></label>
+        <div class="input-group">
+            <input type="text" class="form-input" id="title" placeholder="Title" name="title"
+                aria-label="Name" value="{{ @$model->title }}" />
         </div>
     </div>
-    <div class="form-group">
-        <label for="form-label">Body <span class="text-danger">*</span></label>
+    <div class="mb-3">
+        <label class="form-label">Subject <span class="text-rose-500">*</span></label>
+        <div class="input-group">
+            <input type="text" class="form-input" id="subject" placeholder="subject" name="subject"
+                aria-label="subject" value="{{ @$model->subject }}" />
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="form-label" class="form-label">Body <span class="text-rose-500">*</span></label>
         <textarea name="body" id="body">{!! @$model->body !!}</textarea>
     </div>
     <div class="mb-3">
-        <label class="body mt-2"><b> Parameters </b></label>
+        <label class="block mt-2 font-semibold">Parameters</label>
         <div>
             <p>{{ @$model->params }},app_name</p>
             <i>You can use above parametters in subject and body section using {{ @$example }}</i>
         </div>
     </div>
-    <br>
-    <button type="submit" class="btn btn-primary">Submit</button>
-    <a class="pjax" href="admin/email-template"><button type="button" class="btn btn-dark">Back</button></a>
+    <div class="flex gap-2">
+        <button type="submit" class="btn-primary">Submit</button>
+        <a class="btn-dark pjax" href="admin/email-template">Back</a>
+    </div>
 </form>
 
 @push('scripts')

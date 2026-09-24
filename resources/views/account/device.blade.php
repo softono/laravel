@@ -3,28 +3,25 @@
     Device
 @endsection
 @section('content')
-    <div class="row">
-        <div class="col-md-12">
-            {{ view('account/component/account_block', compact('model')) }}
-            {{-- <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Device /</span> List</h4> --}}
-            <!-- Invoice List Table -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="mb-1"><span class="text-muted fw-light">Device /</span> List</h5>
-                </div>
-                <div class="card-datatable table-responsive">
-                    <table class="datatable-list-table table border-top" id="data-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Client</th>
-                                <th>Location</th>
-                                <th>Last Activity</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
+    <div>
+        {{ view('account/component/account_block', compact('model')) }}
+        <!-- Invoice List Table -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title"><span class="font-normal text-slate-500">Device /</span> List</h5>
+            </div>
+            <div class="card-body overflow-x-auto">
+                <table class="w-full text-sm" id="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Client</th>
+                            <th>Location</th>
+                            <th>Last Activity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
@@ -55,10 +52,14 @@
         }
         documentReady(function() {
             app.addCSS([
-                'theme/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css',
-                'theme/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css'
+                'https://cdn.datatables.net/2.1.8/css/dataTables.tailwindcss.css',
+                'https://cdn.datatables.net/responsive/3.0.4/css/responsive.dataTables.css'
             ]);
-            app.addJS(['theme/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js']);
+            app.addJS([
+                'https://cdn.datatables.net/2.1.8/js/dataTables.js',
+                'https://cdn.datatables.net/responsive/3.0.4/js/dataTables.responsive.js',
+                'https://cdn.datatables.net/2.1.8/js/dataTables.tailwindcss.js'
+            ]);
             datatableObj = $('#data-table').DataTable({
                 ajax: dataTableAjax({
                     url: '{{ route('account/device-list') }}',
@@ -72,7 +73,7 @@
                         data: "client",
                         responsivePriority: 2,
                     },
-                  
+
                     {
                         data: "location",
                         responsivePriority: 2,

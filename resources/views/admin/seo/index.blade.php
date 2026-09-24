@@ -6,11 +6,11 @@ Seo meta
 <?php $sessionUser = auth()->user(); ?>
 <!-- Content -->
 <div class="breadcrumb-box">
-  <h4 class="fw-bold py-3 mb-4">Seo meta</h4>
+  <h4 class="text-xl font-bold text-slate-800">Seo meta</h4>
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <a href="admin/dashboard" class="pjax">Dashboard</a>
+        <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
       </li>
       <li class="breadcrumb-item active">Seo meta</li>
     </ol>
@@ -19,25 +19,25 @@ Seo meta
 
 <!-- Seo Meta List Table -->
 <div class="card">
-  <div class="card-header justify-content-between">
-                <h4 class="align-middle d-sm-inline-block d-none">Seo Meta</h4>
-            @if ($sessionUser->hasPermission('admin/seo/create')) 
-                <a href="admin/seo/create" class="btn btn-primary d-sm-inline-block d-none pjax ms-3"
-                    style="float: inline-end;" aria-label="Create SEO Meta">Create</a>
-            @endif
+  <div class="card-header">
+    <h5 class="card-title">Seo Meta</h5>
+    <div class="flex items-center gap-2">
+      @if ($sessionUser->hasPermission('admin/seo/sitemap-generate'))
+        <button type="button" class="btn-label-primary" aria-label="Generate Sitemap" data-modal-open="#sitemapmodel">
+          <span>Sitemap</span>
+        </button>
+      @endif
+      @if ($sessionUser->hasPermission('admin/seo/create'))
+        <a href="admin/seo/create" class="btn-primary pjax" aria-label="Create SEO Meta">
+          <i class="bx bx-plus"></i>
+          <span>Create</span>
+        </a>
+      @endif
+    </div>
+  </div>
 
-            @if ($sessionUser->hasPermission('admin/seo/sitemap-generate'))
-                <button class="btn buttons-collection btn-label-primary float-end" aria-label="Generate Sitemap"
-                    onclick="$('#sitemapmodel').modal('show')">
-                    <span class="d-flex align-items-center gap-2">
-                        <span class="d-none d-sm-inline-block">Sitemap</span>
-                    </span>
-                </button>
-            @endif
-        </div>
-
-  <div class="card-datatable table-responsive">
-    <table class="datatable-list-table table border-top" id="seo-data-table">
+  <div class="card-body overflow-x-auto">
+    <table class="w-full text-sm" id="seo-data-table">
       <thead>
         <tr>
           <th>#</th>
@@ -53,30 +53,32 @@ Seo meta
 </div>
 
 <!-- / Content -->
-@endsection
 
-@push('scripts')
 <!-- Sitemap Modal -->
-<div class="modal fade" id="sitemapmodel" tabindex="-1" role="dialog" aria-labelledby="sitemapmodellabel"
-  aria-hidden="true">
-  <div class="modal-dialog" role="document">
+<div class="modal fixed inset-0 z-50 hidden items-center justify-center p-4" id="sitemapmodel">
+  <div class="modal-backdrop" data-modal-dismiss></div>
+  <div class="modal-dialog relative z-10 w-full max-w-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">SiteMap</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-modal-dismiss aria-label="Close">
+          <i class="bx bx-x"></i>
+        </button>
       </div>
       <div class="modal-body">
-        SiteMap URL: 
-        <a href="{{ url('sitemap.xml') }}" class="noroute pjax" target="_blank">{{ url('sitemap.xml') }}</a>
+        SiteMap URL:
+        <a href="{{ url('sitemap.xml') }}" class="noroute pjax text-primary-600 hover:underline" target="_blank">{{ url('sitemap.xml') }}</a>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+        <button type="button" class="btn-primary" data-modal-dismiss
           onclick="app.ajaxGet('admin/seo/sitemap-update');">Update SiteMap</button>
       </div>
     </div>
   </div>
 </div>
+@endsection
 
+@push('scripts')
 <!-- DataTable Init -->
 <script>
   documentReady(function () {

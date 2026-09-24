@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class SessionController extends Controller
 {
-    /** GET /api/auth/session - the currently authenticated user, or a guest result. */
+    /** GET /auth/session - the currently authenticated user, or a guest result. */
     public function show(Request $request)
     {
         $user = $request->user();

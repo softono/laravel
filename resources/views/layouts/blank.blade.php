@@ -16,7 +16,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
   //$metaData = $general->getMetaData();
   ?>
   <!DOCTYPE html>
-  <html lang="{{ Config::get('app.locale') }}" class="light-style layout-navbar-fixed layout-menu-fixed" dir="ltr" data-theme="theme-default" data-assets-path="theme/assets/" data-template="vertical-menu-template">
+  <html lang="{{ Config::get('app.locale') }}" dir="ltr">
 
   <head>
     <meta charset="utf-8" />
@@ -32,39 +32,10 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     @endif
     <link rel="shortcut icon" href="{{$general->getFileUrl(config('setting.app_favicon'),'logo')}}" type="image/x-icon">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
-
-    <!-- Icons -->
-    <link rel="stylesheet" href="theme/assets/vendor/fonts/iconify-icons.css" />
-
-    <link rel="stylesheet" href="theme/assets/vendor/fonts/fontawesome.css" />
-    <link rel="stylesheet" href="theme/assets/vendor/fonts/tabler-icons.css" />
-    <link rel="stylesheet" href="theme/assets/vendor/fonts/flag-icons.css" />
-
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="theme/assets/vendor/css/core.css" />
-    <link rel="stylesheet" href="theme/assets/css/demo.css" />
-
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="theme/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-    <link rel="stylesheet" href="theme/assets/vendor/libs/node-waves/node-waves.css" />
-    <!-- Vendor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.15.10/sweetalert2.min.css" integrity="sha512-Of+yU7HlIFqXQcG8Usdd67ejABz27o7CRB1tJCvzGYhTddCi4TZLVhh9tGaJCwlrBiodWCzAx+igo9oaNbUk5A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Page CSS -->
-    <!-- Page -->
-    <link rel="stylesheet" href="theme/assets/vendor/css/pages/page-auth.css" />
-
-    <link rel="stylesheet" href="assets/css/common.css" />
-    <!-- Helpers -->
-    <script src="theme/assets/vendor/js/helpers.js"></script>
-
-    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
-    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
-    <script src="theme/assets/js/config.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     <script>
       /*Global variables*/
@@ -82,43 +53,34 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     {!! config('setting.header_content') !!}
   </head>
 
-  <body>
-    <div id="common-loader" style="display:none;">
-      <div class="common-loader-conetent">
-        <div class="spinner-border spinner-border-lg text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
+  <body class="min-h-screen bg-slate-50">
+    <div id="common-loader" class="fixed inset-0 z-[9999] hidden items-center justify-center">
       <div class="common-loader-backdrop"></div>
+      <div class="common-loader-conetent">
+        <i class="bx bx-loader-alt animate-spin text-4xl text-primary-600"></i>
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
     <!-- Layout wrapper -->
-    <div id="main-container" data-layout="blank">
-      <div id="main-content" data-title="@php if($metaData['title']){echo $metaData['title'];}else{ @endphp@yield('title') | {{config('setting.app_name')}}@php }@endphp">
-           <!--{{ view('common/message_alert') }}-->
+    <div id="main-container" data-layout="blank" class="flex min-h-screen items-center justify-center px-4 py-10">
+      <div id="main-content" class="w-full" data-title="@php if($metaData['title']){echo $metaData['title'];}else{ @endphp@yield('title') | {{config('setting.app_name')}}@php }@endphp">
+        <!--{{ view('common/message_alert') }}-->
         @yield('content')
       </div>
     </div>
 
     <!-- / Layout wrapper -->
-    <div id="common-modal" class="modal fade">
-      <div class="modal-dialog">
-        <div class="modal-content" id="common-modal-content">
-        </div>
+    <div id="common-modal" class="modal fixed inset-0 z-50 hidden items-center justify-center p-4">
+      <div class="modal-backdrop" data-modal-dismiss></div>
+      <div class="modal-dialog relative z-10 w-full max-w-lg">
+        <div class="modal-content" id="common-modal-content"></div>
       </div>
     </div>
-    <!-- Toast with Placements -->
-    <div id="common-toast"></div>
-    <!-- Toast with Placements -->
+    <!-- Toast placement -->
+    <div id="common-toast" class="fixed top-4 end-4 z-[9999] flex flex-col items-end gap-2"></div>
     <!-- Core JS -->
     {{view('common/cookie_consent')}}
-    <!-- build:js theme/assets/vendor/js/core.js -->
-    <script src="theme/assets/vendor/libs/jquery/jquery.js"></script>
-    <script src="theme/assets/vendor/libs/popper/popper.js"></script>
-    <script src="theme/assets/vendor/js/bootstrap.js"></script>
-    <script src="theme/assets/js/front-main.js"></script>
-    <!-- endbuild -->
-    <script src="theme/assets/js/main.js"></script>
-    <!-- Page JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js" integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script src="assets/js/common.js"></script>
@@ -127,7 +89,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     @stack('scripts')
     {!! config('setting.footer_content') !!}
     <script src="assets/js/pjax.js"></script>
-    
+
   </body>
   </html>
 <?php } ?>

@@ -14,24 +14,14 @@ Terms & Condition
     <div class="card-header">
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-lg-12 ">
-                <section class="">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <h2>
-                                    <center>{{$page->title}}</center>
-                                </h2>
-                                <br>
-                                <br>
-                                {!! $page->body !!}
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <section>
+            <div>
+                <h2 class="text-center text-2xl font-bold">{{$page->title}}</h2>
+                <br>
+                <br>
+                {!! $page->body !!}
             </div>
-        </div>
+        </section>
     </div>
 </div>
 @endsection

@@ -1,98 +1,68 @@
-<nav class="layout-navbar container-xxl navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
-    id="layout-navbar">
-    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-        <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
-            <i class="icon-base bx bx-menu icon-md me-3"></i>
-        </a>
-    </div>
+<nav class="flex items-center justify-between gap-4 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:px-8" id="layout-navbar">
+    <button type="button" class="text-slate-500 hover:text-slate-700 lg:hidden" @click="sidebarOpen = true" aria-label="Open sidebar">
+        <i class="bx bx-menu text-xl"></i>
+    </button>
 
-    <div class="navbar-nav-right d-flex align-items-center justify-content-end" id="navbar-collapse">
-        <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-            <!-- User -->
-            <li class="nav-item lh-1 me-4"></li>
-            <!-- Style Switcher pro feature-->
-            <li class="nav-item dropdown me-2 me-xl-0">
-                <a class="nav-link dropdown-toggle hide-arrow" id="nav-theme" href="javascript:void(0);"
-                    data-bs-toggle="dropdown">
-                    <i class="icon-base bx bx-sun icon-md theme-icon-active"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" id="nav-theme-text">
-                    <li>
-                        <a class="dropdown-item align-items-center" href="javascript:void(0);"
-                            data-bs-theme-value="system">
-                            <span class="align-middle"><i class="icon-base bx bx-desktop icon-md me-3"
-                                    data-icon="desktop"></i>System</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item align-items-center" href="javascript:void(0);"
-                            data-bs-theme-value="light">
-                            <span class="align-middle"><i class="icon-base bx bx-sun icon-md me-3 light-style"
-                                    data-icon="sun"></i>Light</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item align-items-center" href="javascript:void(0);"
-                            data-bs-theme-value="dark">
-                            <span class="align-middle"><i class="icon-base bx bx-moon icon-md me-3 dark-style"
-                                    data-icon="moon"></i>Dark</span>
-                        </a>
-                    </li>
+    <div class="flex flex-1 items-center justify-end gap-3">
+        <!-- Theme switcher -->
+        <div class="relative" x-data="{ open: false, theme: (localStorage.getItem('admin-theme') || 'light') }" @click.outside="open = false">
+            <button type="button" class="btn-icon" @click="open = !open">
+                <i class="bx text-lg" :class="theme === 'dark' ? 'bx-moon' : (theme === 'system' ? 'bx-desktop' : 'bx-sun')"></i>
+            </button>
+            <ul x-show="open" x-cloak x-transition class="absolute end-0 z-20 mt-2 w-36 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                <li>
+                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" @click="theme='system'; localStorage.setItem('admin-theme','system'); open=false">
+                        <i class="bx bx-desktop"></i> System
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" @click="theme='light'; localStorage.setItem('admin-theme','light'); open=false">
+                        <i class="bx bx-sun"></i> Light
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:void(0);" class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50" @click="theme='dark'; localStorage.setItem('admin-theme','dark'); open=false">
+                        <i class="bx bx-moon"></i> Dark
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- / Theme switcher -->
 
-                </ul>
-            </li>
-            <!-- / Style Switcher-->
-            <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    <div class="avatar avatar-online">
-                        <img src="{{ $general->getFileUrl($sessionUser->image, 'profile') }}" alt
-                            class="w-px-40 h-auto rounded-circle" />
-                    </div>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" data-bs-popper="static">
-                    <li>
-                        <a class="dropdown-item pjax" href="{{ route('admin/account/update') }}">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="avatar avatar-online">
-                                        <img src="{{ $general->getFileUrl($sessionUser->image, 'profile') }}" alt
-                                            class="w-px-40 h-auto rounded-circle" />
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">{{ $sessionUser->first_name . ' ' . $sessionUser->last_name }}</h6>
-                                    <small class="text-body-secondary">{{ $sessionUser->email }}</small>
-                                </div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                        <a class="dropdown-item pjax" href="{{ route('admin/account/update') }}">
-                            <i class="icon-base bx bx-user icon-md me-3"></i>
-                            <span class="align-middle">My Account</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item pjax" href="{{ route('admin/setting/update') }}">
-                            <i class="icon-base bx bx-cog icon-md me-3"></i>
-                            <span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li>
-                        <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ route('admin/auth/logout') }}">
-                            <i class="icon-base bx bx-power-off icon-md me-3"></i>
-                            <span class="align-middle">Log Out</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <!--/ User -->
-        </ul>
+        <!-- User -->
+        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" class="flex items-center" @click="open = !open">
+                <img src="{{ $general->getFileUrl($sessionUser->image, 'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
+            </button>
+            <ul x-show="open" x-cloak x-transition class="absolute end-0 z-20 mt-2 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+                <li>
+                    <a class="pjax flex items-center gap-3 px-4 py-2 hover:bg-slate-50" href="{{ route('admin/account/update') }}">
+                        <img src="{{ $general->getFileUrl($sessionUser->image, 'profile') }}" alt class="h-9 w-9 rounded-full object-cover" />
+                        <span>
+                            <span class="block text-sm font-semibold text-slate-800">{{ $sessionUser->first_name . ' ' . $sessionUser->last_name }}</span>
+                            <small class="text-slate-400">{{ $sessionUser->email }}</small>
+                        </span>
+                    </a>
+                </li>
+                <li class="my-1 border-t border-slate-100"></li>
+                <li>
+                    <a class="pjax flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50" href="{{ route('admin/account/update') }}">
+                        <i class="bx bx-user"></i> My Account
+                    </a>
+                </li>
+                <li>
+                    <a class="pjax flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50" href="{{ route('admin/setting/update') }}">
+                        <i class="bx bx-cog"></i> Settings
+                    </a>
+                </li>
+                <li class="my-1 border-t border-slate-100"></li>
+                <li>
+                    <a class="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50" href="{{ route('admin/auth/logout') }}">
+                        <i class="bx bx-power-off"></i> Log Out
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!--/ User -->
     </div>
 </nav>

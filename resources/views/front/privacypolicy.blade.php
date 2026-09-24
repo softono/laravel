@@ -14,24 +14,14 @@ Privacy Policy
     <div class="card-header">
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-lg-12 ">
-                <section class="">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <h2>
-                                    <center>{{$privacy->title}}</center>
-                                </h2>
-                                <br>
-                                <br>
-                                {!! $privacy->body !!}
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <section>
+            <div>
+                <h2 class="text-center text-2xl font-bold">{{$privacy->title}}</h2>
+                <br>
+                <br>
+                {!! $privacy->body !!}
             </div>
-        </div>
+        </section>
     </div>
 </div>
 

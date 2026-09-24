@@ -21,6 +21,27 @@ return Application::configure(basePath: dirname(__DIR__))
             // against routes/web.php stays obvious.
             Route::middleware('web')
                 ->group(__DIR__.'/../routes/auth.php');
+
+            // Modular routes (docs/local/module_structure.md). Each module owns a
+            // <module>_routes.php next to its controllers.
+            foreach (glob(app_path('Modules/*/*_routes.php')) as $file) {
+                Route::middleware('web')->group($file);
+            }
+
+            // Admin auth (login and password pages): admin prefix, guests only, so each
+            // route sets its own middleware.
+            foreach (glob(app_path('Modules/Admin/Auth/*_routes.php')) as $file) {
+                Route::middleware('web')->prefix('admin')->group($file);
+            }
+
+            // Every other admin module: admin prefix and an admin session are applied
+            // here, so a new admin module cannot forget auth.admin.
+            foreach (glob(app_path('Modules/Admin/*/*_routes.php')) as $file) {
+                if (basename(dirname($file)) === 'Auth') {
+                    continue;
+                }
+                Route::middleware(['web', 'auth.admin'])->prefix('admin')->group($file);
+            }
         },
     )
     ->withMiddleware(function (Middleware $middleware) {

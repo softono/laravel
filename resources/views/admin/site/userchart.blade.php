@@ -1,9 +1,9 @@
-<div class="row">
-  <div class="col-md-6 col-12 mb-0">
-    <div class="card fgcard" style="height: 100%;">
-      <div class="card-header d-flex align-items-center justify-content-between">
+<div class="flex flex-wrap gap-4">
+  <div class="w-full md:w-[calc(50%-0.5rem)]">
+    <div class="card h-full">
+      <div class="card-header">
         <div>
-          <h5 class="customer-active-chart">Active/Inactive users</h5>
+          <h5 class="card-title customer-active-chart">Active/Inactive users</h5>
         </div>
       </div>
       <div class="card-body">
@@ -12,13 +12,13 @@
     </div>
   </div>
 
-  <div class="col-md-6 col-12 mb-0">
-  <div class="card fgcard" style="height: 100%;">
-      <div class="card-header d-flex align-items-center justify-content-between">
+  <div class="w-full md:w-[calc(50%-0.5rem)]">
+  <div class="card h-full">
+      <div class="card-header">
         <div>
           <h5 class="card-title mb-0 customer-chart">New Users</h5>
         </div>
-            <select class="form-select w-30"  data-style="btn-default"
+            <select class="form-select w-auto"
              id="periodSelect" onchange="userChartDataUpdate(this.value)">
                 <option value="day">Last 7 Days</option>
                 <option value="month">Last 6 Months</option>

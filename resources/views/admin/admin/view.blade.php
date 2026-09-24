@@ -3,20 +3,15 @@
 Admin View
 @endsection
 @section('content')
-<style>
-  .btn-label-danger{
-    display: unset !important;
-  }
-</style>
 <div class="breadcrumb-box">
-  <h4 class="fw-bold py-3 mb-4">Admin</h4>
+  <h4 class="text-xl font-bold text-slate-800">Admin</h4>
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <a href="admin/dashboard" class="pjax">Dashboard</a>
+        <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
       </li>
       <li class="breadcrumb-item">
-        <a href="admin/admin" class="pjax">Admin</a>
+        <a href="admin/admin" class="pjax hover:text-primary-600">Admin</a>
       </li>
       <li class="breadcrumb-item active">Admin View</li>
     </ol>
@@ -24,85 +19,82 @@ Admin View
 </div>
 
 <!-- Content -->
-<div class="row">
+<div class="flex flex-wrap gap-4">
   <!-- User Sidebar -->
-  <div class="col-xl-4 col-lg-5 col-md-5 order-1 order-md-0">
+  <div class="w-full lg:w-[calc(41.6667%-1rem)]">
     <!-- User Card -->
     <div class="card mb-4">
       <div class="card-body">
-        <div class="user-avatar-section">
-          <div class="d-flex align-items-center flex-column">
-            <img class="img-fluid rounded mb-3 pt-1 mt-4" src="{{ $general->getFileUrl($model->image,'profile') }}" height="100" width="100" alt="User avatar" />
-            <div class="user-info text-center">
-              <h4 class="mb-2">{{ $model->first_name.' '.$model->last_name }}</h4>
-              @if ($model->type == 0)
-              <span class="badge bg-label-primary mt-1">SuperAdmin</span>
-              @elseif ($model->type == 1)
-              <span class="badge bg-label-success mt-1">Admin</span>
-              @elseif ($model->type == 2)
-              <span class="badge bg-label-dark mt-1">User</span>
-              @else
-              <span class="badge bg-label-default mt-1">Unknown</span>
-              @endif
-            </div>
+        <div class="flex flex-col items-center">
+          <img class="rounded mb-3 pt-1 mt-4" src="{{ $general->getFileUrl($model->image,'profile') }}" height="100" width="100" alt="User avatar" />
+          <div class="text-center">
+            <h4 class="mb-2 text-lg font-semibold text-slate-800">{{ $model->first_name.' '.$model->last_name }}</h4>
+            @if ($model->type == 0)
+            <span class="badge-soft-primary mt-1">SuperAdmin</span>
+            @elseif ($model->type == 1)
+            <span class="badge-soft-success mt-1">Admin</span>
+            @elseif ($model->type == 2)
+            <span class="badge-soft-secondary mt-1">User</span>
+            @else
+            <span class="badge-soft-secondary mt-1">Unknown</span>
+            @endif
           </div>
         </div>
-        <br>
-        <div class="info-container">
-          <ul class="list-unstyled my-3 py-1">
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-user"></i>
-              <span class="fw-medium mx-2">Name:</span>
+        <div class="mt-4">
+          <ul class="list-none my-3 py-1 space-y-4">
+            <li class="flex items-center">
+              <i class="bx bx-user"></i>
+              <span class="font-medium mx-2">Name:</span>
               <span>{{ $model->first_name.' '.$model->last_name }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-                <i class="icon-base bx bx-envelope"></i>
-                <span class="fw-medium mx-2">Email:</span>
-                <span class="text-break">{{ $model->email }}</span>
+            <li class="flex items-start">
+                <i class="bx bx-envelope"></i>
+                <span class="font-medium mx-2">Email:</span>
+                <span class="break-all">{{ $model->email }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-phone"></i>
-              <span class="fw-medium mx-2">Phone Number:</span>
+            <li class="flex items-center">
+              <i class="bx bx-phone"></i>
+              <span class="font-medium mx-2">Phone Number:</span>
               <span>{{ $model->phone }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-check"></i>
-              <span class="fw-medium mx-2">Status:</span>
+            <li class="flex items-center">
+              <i class="bx bx-check"></i>
+              <span class="font-medium mx-2">Status:</span>
               @if($model->status == 0)
-              <span class="badge rounded-pill bg-label-danger">Inactive</span>
+              <span class="badge-soft-danger">Inactive</span>
               @else($model->status == 1)
-              <span class="badge rounded-pill bg-label-success">Active</span>
+              <span class="badge-soft-success">Active</span>
               @endif
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-time"></i>
-              <span class="fw-medium mx-2">Created at:</span>
+            <li class="flex items-center">
+              <i class="bx bx-time"></i>
+              <span class="font-medium mx-2">Created at:</span>
               <span>{{ $general->dateFormat($model->created_at) }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-time-five"></i>
-              <span class="fw-medium mx-2">Update at:</span>
+            <li class="flex items-center">
+              <i class="bx bx-time-five"></i>
+              <span class="font-medium mx-2">Update at:</span>
                 <span>{{ $general->dateFormat($model->updated_at) }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-timer"></i>
-              <span class="fw-medium mx-2">Time Zone:</span>
+            <li class="flex items-center">
+              <i class="bx bx-timer"></i>
+              <span class="font-medium mx-2">Time Zone:</span>
               <span>{{ $model->timezone }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-registered"></i>
-              <span class="fw-medium mx-2">Register Ip:</span>
-              <span class="text-break">{{ $model->registered_ip }}</span>
+            <li class="flex items-center">
+              <i class="bx bx-registered"></i>
+              <span class="font-medium mx-2">Register Ip:</span>
+              <span class="break-all">{{ $model->registered_ip }}</span>
             </li>
-            <li class="d-flex align-items-center mb-4">
-              <i class="icon-base bx bx-flag"></i>
-              <span class="fw-medium mx-2">Country:</span>
+            <li class="flex items-center">
+              <i class="bx bx-flag"></i>
+              <span class="font-medium mx-2">Country:</span>
               <span>{{ $model->country }}</span>
             </li>
           </ul>
-          <div class="d-flex justify-content-center">
-            <a href="admin/admin/update?id={{$_GET['id']}}" class="btn btn-primary me-3 pjax">Edit</a>
-            <button onclick="app.confirmAction(this);" data-action="admin/admin/delete?id={{$_GET['id']}}" class="btn btn-label-danger">Delete</button>
+          <div class="flex justify-center gap-2">
+            <a href="admin/admin/update?id={{$_GET['id']}}" class="btn-primary pjax">Edit</a>
+            <button onclick="app.confirmAction(this);" data-action="admin/admin/delete?id={{$_GET['id']}}" class="btn-label-danger">Delete</button>
           </div>
         </div>
       </div>
@@ -115,35 +107,35 @@ Admin View
   <!--/ User Sidebar -->
 
   <!-- User Content -->
-  <div class="col-xl-8 col-lg-7 col-md-7 order-0 order-md-1">
+  <div class="w-full lg:w-[calc(58.3333%-1rem)]">
     <!--/ User Pills -->
 
     <!-- Change Password -->
     <div class="card mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="card-header mb-0">Recent Devices</h5>
+        <div class="flex justify-between items-center gap-3 px-5 pt-4">
+            <h5 class="card-title mb-0">Recent Devices</h5>
 
-             <a href="admin/device" class="btn btn-sm btn-primary me-3 pjax">
+             <a href="admin/device" class="btn-primary btn-sm pjax">
                         View All
             </a>
         </div>
-      <div class="table-responsive">
-        <table class="table border-top">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-t border-slate-200 mt-3">
           <thead>
             <tr>
-              <th class="text-truncate">Device</th>
-              <th class="text-truncate">Location</th>
-              <th class="text-truncate">Recent Activities</th>
+              <th class="truncate">Device</th>
+              <th class="truncate">Location</th>
+              <th class="truncate">Recent Activities</th>
             </tr>
           </thead>
           <tbody>
             @foreach($deviceData as $device)
             <tr>
-              <td class="text-truncate">{{ $general->deviceName($device->client) . ' ' . ($device->device_uid == @$_COOKIE[config("setting.app_uid").'_token'] ? ' (This Device)' : ''); }}</td>
-              <td class="text-truncate">{{ $general->getIpLocation($device->ip);}}
+              <td class="truncate">{{ $general->deviceName($device->client) . ' ' . ($device->device_uid == @$_COOKIE[config("setting.app_uid").'_token'] ? ' (This Device)' : ''); }}</td>
+              <td class="truncate">{{ $general->getIpLocation($device->ip);}}
                 <p>({{$device->ip}})</p>
               </td>
-              <td class="text-truncate">{{ date('Y-m-d h:i A', strtotime($device->created_at)); }}</td>
+              <td class="truncate">{{ date('Y-m-d h:i A', strtotime($device->created_at)); }}</td>
             </tr>
             @endforeach
           </tbody>
@@ -159,27 +151,27 @@ Admin View
 
     <!-- Recent Devices -->
     <div class="card mb-4">
-       <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="card-header mb-0">Activity</h5>
+       <div class="flex justify-between items-center gap-3 px-5 pt-4">
+            <h5 class="card-title mb-0">Activity</h5>
 
-                <a href="admin/user-activity" class="btn btn-sm btn-primary me-3 pjax">
+                <a href="admin/user-activity" class="btn-primary btn-sm pjax">
                 View All
             </a>
          </div>
-      <div class="table-responsive">
-        <table class="table border-top">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border-t border-slate-200 mt-3">
           <thead>
             <tr>
-              <th class="text-truncate">Type</th>
-              <th class="text-truncate">Device</th>
-              <th class="text-truncate">Location</th>
-              <th class="text-truncate">Recent Activities</th>
+              <th class="truncate">Type</th>
+              <th class="truncate">Device</th>
+              <th class="truncate">Location</th>
+              <th class="truncate">Recent Activities</th>
             </tr>
           </thead>
           <tbody>
             @foreach($logData as $log)
             <tr>
-              <td class="text-truncate">
+              <td class="truncate">
                 @if($log->type==0)
                 <strong>Login Fail</strong>
                 @elseif($log->type==1)
@@ -196,12 +188,12 @@ Admin View
                 <strong>Register With Social Media</strong>
                 @endif
               </td>
-              <td class="text-truncate">{{ $general->deviceName($log->client) }}</td>
-              <td class="text-truncate">
+              <td class="truncate">{{ $general->deviceName($log->client) }}</td>
+              <td class="truncate">
                  {{-- {{ $general->getIpInfo($log->ip) }} --}}
                  <p>({{$log->ip}}) </p>
               </td>
-              <td class="text-truncate">{{ date('Y-m-d h:i A', strtotime($log->created_at)); }}</td>
+              <td class="truncate">{{ date('Y-m-d h:i A', strtotime($log->created_at)); }}</td>
             </tr>
             @endforeach
           </tbody>
@@ -214,34 +206,37 @@ Admin View
 </div>
 
 <!-- Modals -->
-<!-- Edit User Modal -->
-<div class="modal fade" id="editUser" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-simple modal-edit-user">
-    <div class="modal-content p-3 p-md-5">
-      <div class="modal-body">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Edit User Modal (unused template boilerplate - light touch conversion) -->
+<div class="modal fixed inset-0 z-50 hidden items-center justify-center p-4" id="editUser">
+  <div class="modal-backdrop" data-modal-dismiss></div>
+  <div class="modal-dialog relative z-10 w-full max-w-2xl">
+    <div class="modal-content p-6">
+      <div class="modal-body relative">
+        <button type="button" class="btn-close absolute right-0 top-0" data-modal-dismiss aria-label="Close">
+          <i class="bx bx-x text-xl"></i>
+        </button>
         <div class="text-center mb-4">
-          <h3 class="mb-2">Edit User Information</h3>
-          <p class="text-muted">Updating user details will receive a privacy audit.</p>
+          <h3 class="mb-2 text-lg font-semibold text-slate-800">Edit User Information</h3>
+          <p class="text-slate-500">Updating user details will receive a privacy audit.</p>
         </div>
-        <form id="editUserForm" class="row g-3" onsubmit="return false">
-          <div class="col-12 col-md-6">
+        <form id="editUserForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4" onsubmit="return false">
+          <div>
             <label class="form-label" for="modalEditUserFirstName">First Name</label>
-            <input type="text" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-control" placeholder="John" />
+            <input type="text" id="modalEditUserFirstName" name="modalEditUserFirstName" class="form-input" placeholder="John" />
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditUserLastName">Last Name</label>
-            <input type="text" id="modalEditUserLastName" name="modalEditUserLastName" class="form-control" placeholder="Doe" />
+            <input type="text" id="modalEditUserLastName" name="modalEditUserLastName" class="form-input" placeholder="Doe" />
           </div>
-          <div class="col-12">
+          <div class="sm:col-span-2">
             <label class="form-label" for="modalEditUserName">Username</label>
-            <input type="text" id="modalEditUserName" name="modalEditUserName" class="form-control" placeholder="john.doe.007" />
+            <input type="text" id="modalEditUserName" name="modalEditUserName" class="form-input" placeholder="john.doe.007" />
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditUserEmail">Email</label>
-            <input type="text" id="modalEditUserEmail" name="modalEditUserEmail" class="form-control" placeholder="example@domain.com" />
+            <input type="text" id="modalEditUserEmail" name="modalEditUserEmail" class="form-input" placeholder="example@domain.com" />
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditUserStatus">Status</label>
             <select id="modalEditUserStatus" name="modalEditUserStatus" class="form-select" aria-label="Default select example">
               <option selected>Status</option>
@@ -250,18 +245,18 @@ Admin View
               <option value="3">Suspended</option>
             </select>
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditTaxID">Tax ID</label>
-            <input type="text" id="modalEditTaxID" name="modalEditTaxID" class="form-control modal-edit-tax-id" placeholder="123 456 7890" />
+            <input type="text" id="modalEditTaxID" name="modalEditTaxID" class="form-input modal-edit-tax-id" placeholder="123 456 7890" />
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditUserPhone">Phone Number</label>
             <div class="input-group">
               <span class="input-group-text">US (+1)</span>
-              <input type="text" id="modalEditUserPhone" name="modalEditUserPhone" class="form-control phone-number-mask" placeholder="202 555 0111" />
+              <input type="text" id="modalEditUserPhone" name="modalEditUserPhone" class="form-input phone-number-mask" placeholder="202 555 0111" />
             </div>
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditUserLanguage">Language</label>
             <select id="modalEditUserLanguage" name="modalEditUserLanguage" class="select2 form-select" multiple>
               <option value="">Select</option>
@@ -275,7 +270,7 @@ Admin View
               <option value="hindi">Hindi</option>
             </select>
           </div>
-          <div class="col-12 col-md-6">
+          <div>
             <label class="form-label" for="modalEditUserCountry">Country</label>
             <select id="modalEditUserCountry" name="modalEditUserCountry" class="select2 form-select" data-allow-clear="true">
               <option value="">Select</option>
@@ -305,8 +300,8 @@ Admin View
               <option value="United States">United States</option>
             </select>
           </div>
-          <div class="col-12">
-            <label class="switch">
+          <div class="sm:col-span-2">
+            <label class="switch inline-flex items-center gap-2">
               <input type="checkbox" class="switch-input" />
               <span class="switch-toggle-slider">
                 <span class="switch-on"></span>
@@ -315,9 +310,9 @@ Admin View
               <span class="switch-label">Use as a billing address?</span>
             </label>
           </div>
-          <div class="col-12 text-center">
-            <button type="submit" class="btn btn-primary me-sm-3 me-1">Submit</button>
-            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
+          <div class="sm:col-span-2 text-center flex justify-center gap-2">
+            <button type="submit" class="btn-primary">Submit</button>
+            <button type="reset" class="btn-label-secondary" data-modal-dismiss aria-label="Close">
               Cancel
             </button>
           </div>
@@ -328,28 +323,31 @@ Admin View
 </div>
 <!--/ Edit User Modal -->
 
-<!-- Enable OTP Modal -->
-<div class="modal fade" id="enableOTP" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-simple modal-enable-otp modal-dialog-centered">
-    <div class="modal-content p-3 p-md-5">
-      <div class="modal-body">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Enable OTP Modal (unused template boilerplate - light touch conversion) -->
+<div class="modal fixed inset-0 z-50 hidden items-center justify-center p-4" id="enableOTP">
+  <div class="modal-backdrop" data-modal-dismiss></div>
+  <div class="modal-dialog relative z-10 w-full max-w-md">
+    <div class="modal-content p-6">
+      <div class="modal-body relative">
+        <button type="button" class="btn-close absolute right-0 top-0" data-modal-dismiss aria-label="Close">
+          <i class="bx bx-x text-xl"></i>
+        </button>
         <div class="text-center mb-4">
-          <h3 class="mb-2">Enable One Time Password</h3>
+          <h3 class="mb-2 text-lg font-semibold text-slate-800">Enable One Time Password</h3>
           <p>Verify Your Mobile Number for SMS</p>
         </div>
         <p>Enter your mobile phone number with country code and we will send you a verification code.</p>
-        <form id="enableOTPForm" class="row g-3" onsubmit="return false">
-          <div class="col-12">
+        <form id="enableOTPForm" class="grid grid-cols-1 gap-4 mt-3" onsubmit="return false">
+          <div>
             <label class="form-label" for="modalEnableOTPPhone">Phone Number</label>
             <div class="input-group">
               <span class="input-group-text">US (+1)</span>
-              <input type="text" id="modalEnableOTPPhone" name="modalEnableOTPPhone" class="form-control phone-number-otp-mask" placeholder="202 555 0111" />
+              <input type="text" id="modalEnableOTPPhone" name="modalEnableOTPPhone" class="form-input phone-number-otp-mask" placeholder="202 555 0111" />
             </div>
           </div>
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary me-sm-3 me-1">Submit</button>
-            <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
+          <div class="flex gap-2">
+            <button type="submit" class="btn-primary">Submit</button>
+            <button type="reset" class="btn-label-secondary" data-modal-dismiss aria-label="Close">
               Cancel
             </button>
           </div>
@@ -360,18 +358,21 @@ Admin View
 </div>
 <!--/ Enable OTP Modal -->
 
-<!-- Add New Credit Card Modal -->
-<div class="modal fade" id="upgradePlanModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-simple modal-upgrade-plan">
-    <div class="modal-content p-3 p-md-5">
-      <div class="modal-body">
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Add New Credit Card Modal (unused template boilerplate - light touch conversion) -->
+<div class="modal fixed inset-0 z-50 hidden items-center justify-center p-4" id="upgradePlanModal">
+  <div class="modal-backdrop" data-modal-dismiss></div>
+  <div class="modal-dialog relative z-10 w-full max-w-lg">
+    <div class="modal-content p-6">
+      <div class="modal-body relative">
+        <button type="button" class="btn-close absolute right-0 top-0" data-modal-dismiss aria-label="Close">
+          <i class="bx bx-x text-xl"></i>
+        </button>
         <div class="text-center mb-4">
-          <h3 class="mb-2">Upgrade Plan</h3>
+          <h3 class="mb-2 text-lg font-semibold text-slate-800">Upgrade Plan</h3>
           <p>Choose the best plan for user.</p>
         </div>
-        <form id="upgradePlanForm" class="row g-3" onsubmit="return false">
-          <div class="col-sm-8">
+        <form id="upgradePlanForm" class="grid grid-cols-1 sm:grid-cols-12 gap-4" onsubmit="return false">
+          <div class="sm:col-span-8">
             <label class="form-label" for="choosePlan">Choose Plan</label>
             <select id="choosePlan" name="choosePlan" class="form-select" aria-label="Choose Plan">
               <option selected>Choose Plan</option>
@@ -380,21 +381,21 @@ Admin View
               <option value="Enterprise">Enterprise - $499/month</option>
             </select>
           </div>
-          <div class="col-sm-4 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary">Upgrade</button>
+          <div class="sm:col-span-4 flex items-end">
+            <button type="submit" class="btn-primary">Upgrade</button>
           </div>
         </form>
       </div>
-      <hr class="mx-md-n5 mx-n3" />
+      <hr class="border-slate-200" />
       <div class="modal-body">
         <p class="mb-0">User current plan is standard plan</p>
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-          <div class="d-flex justify-content-center me-2">
-            <sup class="h6 pricing-currency pt-1 mt-3 mb-0 me-1 text-primary">$</sup>
-            <h1 class="display-5 mb-0 text-primary">99</h1>
-            <sub class="h5 pricing-duration mt-auto mb-2 text-muted">/month</sub>
+        <div class="flex justify-between items-center flex-wrap gap-2">
+          <div class="flex justify-center items-center">
+            <sup class="text-base pt-1 mt-3 mb-0 me-1 text-primary-600">$</sup>
+            <h1 class="text-4xl mb-0 text-primary-600">99</h1>
+            <sub class="text-sm mt-auto mb-2 text-slate-500">/month</sub>
           </div>
-          <button class="btn btn-label-danger cancel-subscription mt-3">Cancel Subscription</button>
+          <button class="btn-label-danger cancel-subscription mt-3">Cancel Subscription</button>
         </div>
       </div>
     </div>

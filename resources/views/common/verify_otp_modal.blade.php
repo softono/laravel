@@ -1,38 +1,33 @@
-
 <style>
     .swal2-container.swal2-backdrop-show {
-            z-index: 999999999999 !important;
+        z-index: 999999999999 !important;
     }
 </style>
 
-<div class="modal-dialog modal-dialog-centered" id="verifyOtpModal">
-    <div class="modal-content border-0 shadow">
+<div class="w-full" id="verifyOtpModal">
+    <div class="modal-header">
+        <h5 class="modal-title" id="verifyOtpModalLabel">Verify OTP</h5>
+    </div>
 
-        <div class="modal-header text-white text-center">
-            <h5 class="modal-title w-100 mb-0" id="verifyOtpModalLabel">Verify OTP</h5>
-        </div>
+    <div class="modal-body">
+        <p class="text-center text-sm text-slate-500">
+            Enter the 6-digit code from your authenticator app.
+        </p>
 
-        <div class="modal-body">
-            <p class="text-muted text-center">
-                Enter the 6-digit code from your authenticator app.
-            </p>
+        <form id="otpForm" method="POST" action="{{ route('otp.confirm') }}">
+            <input type="hidden" name="secretKey" value="{{$secretKey}}">
+            <input type="hidden" name="id" value="{{$id}}">
+            @csrf
+            <div class="mb-3">
+                <label for="otp_code" class="form-label">OTP Code <span class="text-rose-500">*</span></label>
+                <input type="text" name="otp" id="otp_code" class="form-input text-center" maxlength="6" required>
+            </div>
 
-            <form id="otpForm" method="POST" action="{{ route('otp.confirm') }}">
-                <input type="hidden" name="secretKey" value="{{$secretKey}}">
-                <input type="hidden" name="id" value="{{$id}}">
-                @csrf
-                <div class="mb-3">
-                    <label for="otp_code" class="form-label">OTP Code <span class="text-danger">*</span></label>
-                    <input type="text" name="otp" id="otp_code" class="form-control text-center" maxlength="6" required>
-                </div>
-
-                <div class="d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Verify</button>
-                </div>
-            </form>
-        </div>
-
+            <div class="flex items-center justify-between">
+                <button type="button" class="btn-outline" data-modal-dismiss>Cancel</button>
+                <button type="submit" class="btn-success">Verify</button>
+            </div>
+        </form>
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -68,7 +63,7 @@ $(document).ready(function() {
                         $('#verifyOtpModal').show();
                     }
                 });
-            } 
+            }
         });
     });
 });

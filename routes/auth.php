@@ -58,7 +58,7 @@ Route::prefix('admin')->middleware(['device.uid', 'admin.guest.redirect'])->grou
 Route::get('/admin/auth/logout', [AdminLoginController::class, 'logout'])->middleware('device.uid')->name('admin/auth/logout');
 
 // --- Public JSON endpoints ---
-Route::middleware('device.uid')->prefix('api/auth')->group(function () {
+Route::middleware('device.uid')->prefix('auth')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])->middleware('auth.throttle:login');
     Route::post('/register', [RegisterController::class, 'register'])->middleware('auth.throttle:register');
     Route::post('/logout', [LoginController::class, 'apiLogout']);
@@ -86,16 +86,16 @@ Route::middleware('device.uid')->prefix('api/auth')->group(function () {
 
 // Google OAuth - GET redirects, outside the throttled JSON block (state is
 // Socialite's own CSRF protection, not our rate limiter).
-Route::middleware('device.uid')->prefix('api/auth')->group(function () {
+Route::middleware('device.uid')->prefix('auth')->group(function () {
     Route::get('/google', [GoogleController::class, 'redirect']);
     Route::get('/google/callback', [GoogleController::class, 'callback']);
 });
 
-Route::post('/api/admin/auth/login', [AdminLoginController::class, 'login'])
+Route::post('/admin/auth/login', [AdminLoginController::class, 'login'])
     ->middleware(['device.uid', 'auth.throttle:admin_login']);
 
 // --- Authenticated JSON endpoints ---
-Route::middleware(['device.uid', 'auth.user'])->prefix('api/auth')->group(function () {
+Route::middleware(['device.uid', 'auth.user'])->prefix('auth')->group(function () {
     Route::post('/change-password', [PasswordController::class, 'changePassword']);
 
     Route::get('/2fa/status', [TfaController::class, 'status']);

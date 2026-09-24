@@ -7,57 +7,42 @@
 
     <!-- Content -->
     <div class="breadcrumb-box">
-        <h4 class="fw-bold py-3 mb-4">Users</h4>
+        <h4 class="text-xl font-bold text-slate-800">Users</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <a href="admin/dashboard" class="pjax">Dashboard</a>
+                    <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
                 </li>
                 <li class="breadcrumb-item active">Users</li>
             </ol>
         </nav>
     </div>
-    <!-- Invoice List Table -->
+    <!-- Users Table -->
     <div class="card">
-        <div class="card-datatable text-nowrap">
-            <div id="DataTables_Table_0_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
-                <div class="row card-header flex-column flex-md-row pb-0">
-                    <div
-                        class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
-                        <h5 class="card-title mb-0 text-md-start text-center">Users</h5>
-                    </div>
-                    <div
-                        class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
-                        <div class="dt-buttons btn-group flex-wrap mb-0">
-                            <div class="btn-group">
-                                @if ($sessionUser->hasPermission('admin/user/create'))
-                                    <a href="admin/user/create" class="btn create-new btn-primary pjax" tabindex="0"
-                                        aria-controls="DataTables_Table_0" type="button"><span><span
-                                                class="d-flex align-items-center gap-2"><i
-                                                    class="icon-base bx bx-plus icon-sm"></i> <span
-                                                    class="d-none d-sm-inline-block">Create</span></span></span></a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-datatable table-responsive">
-                    <table class="table table-bordered table-responsive" id="data-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Country</th>
-                                <th>Status</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
+        <div class="card-header">
+            <h5 class="card-title">Users</h5>
+            @if ($sessionUser->hasPermission('admin/user/create'))
+                <a href="admin/user/create" class="btn-primary pjax">
+                    <i class="bx bx-plus"></i>
+                    <span>Create</span>
+                </a>
+            @endif
+        </div>
+        <div class="card-body overflow-x-auto">
+            <table class="w-full text-sm" id="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Country</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+            </table>
         </div>
     </div>
 @endsection

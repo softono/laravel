@@ -7,12 +7,11 @@
     <!-- Content -->
 
     <div class="breadcrumb-box">
-        <h4 class="fw-bold py-3 mb-4">Admin</h4>
+        <h4 class="text-xl font-bold text-slate-800">Admin</h4>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
-                    <!-- <a href="admin/dashboard">Dashboard</a> -->
-                    <a href="admin/dashboard" class="pjax">Dashboard</a>
+                    <a href="admin/dashboard" class="pjax hover:text-primary-600">Dashboard</a>
                 </li>
                 <li class="breadcrumb-item active">Admin</li>
             </ol>
@@ -21,15 +20,17 @@
 
     <!-- Invoice List Table -->
     <div class="card">
-        <div class="card-header justify-content-between">
-            <h4 class="align-middle d-sm-inline-block d-none">Admin</h4>
+        <div class="card-header">
+            <h5 class="card-title">Admin</h5>
             @if ($sessionUser->hasPermission('admin/admin/create'))
-                <a href="admin/admin/create" class="btn btn-primary d-sm-inline-block d-none pjax"
-                    style="float: inline-end;">Create</a>
+                <a href="admin/admin/create" class="btn-primary pjax">
+                    <i class="bx bx-plus"></i>
+                    <span>Create</span>
+                </a>
             @endif
         </div>
-        <div class="card-datatable table-responsive">
-            <table class="datatable-list-table table border-top" id="data-table">
+        <div class="card-body overflow-x-auto">
+            <table class="w-full text-sm" id="data-table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -45,10 +46,6 @@
         </div>
     </div>
     <!-- / Content -->
-
-    <!--Bootstrap Tables-->
-
-    <!--Bootstrap Tables-->
 @endsection
 @push('scripts')
     <script>

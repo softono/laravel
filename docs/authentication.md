@@ -1,6 +1,6 @@
 # Authentication
 
-> Endpoint paths in this document have no `/api` prefix (Laravel web-route style). The code still registers `api/auth/*` until Phase 0 of [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix) lands.
+> Endpoint paths have no `/api` prefix: these are ordinary web routes (see [`local/module_structure.md`](local/module_structure.md#phase-0-drop-the-api-prefix)).
 
 Complete reference for the authentication system: cookies, sessions, guards, middleware, and every supported sign-in flow.
 
