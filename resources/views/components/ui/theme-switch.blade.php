@@ -64,7 +64,7 @@
             <span class="text-muted-foreground text-[10px] font-bold tracking-wide uppercase">Built-in Themes</span>
         </div>
 
-        <div data-theme-list class="max-h-80 overflow-y-auto p-1 pb-1.5 [scrollbar-color:var(--color-muted)_transparent] [scrollbar-width:thin]">
+        <div data-theme-list class="max-h-[min(20rem,calc(100dvh-13rem))] overflow-y-auto p-1 pb-1.5 [scrollbar-color:var(--color-muted)_transparent] [scrollbar-width:thin]">
             <div data-theme-empty class="text-muted-foreground hidden py-4 text-center text-sm">No themes found</div>
         </div>
 
