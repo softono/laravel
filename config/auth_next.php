@@ -16,6 +16,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Trusted proxy hops
+    |--------------------------------------------------------------------------
+    |
+    | How many proxies sit in front of the app; the client IP is the
+    | X-Forwarded-For entry that many hops from the right.
+    |
+    */
+    'trusted_proxy_count' => (int) env('TRUSTED_PROXY_COUNT', 1),
+
+    /*
+    |--------------------------------------------------------------------------
     | App UID (cookie name prefix)
     |--------------------------------------------------------------------------
     */

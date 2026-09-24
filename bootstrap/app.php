@@ -45,6 +45,13 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Behind a reverse proxy the scheme and host come from X-Forwarded-*; without this, generated
+        // URLs are http:// on an https site. TRUSTED_PROXIES: `*`, or a comma-separated list of proxy IPs.
+        $middleware->trustProxies(
+            at: env('TRUSTED_PROXIES', '*') === '*' ? '*' : array_map('trim', explode(',', env('TRUSTED_PROXIES'))),
+            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
         $middleware->web(append: [
             EnsureDeviceUid::class,
             SecurityHeaders::class,

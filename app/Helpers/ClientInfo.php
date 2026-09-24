@@ -11,21 +11,20 @@ use WhichBrowser\Parser;
 class ClientInfo
 {
     /**
-     * Real client IP: walk X-Forwarded-For right-to-left skipping
-     * private/reserved ranges, then fall back to X-Real-IP, then the
-     * framework's own resolved IP.
+     * Real client IP. Trusts exactly `trusted_proxy_count` hops from the right of
+     * X-Forwarded-For: a client can prepend fake entries to that header but cannot
+     * touch the ones appended by the proxies in front of this app.
      */
     public static function ip(Request $request): ?string
     {
-        $forwarded = $request->header('X-Forwarded-For');
+        $hops = max(1, (int) config('auth_next.trusted_proxy_count'));
+        $forwarded = array_values(array_filter(array_map('trim', explode(',', (string) $request->header('X-Forwarded-For')))));
 
-        if ($forwarded) {
-            $ips = array_reverse(array_map('trim', explode(',', $forwarded)));
+        if (count($forwarded) >= $hops) {
+            $candidate = $forwarded[count($forwarded) - $hops];
 
-            foreach ($ips as $ip) {
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                    return $ip;
-                }
+            if (filter_var($candidate, FILTER_VALIDATE_IP)) {
+                return $candidate;
             }
         }
 
