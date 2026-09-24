@@ -30,6 +30,7 @@ The code is organised into **modules** (`app/Modules/*`). There is no legacy sta
 | OAuth | `laravel/socialite` (Google) |
 | Formatting | Laravel Pint |
 | Tests | PHPUnit 11 |
+| Response headers | `SecurityHeaders` middleware: CSP (script-src keeps `'unsafe-inline'`/`'unsafe-eval'` for Alpine, PJAX and inline handlers), X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy |
 
 ---
 
@@ -100,6 +101,8 @@ For the request lifecycle, layers and caching → **[`docs/architecture.md`](doc
 php artisan serve                      # dev server
 ./vendor/bin/pint                      # format (run before finishing any task)
 php artisan test                       # PHPUnit
+php artisan settings:set smtp_password   # write one setting (secrets encrypted); prompts hidden if no value
+php artisan db:seed --class=SettingSeeder  # add missing settings rows, never overwrites
 npm run build                          # Tailwind/Vite build (needed after adding new utility classes)
 npm run dev
 ```
@@ -131,6 +134,7 @@ Conventions:
 - **`DATETIME`, not `TIMESTAMP`.** Keep `APP_TIMEZONE=UTC`.
 - `text` in Postgres is `TEXT` here, except unique/indexed columns (`VARCHAR`) and HTML bodies (`LONGTEXT`).
 - Roles are strings: `USER`, `ADMIN`, `SUPER_ADMIN` (`App\Constants\UserRole`). Status: `active` / `inactive` (`UserStatus`).
+- `smtp_password`, `google_client_secret` and `google_recaptcha_secret_key` are **encrypted at rest** (`App\Helpers\Encryption`, AES-256-GCM, same layout as Next, key derived from `ENCRYPTION_KEY`); `SettingRepository` encrypts on write and decrypts on read. Set them with `php artisan settings:set <key> [value]` rather than typing them into the admin form.
 - `settings` rows use Next's plain keys (`smtp_host`, `user_email_verify`, …); `SettingRepository::configOverrides()` maps them into Laravel config. Date formats are stored as date-fns patterns and converted to PHP patterns on load.
 - The `users` table has **no** password column. Passwords live in `user_accounts` where `provider_id = 'credential'`.
 
@@ -286,5 +290,6 @@ Route **names** are load-bearing: `SeoMetaRepository::metaForRoute()` looks up `
 | [`docs/architecture.md`](docs/architecture.md) | Modules, layers, request lifecycle, guard resolution, caching |
 | [`docs/authentication.md`](docs/authentication.md) | Cookies, sessions, every auth flow, 2FA, passkeys, OAuth, middleware |
 | [`docs/api.md`](docs/api.md) | Envelope, HTTP status rules, validation, rate limits, endpoint list |
+| [`docs/new_module.md`](docs/new_module.md) | Step-by-step checklist for adding a module |
 | [`docs/frontend.md`](docs/frontend.md) | Layouts, x-ui components, JS helpers, DataTables, PJAX |
 | `docs/local/*` | Gitignored working notes (missing features, module plan) |

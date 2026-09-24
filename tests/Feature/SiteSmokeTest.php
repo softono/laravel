@@ -55,4 +55,15 @@ class SiteSmokeTest extends TestCase
     {
         $this->get('/up')->assertOk();
     }
+
+    public function test_responses_carry_the_security_headers(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertHeader('X-Frame-Options', 'DENY');
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $this->assertStringContainsString("frame-ancestors 'none'", $response->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString("object-src 'none'", $response->headers->get('Content-Security-Policy'));
+    }
 }
