@@ -27,16 +27,17 @@ Vite compiles **CSS only** (`@vite('resources/css/app.css')`); there is no JS bu
 | Layout | Used by |
 |---|---|
 | `layouts/blank` | Auth pages (login, register, verify, …) |
-| `layouts/main` | Site shell: home, blog, pages, contact, dashboard, notes, account area |
+| `layouts/main` | Public site shell (top navbar): home, blog, pages, contact |
+| `layouts/user` | Signed-in area (sidebar shell, like Next's `AuthenticatedLayout`): dashboard, notes, account pages |
 | `modules/admin/layouts/blank` | Admin auth pages |
 | `modules/admin/layouts/main` | Admin panel (sidebar + navbar) |
 
-Both `main` layouts are PJAX-aware and share `common/datatables-css` / `common/datatables-js`, `common/message_alert`, and the toast/modal containers. Every controller extends `App\Http\Controllers\Controller` (or the admin subclass), whose constructor shares `$general` and the settings with the views.
+The `main` and `user` layouts and the admin `main` are PJAX-aware and share `common/datatables-css` / `common/datatables-js`, `common/message_alert`, and the toast/modal containers. Every controller extends `App\Http\Controllers\Controller` (or the admin subclass), whose constructor shares `$general` and the settings with the views.
 
 Page skeleton:
 
 ```blade
-@extends('layouts.main')
+@extends('layouts.user')
 @section('title')
     Notes
 @endsection
@@ -84,6 +85,16 @@ The components carry Next's exact class strings:
 There is no separate legacy stylesheet: every screen (public, user and admin) is built from these components and plain Tailwind utilities with the theme tokens (`bg-card`, `text-muted-foreground`, `border-border`, `bg-sidebar`, …). Do not hardcode palette colours (`slate-*`, `rose-*`); they do not follow dark mode. Component tags cannot contain Blade directives or unquoted `{{ }}`: use bound attributes (`:checked="$x"`, `:readonly="(bool) $y"`) instead of `@if … checked @endif`.
 
 Shared admin partials in `resources/views/modules/admin/partials/`: `status-badge`, `row-actions`, `account-form`, `account-profile`, `recent-sessions`, `recent-activity`, `editor` (Summernote with image upload).
+
+### The `user` layout (sidebar shell)
+
+`layouts/user.blade.php` + `layouts/component/user_sidebar.blade.php` + `user_header.blade.php` port Next's `AuthenticatedLayout` / `AppSidebar` / `NavUser`: the shadcn **inset** sidebar (logo + app name, Dashboard and Notes, the signed-in user's menu with My Account and Sign out) and a header with the sidebar trigger, theme switch and profile dropdown, plus the footer.
+
+- **Collapse:** from `md` up the header trigger, the sidebar's edge rail and Ctrl/Cmd+B collapse it to an icon rail; the state is `data-state="expanded|collapsed"` on `#user-shell`, remembered in the `sidebar_state` cookie (plain cookie, exempt from encryption in `bootstrap/app.php`) which the layout reads, so a collapsed sidebar does not flash open. Below `md` it is an off-canvas sheet over a backdrop (trigger, backdrop, Escape and following a link close it). Behaviour: `app.ui.appSidebar` in `app.js`.
+- **PJAX:** the container is `data-layout="user"`, so moving between user pages swaps only `#main-content`; a link to a `main`-layout page (Blog, Contact) or back makes the server answer `reload` and the browser does a full load. Give a new signed-in page `@extends('layouts.user')` (account views use `$layout`, set in `Modules/User/Controllers/AccountController`).
+- **Active item:** nav `<li class="active-menu" data-active_menu_links="<route path>">`, kept current by `pjax.updateActiveMenu`.
+- **Sign out** asks first: any element with `data-confirm-href` (plus `data-confirm-title`, `-text`, `-yes`) shows the shared confirm dialog and then navigates.
+- Page content sits in a `max-w-7xl` container: do not add your own `min-h-screen` or page padding.
 
 ---
 

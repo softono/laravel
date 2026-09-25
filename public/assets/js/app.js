@@ -1010,6 +1010,8 @@ function dataTableAjax(params) {
  *   [data-sidebar-toggle="open|close"]   admin sidebar (#layout-menu + #sidebar-backdrop)
  *   [data-tabs] > [data-tab="x"] + [data-tab-panel="x"]   data-tabs-active / data-tabs-inactive hold the classes
  *   [data-password-toggle="#input"]   show/hide a password field
+ *   [data-app-sidebar] #app-sidebar + [data-app-sidebar-toggle]   user-area sidebar (layouts/user): icon rail on md+, sheet below
+ *   [data-confirm-href]   asks for confirmation (data-confirm-title / -text / -yes), then navigates to the href
  *   [data-theme-switch]   colour theme + light/dark/system picker (x-ui.theme-switch, see app.ui.theme)
  */
 app.ui = {
@@ -1099,7 +1101,97 @@ app.ui = {
             $(this).find("i").toggleClass("bx-hide", !reveal).toggleClass("bx-show", reveal);
         });
 
+        app.ui.appSidebar.init();
+
+        $doc.on("click", "[data-confirm-href]", function (event) {
+            event.preventDefault();
+            const $button = $(this);
+            app.showConfirmationPopup({
+                title: $button.data("confirmTitle") || "Are you sure?",
+                text: $button.data("confirmText") || "",
+                confirmButtonText: $button.data("confirmYes") || "Yes",
+            }).then(function (confirmed) {
+                if (confirmed) {
+                    window.location.href = $button.data("confirmHref");
+                }
+            });
+        });
+
         app.ui.theme.init();
+    },
+
+    /**
+     * The user-area sidebar (Next's shadcn Sidebar, inset variant). From md up the toggle collapses it to an icon rail
+     * (data-state on #user-shell, remembered in the `sidebar_state` cookie the layout reads); below md it is an
+     * off-canvas sheet over a backdrop. Ctrl/Cmd+B toggles it, like shadcn.
+     */
+    appSidebar: {
+        cookie: "sidebar_state",
+
+        isMobile: function () {
+            return window.matchMedia("(max-width: 767px)").matches;
+        },
+
+        isMobileOpen: function () {
+            return $("#app-sidebar").hasClass("!translate-x-0");
+        },
+
+        toggle: function () {
+            if (this.isMobile()) {
+                this.setMobile(!this.isMobileOpen());
+            } else {
+                this.setOpen($("[data-app-sidebar]").attr("data-state") === "collapsed");
+            }
+        },
+
+        setOpen: function (open) {
+            $("[data-app-sidebar]").attr("data-state", open ? "expanded" : "collapsed");
+            $("[data-app-sidebar-toggle]").attr("aria-expanded", open);
+            document.cookie = this.cookie + "=" + open + "; path=/; max-age=604800; SameSite=Lax";
+        },
+
+        setMobile: function (open) {
+            $("#app-sidebar").toggleClass("!translate-x-0", open);
+            $("[data-app-sidebar-backdrop]").toggleClass("hidden", !open);
+            $("[data-app-sidebar-toggle]").attr("aria-expanded", open);
+            if (open) {
+                $("body").addClass("overflow-hidden");
+            } else if (!$("[data-modal][data-state=open]").length) {
+                $("body").removeClass("overflow-hidden");
+            }
+        },
+
+        init: function () {
+            const sidebar = this;
+            const $doc = $(document);
+
+            $doc.on("click", "[data-app-sidebar-toggle]", function () {
+                sidebar.toggle();
+            });
+            $doc.on("click", "[data-app-sidebar-backdrop]", function () {
+                sidebar.setMobile(false);
+            });
+            // Following a link (pjax) should reveal the page on phones.
+            $doc.on("click", "#app-sidebar a", function () {
+                if (sidebar.isMobile()) {
+                    sidebar.setMobile(false);
+                }
+            });
+            $doc.on("keydown", function (event) {
+                if (event.key === "Escape" && sidebar.isMobileOpen()) {
+                    sidebar.setMobile(false);
+                }
+                if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "b" && $("[data-app-sidebar]").length) {
+                    event.preventDefault();
+                    sidebar.toggle();
+                }
+            });
+            window.matchMedia("(min-width: 768px)").addEventListener("change", function (query) {
+                if (query.matches) {
+                    sidebar.setMobile(false);
+                }
+            });
+        },
     },
 
     /** Shows or hides a collapsible element and syncs its toggle buttons (aria-expanded, menu/close icon). */

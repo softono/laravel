@@ -1,9 +1,9 @@
-@extends('layouts.main')
+@extends('layouts.user')
 @section('title')
     Notes
 @endsection
 @section('content')
-    <div class="min-h-screen py-8 sm:px-6 lg:px-10">
+    <div>
         <x-ui.card>
             <x-ui.card-header class="!grid-cols-[1fr_auto] items-center">
                 <x-ui.card-title class="text-lg">My Notes</x-ui.card-title>

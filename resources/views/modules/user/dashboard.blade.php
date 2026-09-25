@@ -1,4 +1,4 @@
-@extends('layouts.main')
+@extends('layouts.user')
 @section('title')
     Dashboard
 @endsection
@@ -13,7 +13,7 @@
         ];
     @endphp
 
-    <div class="min-h-screen py-8 sm:px-6 lg:px-10">
+    <div>
         <div class="mb-8">
             <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Welcome back, {{ $user->first_name }}</h1>
             <p class="text-muted-foreground mt-1">Here's an overview of your account.</p>

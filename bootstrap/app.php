@@ -53,7 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         // Read by the server to render the visitor's colour theme; JS sets them (see docs/frontend.md), so they are plain cookies.
-        $middleware->encryptCookies(except: ['app-theme', 'app-color-mode', 'app-system-prefers-dark']);
+        $middleware->encryptCookies(except: ['app-theme', 'app-color-mode', 'app-system-prefers-dark', 'sidebar_state']);
 
         $middleware->web(append: [
             EnsureDeviceUid::class,

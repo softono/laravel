@@ -20,7 +20,7 @@ use Illuminate\Http\Request;
 class AccountController extends Controller
 {
     /** Layout, route-name prefix and post-deactivation route; the admin subclass overrides them. */
-    protected string $layout = 'layouts.main';
+    protected string $layout = 'layouts.user';
 
     protected string $prefix = '';
 
