@@ -55,11 +55,11 @@ class SecurityHeaders
 
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com {$cdns} {$vite}",
+            "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://static.cloudflareinsights.com {$cdns} {$vite}",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com {$cdns} {$vite}",
             "img-src 'self' data: blob: {$fileOrigin}",
             "font-src 'self' data: https://fonts.gstatic.com {$cdns}",
-            "connect-src 'self' {$vite}",
+            "connect-src 'self' https://cloudflareinsights.com {$vite}",
             'frame-src https://www.google.com',
             "object-src 'none'",
             "base-uri 'self'",

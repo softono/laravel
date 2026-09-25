@@ -6,7 +6,7 @@
     <div class="px-3 py-6 sm:px-6 lg:px-15">
         <h1 class="mb-6 text-2xl font-bold tracking-tight">Blog</h1>
 
-        <form method="get" action="{{ route('blog') }}" class="mb-6 flex flex-col gap-3 sm:flex-row">
+        <form method="get" action="{{ route('blog') }}" data-ajax-grid-form="#blog-grid" class="mb-6 flex flex-col gap-3 sm:flex-row">
             <x-ui.input type="search" name="search" :value="request('search')" placeholder="Search articles…" class="sm:max-w-sm" />
             <x-ui.select name="category" class="sm:w-64">
                 <option value="">All categories</option>
@@ -14,9 +14,13 @@
                     <option value="{{ $key }}" @selected(request('category') === $key)>{{ $label }}</option>
                 @endforeach
             </x-ui.select>
+            @if (request()->filled('limit'))
+                <input type="hidden" name="limit" value="{{ request('limit') }}">
+            @endif
             <x-ui.button type="submit" variant="secondary">Search</x-ui.button>
         </form>
 
+        <div id="blog-grid" data-ajax-grid>
         @forelse ($posts as $post)
             @if ($loop->first)
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -40,6 +44,7 @@
             <p class="text-muted-foreground py-12 text-center text-sm">No articles found.</p>
         @endforelse
 
-        <x-ui.pagination :paginator="$posts" />
+        <x-ui.pagination :paginator="$posts" :page-sizes="\App\Modules\Blog\Controllers\BlogController::PAGE_SIZES" />
+        </div>
     </div>
 @endsection

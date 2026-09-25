@@ -75,7 +75,7 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/account/tfa.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/account/tfa.js') }}"></script>
     <script>
         accountTfa.init({
             statusUrl: '{{ url('/auth/2fa/status') }}',

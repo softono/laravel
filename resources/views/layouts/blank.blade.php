@@ -33,7 +33,6 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <link rel="shortcut icon" href="{{$general->getFileUrl(config('setting.app_favicon'),'logo')}}" type="image/x-icon">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.15.10/sweetalert2.min.css" integrity="sha512-Of+yU7HlIFqXQcG8Usdd67ejABz27o7CRB1tJCvzGYhTddCi4TZLVhh9tGaJCwlrBiodWCzAx+igo9oaNbUk5A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 
     @vite('resources/css/app.css')
@@ -67,7 +66,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <x-ui.theme-switch float />
     <!-- Layout wrapper -->
     <div id="main-container" data-layout="blank" class="flex min-h-screen items-center justify-center px-4 py-10">
-      <div id="main-content" class="w-full" data-title="@php if($metaData['title']){echo $metaData['title'];}else{ @endphp@yield('title') | {{config('setting.app_name')}}@php }@endphp">
+      <div id="main-content" class="flex w-full flex-col items-center" data-title="@php if($metaData['title']){echo $metaData['title'];}else{ @endphp@yield('title') | {{config('setting.app_name')}}@php }@endphp">
         <!--{{ view('common/message_alert') }}-->
         @yield('content')
       </div>
@@ -75,6 +74,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
 
     <!-- / Layout wrapper -->
     <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
+    @include('common.confirm-modal')
     <!-- Toast placement -->
     <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
     <!-- Core JS -->
@@ -82,11 +82,10 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js" integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script src="assets/js/app.js"></script>
-    <script src="assets/js/session-handler.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/app.js') }}"></script>
     @stack('scripts')
     {!! config('setting.footer_content') !!}
-    <script src="assets/js/pjax.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/pjax.js') }}"></script>
 
   </body>
   </html>

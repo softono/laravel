@@ -44,7 +44,7 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/approve.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/approve.js') }}"></script>
     <script>
         loginApprove.init({
             infoUrl: '{{ url('/auth/login-link/approve') }}',

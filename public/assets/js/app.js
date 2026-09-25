@@ -110,7 +110,7 @@ const app = {
     },
 
     closeModal: function ($modal) {
-        $($modal).removeClass("flex").addClass("hidden").attr("data-state", "closed");
+        $($modal).removeClass("flex").addClass("hidden").attr("data-state", "closed").trigger("modal:closed");
         if (!$("[data-modal][data-state=open]").length) {
             $("body").removeClass("overflow-hidden");
         }
@@ -428,19 +428,34 @@ const app = {
         });
     },
     showConfirmationPopup: function (params) {
-        return new Promise((resolve, reject) => {
-            if (confirm(params.text)) {
-                resolve(true);
-            } else {
-                reject(false);
-            }
-            // Swal.fire(params).then((result) => {
-            //     if (result.value) {
-            //         resolve(true);
-            //     }else{
-            //         reject(false);
-            //     }
-            // });
+        return new Promise((resolve) => {
+            const $modal = $("#confirm-modal");
+            let answered = false;
+            const answer = (value) => {
+                if (answered) {
+                    return;
+                }
+                answered = true;
+                $modal.off(".confirm");
+                resolve(value);
+            };
+
+            $("#confirm-modal-title").text(params.title || "Are you sure?");
+            $("#confirm-modal-text").text(params.text || "");
+            $("#confirm-modal-yes").text(params.confirmButtonText || "Yes");
+            $("#confirm-modal-cancel").text(params.cancelButtonText || "No");
+
+            $modal.on("click.confirm", "#confirm-modal-yes", function () {
+                // Answer first: closing the modal also fires modal:closed, which means "no".
+                answer(true);
+                app.closeModal($modal);
+            });
+            // Cancel, the backdrop, the X and Escape all just close the modal.
+            $modal.on("modal:closed.confirm", function () {
+                answer(false);
+            });
+            app.openModal($modal);
+            $("#confirm-modal-cancel").trigger("focus");
         });
     },
 
@@ -1018,10 +1033,28 @@ app.ui = {
             $("[data-dropdown-menu]").addClass("hidden");
         });
 
-        $doc.on("click", "[data-collapse-toggle]", function () {
-            const $button = $(this);
-            $($button.data("collapseToggle")).toggleClass("hidden");
-            $button.find("[data-toggle-icon]").toggleClass("hidden");
+        $doc.on("click", "[data-collapse-toggle]", function (event) {
+            event.stopPropagation();
+            const $target = $($(this).data("collapseToggle"));
+            app.ui.collapse($target, $target.hasClass("hidden"));
+        });
+
+        // A collapse with data-collapse-auto-close (the mobile navbar menu) closes on a link click, an outside
+        // click and Escape, so it never stays open over the page it navigated to.
+        $doc.on("click", "[data-collapse-auto-close] a", function () {
+            app.ui.collapse($(this).closest("[data-collapse-auto-close]"), false);
+        });
+        $doc.on("click", function (event) {
+            if (!$(event.target).closest("[data-collapse-auto-close], [data-collapse-toggle]").length) {
+                app.ui.collapse($("[data-collapse-auto-close]"), false);
+            }
+        });
+        // Growing past the desktop breakpoint swaps in the desktop navigation; drop the mobile state.
+        window.matchMedia("(min-width: 1024px)").addEventListener("change", function (mq) {
+            if (mq.matches) {
+                app.ui.collapse($("[data-collapse-auto-close]"), false);
+                app.ui.sidebar(false);
+            }
         });
 
         $doc.on("click", "[data-sidebar-toggle]", function () {
@@ -1030,6 +1063,8 @@ app.ui = {
         $doc.on("keydown", function (event) {
             if (event.key === "Escape") {
                 $("[data-dropdown-menu]").addClass("hidden");
+                app.ui.collapse($("[data-collapse-auto-close]"), false);
+                app.ui.sidebar(false);
             }
         });
         // Following a link inside the sidebar (pjax) should reveal the page on small screens.
@@ -1067,9 +1102,33 @@ app.ui = {
         app.ui.theme.init();
     },
 
+    /** Shows or hides a collapsible element and syncs its toggle buttons (aria-expanded, menu/close icon). */
+    collapse: function ($targets, open) {
+        $targets.each(function () {
+            const $target = $(this);
+            $target.toggleClass("hidden", !open);
+            $("[data-collapse-toggle='#" + this.id + "']").each(function () {
+                const $icons = $(this).find("[data-toggle-icon]");
+                $(this).attr("aria-expanded", open);
+                // First icon = closed state, second = open state.
+                $icons.eq(0).toggleClass("hidden", open);
+                $icons.eq(1).toggleClass("hidden", !open);
+            });
+        });
+    },
+
+    /** Admin sidebar drawer (below lg): slides in over a backdrop and locks page scroll while open. */
     sidebar: function (open) {
-        $("#layout-menu").toggleClass("!translate-x-0", open);
+        const $menu = $("#layout-menu");
+        if (!$menu.length) return;
+        $menu.toggleClass("!translate-x-0", open);
         $("#sidebar-backdrop").toggleClass("hidden", !open);
+        $("[data-sidebar-toggle=open]").attr("aria-expanded", open);
+        if (open) {
+            $("body").addClass("overflow-hidden");
+        } else if (!$("[data-modal][data-state=open]").length) {
+            $("body").removeClass("overflow-hidden");
+        }
     },
 
     /**
@@ -1329,6 +1388,66 @@ app.ui = {
     },
 };
 
+/**
+ * Ajax grid pagination (x-ui.pagination + a [data-ajax-grid] container). The buttons are real links, so the
+ * page works without JS; here a click on a page link / the Rows select, or a submit of a
+ * form[data-ajax-grid-form="#grid"], fetches the target URL, swaps the grid's contents and updates the address bar.
+ *
+ *   <form data-ajax-grid-form="#blog-grid" method="get">…</form>
+ *   <div id="blog-grid" data-ajax-grid> …items… <x-ui.pagination …/> </div>
+ */
+app.pagination = {
+    init: function () {
+        const $doc = $(document);
+
+        $doc.on("click", "[data-ajax-grid] a[data-page-link]", function (e) {
+            if (e.ctrlKey || e.metaKey || e.shiftKey) return;
+            e.preventDefault();
+            app.pagination.load($(this).closest("[data-ajax-grid]"), this.href);
+        });
+
+        $doc.on("change", "[data-ajax-grid] select[data-pagination-limit]", function () {
+            app.pagination.load($(this).closest("[data-ajax-grid]"), this.value);
+        });
+
+        $doc.on("submit", "form[data-ajax-grid-form]", function (e) {
+            const $grid = $($(this).data("ajaxGridForm"));
+            if (!$grid.length) return;
+            e.preventDefault();
+            const query = $(this).serialize();
+            app.pagination.load($grid, this.action.split("?")[0] + (query ? "?" + query : ""));
+        });
+    },
+
+    load: function ($grid, url) {
+        const gridId = $grid.attr("id");
+        const layout = $("#main-container").data("layout");
+        const fetchUrl = url + (url.includes("?") ? "&" : "?") + "partial=1&layout=" + layout;
+
+        $grid.addClass("pointer-events-none opacity-50 transition-opacity");
+        $.ajax({ url: fetchUrl, method: "GET" })
+            .done(function (response) {
+                const $fresh = $("<div>").append($.parseHTML(String(response))).find("#" + gridId);
+                if (!$fresh.length) {
+                    window.location.href = url;
+                    return;
+                }
+                $grid.html($fresh.html());
+                window.history.pushState({}, "", url);
+                if ($grid[0].getBoundingClientRect().top < 0) {
+                    $grid[0].scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            })
+            .fail(function () {
+                window.location.href = url;
+            })
+            .always(function () {
+                $grid.removeClass("pointer-events-none opacity-50 transition-opacity");
+            });
+    },
+};
+
 $(function () {
     app.ui.init();
+    app.pagination.init();
 });

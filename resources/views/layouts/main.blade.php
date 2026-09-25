@@ -98,6 +98,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <!-- / Footer -->
 
         <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
+        @include('common.confirm-modal')
         <!-- Toast placement -->
         <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
         <!-- Core JS -->
@@ -105,11 +106,11 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         @include('common.datatables-js')
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js" integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="assets/js/app.js"></script>
+        <script src="{{ $general->assetUrl('assets/js/app.js') }}"></script>
         @stack('scripts')
         {!! config('setting.footer_content') !!}
 
-        <script src="assets/js/pjax.js"></script>
+        <script src="{{ $general->assetUrl('assets/js/pjax.js') }}"></script>
     </body>
 
     </html>

@@ -7,7 +7,7 @@
 
         <div class="flex items-center gap-2 lg:hidden">
             <x-ui.theme-switch />
-            <x-ui.button variant="outline" size="icon" class="rounded-lg" data-collapse-toggle="#mobile-menu" aria-label="Toggle navigation">
+            <x-ui.button variant="outline" size="icon" class="rounded-lg" data-collapse-toggle="#mobile-menu" aria-controls="mobile-menu" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="bx bx-menu text-xl" data-toggle-icon></i>
                 <i class="bx bx-x hidden text-xl" data-toggle-icon></i>
             </x-ui.button>
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div id="mobile-menu" class="hidden space-y-1 border-t border-border px-4 py-3 lg:hidden">
+    <div id="mobile-menu" data-collapse-auto-close class="hidden space-y-1 border-t border-border px-4 py-3 lg:hidden">
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent" href="{{ route('home') }}">Home</a>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent" href="{{ route('blog') }}">Blog</a>
         <a class="pjax block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent" href="{{ route('contact') }}">Contact</a>

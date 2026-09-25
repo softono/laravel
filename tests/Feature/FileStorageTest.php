@@ -109,8 +109,8 @@ class FileStorageTest extends TestCase
     {
         $general = app(General::class);
 
-        $this->assertSame('https://files.test/upload/no-image.jpg', $general->getFileUrl('missing.png', 'profile'));
-        $this->assertSame('https://files.test/upload/no-image.jpg', $general->getFileUrl(null, 'profile'));
+        $this->assertSame(asset('assets/images/no-image.svg'), $general->getFileUrl('missing.png', 'profile'));
+        $this->assertSame(asset('assets/images/no-image.svg'), $general->getFileUrl(null, 'profile'));
 
         Storage::disk('test_public')->put('profile/here.png', 'x');
         $this->assertSame('https://files.test/upload/profile/here.png', $general->getFileUrl('here.png', 'profile'));

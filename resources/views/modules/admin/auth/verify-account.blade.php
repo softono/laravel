@@ -41,7 +41,7 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/countdown.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/countdown.js') }}"></script>
     <script>
         document.getElementById('verify-form').addEventListener('submit', function (event) {
             event.preventDefault();

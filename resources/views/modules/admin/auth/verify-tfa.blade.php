@@ -56,7 +56,7 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/tfa-verify.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/tfa-verify.js') }}"></script>
     <script>
         tfaVerify.init({
             methodsUrl: '{{ url('/auth/tfa/methods') }}',

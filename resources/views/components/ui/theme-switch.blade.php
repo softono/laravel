@@ -16,7 +16,7 @@
 @endphp
 <div data-slot="theme-switch" data-theme-switch data-dropdown
     data-themes-url="{{ route('theme') }}" data-theme-url="{{ route('theme/show', ['name' => '__name__']) }}"
-    {{ $attributes->class(['relative', 'fixed top-4 right-4 z-40' => $float]) }}>
+    {{ $attributes->class([$float ? 'fixed top-4 right-4 z-40' : 'relative']) }}>
     <button type="button" data-dropdown-toggle data-theme-trigger aria-haspopup="dialog" aria-label="Change theme"
         title="Active Theme: {{ $label }}"
         class="border-border bg-card text-foreground hover:bg-muted focus-visible:ring-ring/50 flex size-9 cursor-pointer items-center justify-center rounded-lg border outline-none transition-colors duration-150 focus-visible:ring-[3px]">

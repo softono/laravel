@@ -34,8 +34,8 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/passkey.js') }}"></script>
-    <script src="{{ asset('assets/js/account/passkeys.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/passkey.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/account/passkeys.js') }}"></script>
     <script>
         accountPasskeys.init({
             listUrl: '{{ url('/auth/passkey/list') }}',

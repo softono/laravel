@@ -8,6 +8,15 @@ use Tests\TestCase;
 
 class ClientIpTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Requests made by earlier tests leave Symfony's static trusted-proxy list at `*` (bootstrap/app.php),
+        // which would make `$request->ip()` follow X-Forwarded-For here.
+        Request::setTrustedProxies([], Request::HEADER_X_FORWARDED_FOR);
+    }
+
     private function request(string $forwarded): Request
     {
         return Request::create('/', 'GET', [], [], [], ['REMOTE_ADDR' => '10.0.0.1', 'HTTP_X_FORWARDED_FOR' => $forwarded]);

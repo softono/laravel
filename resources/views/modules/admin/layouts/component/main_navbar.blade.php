@@ -1,5 +1,5 @@
 <nav class="flex items-center justify-between gap-4 border-b border-border bg-card px-4 py-3 sm:px-6 lg:px-8" id="layout-navbar">
-    <button type="button" class="text-muted-foreground hover:text-foreground lg:hidden" data-sidebar-toggle="open" aria-label="Open sidebar">
+    <button type="button" class="text-muted-foreground hover:text-foreground lg:hidden" data-sidebar-toggle="open" aria-controls="layout-menu" aria-expanded="false" aria-label="Open sidebar">
         <i class="bx bx-menu text-xl"></i>
     </button>
 

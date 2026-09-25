@@ -110,7 +110,7 @@ npm run dev
 
 > ⚠️ **Autoload:** the system `composer` (2.0.14) cannot parse `enum` files and silently drops `SortDirection` from the classmap, which breaks every page. Use a current Composer (2.7+): `php composer.phar dump-autoload -o`.
 >
-> ⚠️ **URLs:** the deployed site does not rewrite pretty URLs under `/laravel/laravel/public/`; request routes as `…/public/index.php/<route>`.
+> ⚠️ **URLs:** the deployed site serves pretty URLs (`…/laravel/laravel/public/<route>`, nginx `try_files … /laravel/laravel/public/index.php?$query_string`); `…/public/index.php/<route>` works too. Never write a relative `src="assets/…"` in a view: `<base href>` follows the URL form, so it breaks under `index.php/`. Load scripts with `$general->assetUrl('assets/js/x.js')`, which is absolute and adds `?v=<mtime>` (Cloudflare and browsers cache static files for hours).
 >
 > ⚠️ `phpunit.xml` has the SQLite lines **commented out**, so `php artisan test` runs against the **real MySQL database**. Configure a scratch database before running the suite.
 
@@ -266,6 +266,7 @@ Route **names** are load-bearing: `SeoMetaRepository::metaForRoute()` looks up `
 | Trusting `Auth::login()` / `Auth::logout()` | `SessionTokenGuard` implements only `Guard`; these fatal | `SessionService::issue()` / `revoke()` |
 | Adding a column to `users` for auth state | Wrong table; the schema mirrors Next | Use the existing `user_*` table for that concern |
 | Using a utility class no view had before | Silently unstyled until the CSS is rebuilt | `npm run build` |
+| Adding `<script src="assets/js/x.js">` (relative, unversioned) | 404 under `index.php/`, or a stale cached script next to new HTML: the page looks fine but nothing responds | `{{ $general->assetUrl('assets/js/x.js') }}` |
 | Using `x-data` / `@click` (Alpine) in a view | Alpine is gone; the attributes do nothing | Use the `data-*` behaviours in `app.ui`, or jQuery in `app.js` |
 | Forgetting `parent::__construct()` in a controller | `$general` / settings missing → view errors | Always call it |
 | A distinct error message on a failure path | Enables user enumeration | Keep messages generic; log the real reason |

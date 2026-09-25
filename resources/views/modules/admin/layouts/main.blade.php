@@ -98,6 +98,7 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     </div>
 
     <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
+    @include('common.confirm-modal')
     <!-- Toast with Placements -->
     <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
     <!-- Toast with Placements -->
@@ -110,16 +111,16 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script src="assets/js/app.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/app.js') }}"></script>
     @stack('scripts')
-    <script src="assets/js/admin-idle.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/admin-idle.js') }}"></script>
     <script>
         adminIdle.init({
             logoutUrl: @json(route('admin/auth/logout')),
             remember: @json((bool) auth()->guard()->session()?->isRemembered()),
         });
     </script>
-    <script src="assets/js/pjax.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/pjax.js') }}"></script>
 </body>
 
 </html>

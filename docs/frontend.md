@@ -70,7 +70,7 @@ The components carry Next's exact class strings:
 | `<x-ui.page-header title="…" :crumbs="[['Dashboard', route('admin/dashboard')], ['Users']]">` | Page title + breadcrumb trail (last crumb has no link) |
 | `<x-ui.theme-switch>` | Light / dark / system picker; see [Theme switch](#theme-switch) |
 | `<x-ui.table>`, `tr`, `th`, `td` | plain tables |
-| `<x-ui.pagination :paginator="$posts" />` | Previous / Next for a Laravel paginator |
+| `<x-ui.pagination :paginator="$posts" :page-sizes="[12, 24, 48]" />` | Next's grid pagination for a Laravel paginator: Rows select, count, round numbered links. Inside a `[data-ajax-grid]` container `app.pagination` loads pages via ajax (`form[data-ajax-grid-form="#grid"]` does the same for a search form); the links are real hrefs so it works without JS. `page-sizes` needs the controller to honour `limit` |
 
 ```blade
 <x-ui.card>
@@ -109,7 +109,7 @@ Dropdowns, collapsible menus, the admin sidebar, tabs, modals, alerts and the th
 | Attributes | Behaviour |
 |---|---|
 | `data-dropdown` wrapper, `data-dropdown-toggle` button, `data-dropdown-menu` | Click toggles the menu; a click outside or on a link inside closes it |
-| `data-collapse-toggle="#id"` (+ `data-toggle-icon` icons) | Toggles `hidden` on `#id` and on the icons (menu/close swap) |
+| `data-collapse-toggle="#id"` (+ two `data-toggle-icon` icons: closed, open) | Toggles `hidden` on `#id`, swaps the icons, keeps `aria-expanded` in sync (`app.ui.collapse($el, open)`). Add `data-collapse-auto-close` to the target and it also closes on a link click, an outside click, Escape and when the viewport reaches `lg` |
 | `data-sidebar-toggle="open\|close"` | Admin sidebar (`#layout-menu`) and `#sidebar-backdrop` |
 | `data-tabs` (with `data-tabs-active` / `data-tabs-inactive` class strings), `data-tab="x"`, `data-tab-panel="x"` | Tabs; render the first tab active and the other panels `hidden` |
 | `data-menu-toggle` on a sidebar link | Toggles `open` on its `<li>` (submenu group) |
@@ -122,7 +122,11 @@ Tailwind also scans `public/assets/js`, so utility classes written in JS strings
 
 ### Modals
 
-`<x-ui.modal id="note-modal">…</x-ui.modal>` renders a hidden `[data-modal]` overlay (backdrop, panel, close button). Open it with `data-modal-open="#note-modal"` or `app.openModal($('#note-modal'))`; the backdrop, any `data-modal-dismiss` element and Escape close it. State lives in `data-state="open|closed"` and the `hidden`/`flex` classes. The layouts include one shared `#common-modal` whose content (`#common-modal-content`) is loaded by `app.showModalView(url)`; the `hide_modal` follow-up closes it.
+`<x-ui.modal id="note-modal">…</x-ui.modal>` renders a hidden `[data-modal]` overlay (backdrop, panel, close button). Open it with `data-modal-open="#note-modal"` or `app.openModal($('#note-modal'))`; the backdrop, any `data-modal-dismiss` element and Escape close it. State lives in `data-state="open|closed"` and the `hidden`/`flex` classes. The layouts include one shared `#common-modal` whose content (`#common-modal-content`) is loaded by `app.showModalView(url)`; the `hide_modal` follow-up closes it. `app.closeModal()` fires a `modal:closed` event on the modal.
+
+**Confirmation dialog.** `app.confirmAction(button)` / `app.showConfirmationPopup({title, text, confirmButtonText, cancelButtonText})` open the shared `#confirm-modal` (`common/confirm-modal.blade.php`, included by every layout) and return a promise that resolves `true` on Yes and `false` for No, the backdrop, the X or Escape. There is no browser `confirm()` and no SweetAlert.
+
+**Mobile.** Delegated `click` handlers on `document` only see taps on non-button elements (backdrops, list rows) in iOS Safari when the element has `cursor: pointer`; `common.css` sets it for every `data-*` toggle. Keep that list in sync when adding a new delegated toggle. On phones DataTables Responsive collapses columns behind a ▶ row expander; put row actions in a column that stays useful when collapsed.
 
 ### Theme switch
 
@@ -218,3 +222,4 @@ Links with the `pjax` class load their page into the layout without a full reloa
 | A table does not reload after delete | The delete button has no `data-next="table_refresh"`, or the table was not created with `app.dataTable` |
 | `$general` undefined in a view | The controller did not call `parent::__construct()` |
 | Blade change not visible | `php artisan view:clear` |
+| Buttons/toggles do nothing (page is styled, JS dead) | A script URL relative to `<base href>` resolved under `index.php/` (404), or a stale cached copy of a script is served next to new HTML. Load scripts with `{{ $general->assetUrl('assets/js/x.js') }}` (absolute, `?v=<mtime>`), never `src="assets/…"` |

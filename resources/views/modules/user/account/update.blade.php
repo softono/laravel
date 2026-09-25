@@ -107,7 +107,7 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/account/email-change.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/account/email-change.js') }}"></script>
     <script type="text/javascript">
         documentReady(function() {
             emailChange.init({

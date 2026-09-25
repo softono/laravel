@@ -14,3 +14,48 @@ label.error {
 .dt-container .dt-paging button {
     border-radius: 0.375rem;
 }
+
+/* DataTables on phones: length + search and info + paging each get a full-width row instead of two cramped columns. */
+@media (max-width: 639px) {
+    .dt-container > .grid.grid-cols-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .dt-container > .grid.grid-cols-2 > * {
+        grid-column: 1;
+        justify-self: stretch;
+    }
+    .dt-container .dt-search {
+        display: flex;
+        align-items: center;
+    }
+    .dt-container .dt-search input {
+        flex: 1;
+        min-width: 0;
+    }
+    .dt-container .dt-paging {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/*
+ * Delegated click handlers (app.ui in app.js) sit on `document`. iOS Safari only bubbles a tap on a non-button
+ * element up to the document when it looks clickable, so anything behind a data-* toggle gets cursor: pointer;
+ * touch-action removes the double-tap-zoom delay on the controls themselves.
+ */
+[data-sidebar-toggle],
+[data-modal-dismiss],
+[data-collapse-toggle],
+[data-dropdown-toggle],
+[data-menu-toggle],
+[data-tab],
+[data-theme-name],
+[data-theme-cycle],
+[data-theme-shuffle],
+[data-password-toggle],
+[data-alert-dismiss],
+[data-toast-dismiss] {
+    cursor: pointer;
+    touch-action: manipulation;
+}

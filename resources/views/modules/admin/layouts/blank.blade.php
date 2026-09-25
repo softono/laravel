@@ -30,11 +30,6 @@ if (isset($_GET['partial']) && $_GET['partial']) {
     <link rel="shortcut icon" href="{{ $general->getFileUrl(config('setting.app_favicon'), 'logo') }}"
         type="image/x-icon">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.15.10/sweetalert2.min.css"
-        integrity="sha512-Of+yU7HlIFqXQcG8Usdd67ejABz27o7CRB1tJCvzGYhTddCi4TZLVhh9tGaJCwlrBiodWCzAx+igo9oaNbUk5A=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-
     @vite('resources/css/app.css')
     {{-- After the stylesheet: its :root overrides must win. --}}
     @include('common.theme-init')
@@ -65,14 +60,15 @@ if (isset($_GET['partial']) && $_GET['partial']) {
 </div>
     <x-ui.theme-switch float />
     <!-- Layout wrapper -->
-    <div id="main-container" data-layout="blank" class="w-full">
-        <div id="main-content" data-title="@yield('title') | {{ config('app.name') }}">
+    <div id="main-container" data-layout="blank" class="flex min-h-screen items-center justify-center px-4 py-10">
+        <div id="main-content" class="flex w-full flex-col items-center" data-title="@yield('title') | {{ config('app.name') }}">
             @yield('content')
         </div>
     </div>
 
     <!-- / Layout wrapper -->
     <x-ui.modal id="common-modal" content-id="common-modal-content"></x-ui.modal>
+    @include('common.confirm-modal')
     <!-- Toast with Placements -->
     <div id="common-toast" class="fixed top-4 right-4 z-[9999] flex flex-col items-end gap-2"></div>
     <!-- Toast with Placements -->
@@ -83,9 +79,9 @@ if (isset($_GET['partial']) && $_GET['partial']) {
         integrity="sha512-KFHXdr2oObHKI9w4Hv1XPKc898mE4kgYx58oqsc/JqqdLMDI4YjOLzom+EMlW8HFUd0QfjfAvxSL6sEq/a42fQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <script src="assets/js/app.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/app.js') }}"></script>
     @stack('scripts')
-    <script src="assets/js/pjax.js"></script>
+    <script src="{{ $general->assetUrl('assets/js/pjax.js') }}"></script>
 </body>
 
 </html>

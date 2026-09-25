@@ -223,10 +223,21 @@ class General
         return $this->files()->directory($type);
     }
 
-    /** URL of the "no image" placeholder on the public disk. */
+    /**
+     * URL of a file under public/ with its modification time as `?v=`. Static files are cached by the browser and by
+     * Cloudflare (hours), so an edited script would otherwise be served stale next to new HTML that expects it.
+     */
+    public function assetUrl(string $path): string
+    {
+        $file = public_path($path);
+
+        return asset($path).(is_file($file) ? '?v='.filemtime($file) : '');
+    }
+
+    /** URL of the "no image" placeholder: a static asset, so it exists on every disk (local, S3) and every deploy. */
     public function getNoFile($type = 'setting')
     {
-        return $this->files()->disk('profile')->url('no-image.jpg');
+        return asset('assets/images/no-image.svg');
     }
 
     /**

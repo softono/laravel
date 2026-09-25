@@ -135,9 +135,9 @@
     </div>
 @endsection
 @push('scripts')
-    <script src="{{ asset('assets/js/auth/login-link.js') }}"></script>
-    <script src="{{ asset('assets/js/auth/login-otp.js') }}"></script>
-    <script src="{{ asset('assets/js/auth/passkey.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/login-link.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/login-otp.js') }}"></script>
+    <script src="{{ $general->assetUrl('assets/js/auth/passkey.js') }}"></script>
     <script>
         (function () {
             var btn = document.getElementById('passkey-login-btn');
